@@ -202,6 +202,7 @@ export class WorkspaceMetricsCollector {
     const metered = this.config.get('BILLING_ENABLED', { infer: true });
     const selfHosted = selfHostedLimits(
       this.config.get('AI_CALLS_PER_MONTH', { infer: true }),
+      this.config.get('SELF_HOSTED_COMPETITORS_PER_APP', { infer: true }),
     );
     return new Map(
       workspaces.map((workspace) => [

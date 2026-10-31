@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { Suspense } from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useQueryState } from "nuqs";
@@ -65,7 +67,9 @@ function SerpMoversList({ id, days }: { id: string; days: number }) {
                     <span className="font-medium">{item.title}</span>
                     {item.appId === id ? <Badge>You</Badge> : null}
                     {item.isCompetitor ? (
-                      <Badge variant="secondary">Competitor</Badge>
+                      <Badge variant="secondary">
+                        <LocalizedText en="Competitor" />
+                      </Badge>
                     ) : null}
                   </span>
                   <span className="text-sm text-muted-foreground">
@@ -112,8 +116,12 @@ export function SerpMoversCard({ id }: { id: string }) {
     <Card>
       <CardHeader className="flex-row items-start justify-between gap-4">
         <div className="flex flex-col gap-1.5">
-          <CardDescription>SERP movers</CardDescription>
-          <CardTitle>New entrants in your keywords’ top 10</CardTitle>
+          <CardDescription>
+            <LocalizedText en="SERP movers" />
+          </CardDescription>
+          <CardTitle>
+            <LocalizedText en="New entrants in your keywords’ top 10" />
+          </CardTitle>
         </div>
         <Tabs
           value={String(days)}

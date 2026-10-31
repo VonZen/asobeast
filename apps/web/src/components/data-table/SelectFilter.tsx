@@ -7,6 +7,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { componentCopy } from "@/lib/component-copy";
 
 export function SelectFilter<T extends string>({
   title,
@@ -19,6 +21,7 @@ export function SelectFilter<T extends string>({
   options: ReadonlyArray<{ value: T; label: string }>;
   onChange: (next: T) => void;
 }) {
+  const language = useInterfaceLanguage();
   return (
     <Select
       value={value}
@@ -27,15 +30,25 @@ export function SelectFilter<T extends string>({
         if (option) onChange(option.value);
       }}
     >
-      <SelectTrigger size="sm" aria-label={`Filter by ${title.toLowerCase()}`}>
+      <SelectTrigger
+        size="sm"
+        aria-label={
+          language === "zh-CN"
+            ? `按${componentCopy(language, title)}筛选`
+            : `Filter by ${title.toLowerCase()}`
+        }
+      >
         <SelectValue>
-          {options.find((option) => option.value === value)?.label}
+          {componentCopy(
+            language,
+            options.find((option) => option.value === value)?.label ?? "",
+          )}
         </SelectValue>
       </SelectTrigger>
       <SelectContent>
         {options.map((option) => (
           <SelectItem key={option.value} value={option.value}>
-            {option.label}
+            {componentCopy(language, option.label)}
           </SelectItem>
         ))}
       </SelectContent>

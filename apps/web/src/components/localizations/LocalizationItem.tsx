@@ -1,6 +1,7 @@
 "use client";
 
 import { Sparkles } from "lucide-react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import type {
   AppLocalizationItem,
   AppStoreLocalization,
@@ -27,6 +28,7 @@ export function LocalizationItem({
   onDraft: ((localization: AppStoreLocalization) => void) | null;
 }) {
   const name = localizationName(item.localization);
+  const zh = useInterfaceLanguage() === "zh-CN";
 
   return (
     <AccordionItem value={item.localization}>
@@ -51,11 +53,11 @@ export function LocalizationItem({
               <Button
                 variant="outline"
                 size="xs"
-                aria-label={`Draft with AI: ${name}`}
+                aria-label={zh ? `AI 起草：${name}` : `Draft with AI: ${name}`}
                 onClick={() => onDraft(item.localization)}
               >
                 <Sparkles aria-hidden />
-                Draft with AI
+                {zh ? "使用 AI 起草" : "Draft with AI"}
               </Button>
             </div>
           ) : null}

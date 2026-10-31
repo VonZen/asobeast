@@ -1,11 +1,13 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -45,7 +47,9 @@ function ReturnCard({
           />
         ) : (
           <Button asChild variant="outline">
-            <Link href={STORE_CONNECTIONS_PATH}>Back to store connections</Link>
+            <Link href={STORE_CONNECTIONS_PATH}>
+              <LocalizedText en="Back to store connections" />
+            </Link>
           </Button>
         )}
       </CardContent>

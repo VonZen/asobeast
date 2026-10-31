@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { Loader2 } from "lucide-react";
 import {
   type MarketSuggestion,
@@ -55,6 +56,7 @@ export function SuggestedMarkets({
   selected: readonly string[];
   onSelect: (market: string, selected: boolean) => void;
 }) {
+  const zh = useInterfaceLanguage() === "zh-CN";
   const languages = languageNames(result);
   const [ticked, setTicked] = useState<ReadonlySet<string>>(new Set());
   const [seedChoices, setSeedChoices] = useState<ReadonlyMap<string, boolean>>(
@@ -88,7 +90,11 @@ export function SuggestedMarkets({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
-        <p className="text-body">Your listing ships {formatList(languages)}.</p>
+        <p className="text-body">
+          {zh
+            ? `商品页目前提供：${formatList(languages)}。`
+            : `Your listing ships ${formatList(languages)}.`}
+        </p>
         <div className="flex flex-wrap gap-1.5">
           {languages.map((language) => (
             <Badge key={language} variant="secondary">
@@ -128,7 +134,9 @@ export function SuggestedMarkets({
           {seedButtonLabel(pending.length, plan.seed.length)}
         </Button>
         <p className="flex items-center gap-1 text-caption text-muted-foreground">
-          Each country adds requests a day to the daily run.
+          {zh
+            ? "每个国家／地区都会增加每日采集请求量。"
+            : "Each country adds requests a day to the daily run."}
           <MarketCostTip store={store} />
         </p>
       </div>
@@ -137,11 +145,18 @@ export function SuggestedMarkets({
 }
 
 export function MarketCostTip({ store }: { store: Store }) {
+  const zh = useInterfaceLanguage() === "zh-CN";
   return (
     <InfoTip
-      label="About market costs"
-      title="What a market costs"
-      summary={marketCostSummary(store)}
+      label={zh ? "了解市场采集成本" : "About market costs"}
+      title={zh ? "市场采集成本" : "What a market costs"}
+      summary={
+        zh
+          ? store === "APP_STORE"
+            ? "每个市场每天都会为 App 和每个竞品采集一次商品页信息，还会按本地化版本分别采集；在该市场跟踪的每个关键词也会增加一次每日搜索。自动初始化时，还可能从标题和副标题中添加种子关键词。"
+            : "每个市场每天都会为 App 和每个竞品采集一次商品页信息，在该市场跟踪的每个关键词也会增加一次每日搜索。"
+          : marketCostSummary(store)
+      }
     >
       <a
         href={MARKET_COST_GUIDE}
@@ -149,7 +164,7 @@ export function MarketCostTip({ store }: { store: Store }) {
         rel="noreferrer"
         className="font-medium text-foreground underline decoration-primary underline-offset-4 hover:decoration-2"
       >
-        Read what a market costs
+        {zh ? "了解市场采集成本" : "Read what a market costs"}
       </a>
     </InfoTip>
   );
@@ -174,6 +189,7 @@ function SuggestedMarket({
   onPick: (on: boolean) => void;
   onSeed: (on: boolean) => void;
 }) {
+  const zh = useInterfaceLanguage() === "zh-CN";
   const id = `setup-suggested-${market.country}`;
   const seedId = `setup-seed-${market.country}`;
   const name = formatCountry(market.country);
@@ -190,9 +206,13 @@ function SuggestedMarket({
           {name} ({market.country.toUpperCase()})
         </Label>
         <ReadRoleBadge role={market.role} />
-        {market.tracked ? <Badge variant="outline">Tracked</Badge> : null}
+        {market.tracked ? (
+          <Badge variant="outline">{zh ? "已跟踪" : "Tracked"}</Badge>
+        ) : null}
         <span className="text-caption text-muted-foreground">
-          {marketCostText(market)}
+          {zh
+            ? `每天 ${market.dailyRequests.listing} 次商品页采集，每个关键词 ${market.dailyRequests.perKeyword} 次搜索`
+            : marketCostText(market)}
         </span>
       </div>
       {ticked ? (
@@ -206,8 +226,10 @@ function SuggestedMarket({
             htmlFor={seedId}
             className="text-caption font-normal text-muted-foreground"
           >
-            Seed with its listing
-            <span className="sr-only"> for {name}</span>
+            {zh ? "使用商店元数据初始化关键词" : "Seed with its listing"}
+            <span className="sr-only">
+              {zh ? `（${name}）` : ` for ${name}`}
+            </span>
           </Label>
         </div>
       ) : null}

@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useSyncExternalStore } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { BellRing } from "lucide-react";
@@ -79,26 +81,33 @@ export function AlertsNudge({ id }: { id: string }) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <BellRing aria-hidden className="size-4 text-muted-foreground" />
-          Get told when a position moves
+          <LocalizedText en="Get told when a position moves" />
         </CardTitle>
         <CardDescription>
-          Two daily captures are in, so positions can now move. Email or a
-          webhook tells you when one drops, climbs or enters the top ten.
+          <LocalizedText en="Two daily captures are in, so positions can now move. Email or a webhook tells you when one drops, climbs or enters the top ten." />
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-2">
           {state === "email" ? (
             <AddEmailAlertDialog
-              trigger={<Button variant="outline">Add an email alert</Button>}
+              trigger={
+                <Button variant="outline">
+                  <LocalizedText en="Add an email alert" />
+                </Button>
+              }
             />
           ) : (
             <AddWebhookDialog
-              trigger={<Button variant="outline">Add a webhook</Button>}
+              trigger={
+                <Button variant="outline">
+                  <LocalizedText en="Add a webhook" />
+                </Button>
+              }
             />
           )}
           <Button variant="ghost" onClick={dismiss}>
-            Not now
+            <LocalizedText en="Not now" />
           </Button>
         </div>
         {state === "webhook" ? (
@@ -110,7 +119,7 @@ export function AlertsNudge({ id }: { id: string }) {
               rel="noreferrer"
               className="text-foreground underline decoration-primary underline-offset-4"
             >
-              Set up email delivery
+              <LocalizedText en="Set up email delivery" />
             </a>
           </p>
         ) : null}

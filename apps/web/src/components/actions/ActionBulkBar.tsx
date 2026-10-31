@@ -1,6 +1,7 @@
 "use client";
 
 import { Check, Clock } from "lucide-react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import type { ActionUpdateRequest } from "@asobeast/shared";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,16 +31,17 @@ export function ActionBulkBar({
   onSelectAll: () => void;
   onClear: () => void;
 }) {
+  const language = useInterfaceLanguage();
   if (count === 0) return null;
 
   return (
     <div
       role="toolbar"
-      aria-label="Bulk actions"
+      aria-label={language === "zh-CN" ? "批量操作" : "Bulk actions"}
       className="sticky bottom-4 z-20 flex flex-wrap items-center gap-2 rounded-lg border bg-popover px-3 py-2 shadow-overlay"
     >
       <span className="text-body font-medium">
-        {formatNumber(count)} selected
+        {language === "zh-CN" ? `已选择 ${formatNumber(count)} 项` : `${formatNumber(count)} selected`}
       </span>
       <Button
         size="sm"
@@ -48,7 +50,7 @@ export function ActionBulkBar({
         onClick={() => onUpdate({ status: "DONE" })}
       >
         <Check aria-hidden />
-        Done
+        {language === "zh-CN" ? "完成" : "Done"}
       </Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -59,7 +61,7 @@ export function ActionBulkBar({
             disabled={busy}
           >
             <Clock aria-hidden />
-            Snooze
+            {language === "zh-CN" ? "推迟" : "Snooze"}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
@@ -70,7 +72,7 @@ export function ActionBulkBar({
                 onUpdate({ status: "SNOOZED", snoozedUntil: snoozeUntil(days) })
               }
             >
-              {days} days
+              {days} {language === "zh-CN" ? "天" : "days"}
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>
@@ -87,7 +89,7 @@ export function ActionBulkBar({
           className={BAR_BUTTON}
           onClick={onSelectAll}
         >
-          Select all {formatNumber(shown)} shown
+          {language === "zh-CN" ? `选择显示的全部 ${formatNumber(shown)} 项` : `Select all ${formatNumber(shown)} shown`}
         </Button>
       ) : null}
       <Button
@@ -96,7 +98,7 @@ export function ActionBulkBar({
         className={BAR_BUTTON}
         onClick={onClear}
       >
-        Clear selection
+        {language === "zh-CN" ? "清除选择" : "Clear selection"}
       </Button>
     </div>
   );

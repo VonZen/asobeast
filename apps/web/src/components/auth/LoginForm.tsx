@@ -20,8 +20,12 @@ import { Label } from "@/components/ui/label";
 import { SessionNotKeptAlert } from "./SessionNotKeptAlert";
 import { useAuth } from "./use-auth";
 import { useSessionEntry } from "./use-session-entry";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 
 export function LoginForm() {
+  const locale = useInterfaceLanguage();
+  const t = (value: string) => interfaceCopy(locale, value);
   const params = useSearchParams();
   const { status } = useAuth();
   const [email, setEmail] = useState("");
@@ -34,8 +38,8 @@ export function LoginForm() {
     onFailure: (err) => {
       setError(
         err instanceof ApiError
-          ? err.envelope.message
-          : "Could not sign in. Try again.",
+          ? t(err.envelope.message)
+          : t("Could not sign in. Try again."),
       );
     },
   });
@@ -51,20 +55,23 @@ export function LoginForm() {
       <Card>
         <CardHeader>
           <CardTitle asChild>
-            <h1>Sign in</h1>
+            <h1>{t("Sign in")}</h1>
           </CardTitle>
-          <CardDescription>Sign in to your AsoBeast workspace.</CardDescription>
+          <CardDescription>
+            {t("Sign in to your AsoBeast workspace.")}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {params.get("registration") === "closed" ? (
             <p className="mb-4 text-sm text-muted-foreground">
-              Registration is closed on this deployment. Ask the owner for an
-              account.
+              {t(
+                "Registration is closed on this deployment. Ask the owner for an account.",
+              )}
             </p>
           ) : null}
           <form onSubmit={submit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("Email")}</Label>
               <Input
                 id="email"
                 type="email"
@@ -80,12 +87,12 @@ export function LoginForm() {
             </div>
             <div className="flex flex-col gap-2">
               <div className="flex items-baseline justify-between gap-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t("Password")}</Label>
                 <Link
                   href="/forgot-password"
                   className="text-sm text-muted-foreground underline"
                 >
-                  Forgot password?
+                  {t("Forgot password?")}
                 </Link>
               </div>
               <Input
@@ -105,16 +112,16 @@ export function LoginForm() {
             ) : null}
             <Button type="submit" disabled={mutation.isPending}>
               {mutation.isPending ? <Loader2 className="animate-spin" /> : null}
-              Sign in
+              {t("Sign in")}
             </Button>
           </form>
         </CardContent>
       </Card>
       {status?.registrationOpen ? (
         <p className="text-center text-sm text-muted-foreground">
-          Need an account?{" "}
+          {t("Need an account?")}{" "}
           <Link href="/register" className="font-medium underline">
-            Create one
+            {t("Create one")}
           </Link>
         </p>
       ) : null}

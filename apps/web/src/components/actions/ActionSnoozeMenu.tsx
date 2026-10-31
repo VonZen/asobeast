@@ -1,5 +1,6 @@
 "use client";
 
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { Clock } from "lucide-react";
 import type { ActionStatus } from "@asobeast/shared";
 import { Button } from "@/components/ui/button";
@@ -34,11 +35,18 @@ export function ActionSnoozeMenu({
   onSnooze: (snoozedUntil: string) => void;
   onWake: () => void;
 }) {
+  const language = useInterfaceLanguage();
   if (status === "SNOOZED") {
     return (
       <Button variant="outline" size="sm" disabled={disabled} onClick={onWake}>
         <Clock aria-hidden className="size-4" />
-        {snoozedUntil ? `Wakes ${formatDate(snoozedUntil)}` : "Wake now"}
+        {snoozedUntil
+          ? language === "zh-CN"
+            ? `${formatDate(snoozedUntil, language)} 恢复`
+            : `Wakes ${formatDate(snoozedUntil)}`
+          : language === "zh-CN"
+            ? "立即恢复"
+            : "Wake now"}
       </Button>
     );
   }
@@ -53,7 +61,7 @@ export function ActionSnoozeMenu({
           data-command="snooze"
         >
           <Clock aria-hidden className="size-4" />
-          Snooze
+          {language === "zh-CN" ? "推迟" : "Snooze"}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
@@ -62,7 +70,7 @@ export function ActionSnoozeMenu({
             key={days}
             onSelect={() => onSnooze(snoozeUntil(days))}
           >
-            {days} days
+            {days} {language === "zh-CN" ? "天" : "days"}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

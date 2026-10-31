@@ -1,5 +1,7 @@
 "use client";
 
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 import { X } from "lucide-react";
 import {
   ACTION_DISMISS_REASONS,
@@ -21,25 +23,29 @@ import { ACTION_DISMISS_REASON_LABEL } from "./action-history";
 type OnDismiss = (reason?: ActionDismissReason) => void;
 
 function DismissItems({ onDismiss }: { onDismiss: OnDismiss }) {
+  const language = useInterfaceLanguage();
   return (
     <>
       {ACTION_DISMISS_REASONS.map((reason) => (
         <DropdownMenuItem key={reason} onSelect={() => onDismiss(reason)}>
-          {ACTION_DISMISS_REASON_LABEL[reason]}
+          {interfaceCopy(language, ACTION_DISMISS_REASON_LABEL[reason])}
         </DropdownMenuItem>
       ))}
       <DropdownMenuSeparator />
       <DropdownMenuItem onSelect={() => onDismiss()}>
-        Dismiss without a reason
+        {language === "zh-CN" ? "不填写原因并忽略" : "Dismiss without a reason"}
       </DropdownMenuItem>
     </>
   );
 }
 
 export function ActionDismissSubMenu({ onDismiss }: { onDismiss: OnDismiss }) {
+  const language = useInterfaceLanguage();
   return (
     <DropdownMenuSub>
-      <DropdownMenuSubTrigger>Dismiss</DropdownMenuSubTrigger>
+      <DropdownMenuSubTrigger>
+        {language === "zh-CN" ? "忽略" : "Dismiss"}
+      </DropdownMenuSubTrigger>
       <DropdownMenuSubContent>
         <DismissItems onDismiss={onDismiss} />
       </DropdownMenuSubContent>
@@ -56,6 +62,7 @@ export function ActionDismissMenu({
   disabled: boolean;
   className?: string;
 }) {
+  const language = useInterfaceLanguage();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -67,7 +74,7 @@ export function ActionDismissMenu({
           className={className}
         >
           <X aria-hidden />
-          Dismiss
+          {language === "zh-CN" ? "忽略" : "Dismiss"}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

@@ -3,6 +3,9 @@ import { Badge } from "@/components/ui/badge";
 import { GradedNumber } from "@/components/ui/graded";
 import { grade } from "@/lib/grade";
 import { ACTION_EVIDENCE_UNAVAILABLE } from "./action-copy";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
+import { chineseEvidenceSummary } from "./evidence-summary-zh";
 import {
   evidenceSections,
   type EvidenceFact,
@@ -10,20 +13,24 @@ import {
 } from "./evidence-sections";
 
 function FactValue({ fact }: { fact: EvidenceFact }) {
+  const locale = useInterfaceLanguage();
   if (!fact.grade) return <>{fact.value}</>;
   return (
     <GradedNumber
       value={fact.value}
       grade={grade(fact.grade.metric, fact.grade.value)}
-      label={fact.label}
+      label={interfaceCopy(locale, fact.label)}
     />
   );
 }
 
 function EvidenceLists({ lists }: { lists: EvidenceList[] }) {
+  const locale = useInterfaceLanguage();
   return lists.map((list) => (
     <div key={list.label} className="flex flex-col gap-1.5">
-      <p className="text-label text-muted-foreground">{list.label}</p>
+      <p className="text-label text-muted-foreground">
+        {interfaceCopy(locale, list.label)}
+      </p>
       <ul className="flex list-none flex-wrap gap-1.5 p-0">
         {list.items.map((entry) => (
           <li key={`${entry.text}~${entry.detail ?? ""}`}>
@@ -47,10 +54,13 @@ export function ActionEvidencePanel({
 }: {
   evidence: ActionEvidence | null;
 }) {
+  const locale = useInterfaceLanguage();
   if (!evidence) {
     return (
       <p className="text-sm text-muted-foreground">
-        {ACTION_EVIDENCE_UNAVAILABLE}
+        {locale === "zh-CN"
+          ? "此已保存行动的依据不可用，将在下次运行时重新生成。"
+          : ACTION_EVIDENCE_UNAVAILABLE}
       </p>
     );
   }
@@ -65,7 +75,9 @@ export function ActionEvidencePanel({
             key={fact.label}
             className="flex flex-col gap-0.5 border-b border-dashed border-border/60 pb-1"
           >
-            <dt className="text-caption text-muted-foreground">{fact.label}</dt>
+            <dt className="text-caption text-muted-foreground">
+              {interfaceCopy(locale, fact.label)}
+            </dt>
             <dd className="numeric font-mono font-medium">
               <FactValue fact={fact} />
             </dd>
@@ -73,7 +85,9 @@ export function ActionEvidencePanel({
         ))}
       </dl>
       <EvidenceLists lists={lists} />
-      <p className="text-body">{summary}</p>
+      <p className="text-body">
+        {locale === "zh-CN" ? chineseEvidenceSummary(evidence) : summary}
+      </p>
     </div>
   );
 }

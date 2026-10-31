@@ -390,6 +390,8 @@ OPENAI_BASE_URL=
 AI_MODEL=gpt-5.6-luna               # model with vision + structured outputs, as the provider spells it
 # optional; AI calls each workspace may make per UTC month when BILLING_ENABLED=false. Empty = unlimited, 0 turns AI calls off. Ignored with billing on, where each plan sets its own allowance. WARNS in production when empty with OPENAI_API_KEY set and AUTH_ALLOW_REGISTRATION=true
 AI_CALLS_PER_MONTH=
+# optional; competitors each app may hold when BILLING_ENABLED=false. Empty = 10, the shipped cap; a whole number raises it; unlimited removes it. Ignored with billing on, where each plan sets its own allowance. REFUSES TO BOOT on any other value
+SELF_HOSTED_COMPETITORS_PER_APP=
 SCREENSHOT_OCR=true                 # read the caption text printed on app store screenshots on this machine; false records the screenshot list and detects image changes but downloads and reads nothing
 SCREENSHOT_OCR_LANGUAGES=eng,deu,fra,spa,por,ita,jpn,kor,chi_sim,chi_tra,rus,ara,tha,pol  # bundled language packs the reader may use; a storefront reads English plus its own language; REFUSES TO BOOT on a name that is not bundled
 BULL_BOARD_ENABLED=true             # queue dashboard at /admin/queues; platform-operator only, proxied through the web app

@@ -14,6 +14,7 @@ import { SearchInput } from "@/components/data-table/SearchInput";
 import type { DataTableFeatures } from "@/components/data-table/table-features";
 import { EmptyState } from "@/components/ui/empty-state";
 import { AdminTable } from "./AdminTable";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { ListLimitNote } from "./ListLimitNote";
 import { PLAN_COLUMN } from "./useAdminTable";
 
@@ -42,6 +43,10 @@ export function AdminList<TData extends RowData>({
   onClearFilters: () => void;
   filters?: ReactNode;
 }) {
+  const locale = useInterfaceLanguage();
+  const zh = locale === "zh-CN";
+  const itemName = ({ workspace: "工作区", account: "账号", app: "App" } as Record<string, string>)[noun] ?? noun;
+  const translatedCaption = ({ "Workspaces on this instance": "此实例中的工作区", "Accounts on this instance": "此实例中的账号", "Apps on this instance": "此实例中的 App" } as Record<string, string>)[caption] ?? caption;
   const shown = table.getRowModel().rows.length;
   const filtered = search !== "" || chips.length > 0;
   const hideable = table
@@ -52,7 +57,7 @@ export function AdminList<TData extends RowData>({
     <div className="flex min-w-0 flex-col gap-3">
       <div className="flex flex-wrap items-center gap-2">
         <SearchInput
-          label={`Search ${noun}s`}
+          label={zh ? `搜索${itemName}` : `Search ${noun}s`}
           value={search}
           onSearch={onSearch}
         />
@@ -65,14 +70,14 @@ export function AdminList<TData extends RowData>({
       <FilterChips chips={chips} onClearAll={onClearFilters} />
       <ListLimitNote shown={loaded} total={total} noun={noun} />
       {shown > 0 ? (
-        <AdminTable table={table} caption={caption} />
+        <AdminTable table={table} caption={zh ? translatedCaption : caption} />
       ) : filtered ? (
         <FilteredEmpty
-          title={`No ${noun}s match these filters`}
+          title={zh ? `没有符合筛选条件的${itemName}` : `No ${noun}s match these filters`}
           onClear={onClearFilters}
         />
       ) : (
-        <EmptyState title={`No ${noun}s on this instance yet`} />
+        <EmptyState title={zh ? `此实例中暂无${itemName}` : `No ${noun}s on this instance yet`} />
       )}
     </div>
   );

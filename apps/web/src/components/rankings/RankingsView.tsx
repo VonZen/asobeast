@@ -44,8 +44,10 @@ import { KeywordPicker } from "./KeywordPicker";
 import { RangePicker } from "./RangePicker";
 import { RankingChart } from "./RankingChart";
 import { DEFAULT_SELECTION, topByOpportunity } from "./selection";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 
 export function RankingsView({ id }: { id: string }) {
+  const chinese = useInterfaceLanguage() === "zh-CN";
   const [range, setRange] = useQueryState("range", rangeParser);
   const [selected, setSelected] = useQueryState("keywords", keywordIdsParser);
   const { data: tracked } = useSuspenseQuery(keywordsOptions(id));
@@ -86,7 +88,7 @@ export function RankingsView({ id }: { id: string }) {
     const spec = rankingImageSpec({
       chart,
       kind: "rankings",
-      title: "Keyword rank positions",
+      title: chinese ? "关键词排名" : "Keyword rank positions",
       app: detail,
       countries: data.series.slice(0, MAX_SERIES).map((item) => item.country),
     });
@@ -96,8 +98,12 @@ export function RankingsView({ id }: { id: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardDescription>Ranking history</CardDescription>
-        <CardTitle>Keyword positions over time</CardTitle>
+        <CardDescription>
+          {chinese ? "排名历史" : "Ranking history"}
+        </CardDescription>
+        <CardTitle>
+          {chinese ? "关键词排名变化" : "Keyword positions over time"}
+        </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center gap-2">
@@ -106,13 +112,17 @@ export function RankingsView({ id }: { id: string }) {
             presets={RANGE_PRESETS}
             value={range}
             onChange={setRange}
-            label="Date range"
+            label={chinese ? "日期范围" : "Date range"}
           />
           {effective.map((keywordId) => (
             <button
               key={keywordId}
               type="button"
-              aria-label={`Remove ${labels.get(keywordId) ?? keywordId} from the chart`}
+              aria-label={
+                chinese
+                  ? `从图表中移除 ${labels.get(keywordId) ?? keywordId}`
+                  : `Remove ${labels.get(keywordId) ?? keywordId} from the chart`
+              }
               onClick={() =>
                 setSelected(effective.filter((item) => item !== keywordId))
               }
@@ -170,7 +180,9 @@ export function RankingsView({ id }: { id: string }) {
             />
             {chart.totalSeries > MAX_SERIES ? (
               <p className="text-caption text-muted-foreground">
-                Showing {MAX_SERIES} of {chart.totalSeries} keywords.
+                {chinese
+                  ? `显示 ${chart.totalSeries} 个关键词中的 ${MAX_SERIES} 个。`
+                  : `Showing ${MAX_SERIES} of ${chart.totalSeries} keywords.`}
               </p>
             ) : null}
           </>

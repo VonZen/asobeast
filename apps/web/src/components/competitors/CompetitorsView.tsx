@@ -7,6 +7,7 @@ import { CollapsibleCard } from "@/components/layout/CollapsibleCard";
 import { KNOWN_SECTIONS } from "@/components/layout/known-sections";
 import { Skeleton } from "@/components/ui/skeleton";
 import { competitorsOptions } from "@/lib/queries";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { AddCompetitorForm } from "./AddCompetitorForm";
 import { ComparisonMatrix } from "./ComparisonMatrix";
 import { COMPETITOR_SECTION } from "./competitor-sections";
@@ -31,13 +32,18 @@ export function CompetitorsView({
   id: string;
   collapsed: readonly string[];
 }) {
+  const chinese = useInterfaceLanguage() === "zh-CN";
   return (
     <CollapsedSectionsProvider initial={collapsed} known={KNOWN_SECTIONS}>
       <div className="flex flex-col gap-6">
         <CollapsibleCard
           section={COMPETITOR_SECTION.tracked}
-          eyebrow="Competitors"
-          title="Track the apps you rank against"
+          eyebrow={chinese ? "竞品" : "Competitors"}
+          title={
+            chinese
+              ? "跟踪与你竞争排名的 App"
+              : "Track the apps you rank against"
+          }
         >
           <div className="flex flex-col gap-6">
             <Suspense fallback={<Skeleton className="h-9 w-full" />}>

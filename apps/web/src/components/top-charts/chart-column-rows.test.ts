@@ -54,6 +54,14 @@ describe("columnRows", () => {
 });
 
 describe("columnCaption", () => {
+  it("keeps the chart totals when the caption is Chinese", () => {
+    expect(columnCaption(CAPTURED, null, "zh-CN")).toBe(
+      "共 100 个，显示前 25 个 · 10月14日",
+    );
+    expect(columnCaption({ ...CAPTURED, entries: [] }, null, "zh-CN")).toBe(
+      "没有 App · 10月14日",
+    );
+  });
   it("names how many rows show and the capture day", () => {
     expect(columnCaption(CAPTURED, null)).toBe("Top 25 of 100 · Oct 14");
   });

@@ -1,3 +1,7 @@
+"use client";
+
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+
 export function RowCount({
   shown,
   total,
@@ -7,6 +11,13 @@ export function RowCount({
   total: number;
   noun: string;
 }) {
+  const language = useInterfaceLanguage();
+  if (language === "zh-CN")
+    return (
+      <p className="text-body text-muted-foreground" aria-live="polite">
+        显示 {shown} 项，共 {total} 项
+      </p>
+    );
   return (
     <p className="text-body text-muted-foreground" aria-live="polite">
       <span className="numeric font-mono font-medium text-foreground">

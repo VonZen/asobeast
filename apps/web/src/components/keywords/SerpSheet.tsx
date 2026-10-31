@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useQueryState } from "nuqs";
@@ -60,7 +62,9 @@ function SerpRows({ appId, data }: { appId: string; data: SerpSnapshot }) {
                   <span className="truncate font-medium">{entry.title}</span>
                   {role === "you" ? <Badge>You</Badge> : null}
                   {role === "competitor" ? (
-                    <Badge variant="secondary">Competitor</Badge>
+                    <Badge variant="secondary">
+                      <LocalizedText en="Competitor" />
+                    </Badge>
                   ) : null}
                 </span>
                 {entry.developer ? (
@@ -161,9 +165,11 @@ export function SerpSheet({ appId }: { appId: string }) {
         }}
       >
         <SheetHeader>
-          <SheetTitle>Top 10 search results</SheetTitle>
+          <SheetTitle>
+            <LocalizedText en="Top 10 search results" />
+          </SheetTitle>
           <SheetDescription>
-            The apps ranking for this keyword on the latest daily check.
+            <LocalizedText en="The apps ranking for this keyword on the latest daily check." />
           </SheetDescription>
           {open ? (
             <SerpExportButton appId={appId} keywordId={keywordId} />

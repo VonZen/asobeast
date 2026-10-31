@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsOption } from "@/components/ui/tabs";
 import { VisibilityHelp } from "@/components/visibility/VisibilityHelp";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 import { portfolioOptions } from "@/lib/queries";
 import {
   appListParsers,
@@ -34,6 +36,8 @@ const SORT_LABELS: Record<AppSort, string> = {
 };
 
 export function AppsToolbar() {
+  const locale = useInterfaceLanguage();
+  const t = (value: string) => interfaceCopy(locale, value);
   const { data } = useSuspenseQuery(portfolioOptions);
   const [{ q, sort, view }, setList] = useQueryStates(appListParsers);
 
@@ -42,7 +46,7 @@ export function AppsToolbar() {
       <VisibilityHelp />
       {data.apps.length > SEARCH_MIN_APPS || q !== "" ? (
         <SearchInput
-          label="Search apps"
+          label={t("Search apps")}
           value={q}
           onSearch={(next, options) => void setList({ q: next }, options)}
         />
@@ -54,13 +58,13 @@ export function AppsToolbar() {
             void setList({ sort: appSortParser.parse(next), dir: null })
           }
         >
-          <SelectTrigger size="sm" aria-label="Sort by">
-            <SelectValue>{SORT_LABELS[sort]}</SelectValue>
+          <SelectTrigger size="sm" aria-label={t("Sort by")}>
+            <SelectValue>{t(SORT_LABELS[sort])}</SelectValue>
           </SelectTrigger>
           <SelectContent>
             {Object.entries(SORT_LABELS).map(([value, label]) => (
               <SelectItem key={value} value={value}>
-                {label}
+                {t(label)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -73,10 +77,10 @@ export function AppsToolbar() {
         }
       >
         <TabsList>
-          <TabsOption value="cards" aria-label="Cards">
+          <TabsOption value="cards" aria-label={t("Cards")}>
             <LayoutGrid aria-hidden />
           </TabsOption>
-          <TabsOption value="table" aria-label="Table">
+          <TabsOption value="table" aria-label={t("Table")}>
             <Rows3 aria-hidden />
           </TabsOption>
         </TabsList>

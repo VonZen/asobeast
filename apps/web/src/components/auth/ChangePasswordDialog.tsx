@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import type { FormEvent, ReactNode } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { PASSWORD_RULE } from "@asobeast/shared";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import { changePassword } from "@/lib/api";
 import { passwordError } from "@/lib/password";
 import { invalidatePasswordChange } from "@/lib/queries";
@@ -31,6 +32,7 @@ import { FieldErrorMessage } from "./FieldErrorMessage";
 import { useSingleFlight } from "@/lib/single-flight";
 
 export function ChangePasswordDialog({ trigger }: { trigger: ReactNode }) {
+  const language = useInterfaceLanguage();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [current, setCurrent] = useState("");
@@ -51,7 +53,9 @@ export function ChangePasswordDialog({ trigger }: { trigger: ReactNode }) {
     onSuccess: () => {
       invalidatePasswordChange(queryClient);
       toast.success(
-        "Password changed. Other sessions were signed out and API tokens revoked.",
+        language === "zh-CN"
+          ? "密码已修改，其他会话已退出，API token 已撤销。"
+          : "Password changed. Other sessions were signed out and API tokens revoked.",
       );
       reset(false);
     },
@@ -77,15 +81,20 @@ export function ChangePasswordDialog({ trigger }: { trigger: ReactNode }) {
       <DialogContent>
         <form onSubmit={submit} className="flex min-h-0 flex-col gap-4">
           <DialogHeader>
-            <DialogTitle>Change password</DialogTitle>
+            <DialogTitle>
+              {language === "zh-CN" ? "修改密码" : "Change password"}
+            </DialogTitle>
             <DialogDescription>
-              Changing your password signs out every other session and revokes
-              every API token.
+              {language === "zh-CN"
+                ? "修改密码将退出其他所有会话，并撤销所有 API token。"
+                : "Changing your password signs out every other session and revokes every API token."}
             </DialogDescription>
           </DialogHeader>
           <DialogBody>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="current-password">Current password</Label>
+              <Label htmlFor="current-password">
+                {language === "zh-CN" ? "当前密码" : "Current password"}
+              </Label>
               <Input
                 id="current-password"
                 type="password"
@@ -102,7 +111,9 @@ export function ChangePasswordDialog({ trigger }: { trigger: ReactNode }) {
               />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="next-password">New password</Label>
+              <Label htmlFor="next-password">
+                {language === "zh-CN" ? "新密码" : "New password"}
+              </Label>
               <Input
                 id="next-password"
                 type="password"
@@ -121,7 +132,9 @@ export function ChangePasswordDialog({ trigger }: { trigger: ReactNode }) {
                 id="next-password-rule"
                 className="text-xs text-muted-foreground"
               >
-                {PASSWORD_RULE}
+                {language === "zh-CN"
+                  ? "密码须包含至少 10 个非空白字符。"
+                  : PASSWORD_RULE}
               </p>
               <FieldErrorMessage
                 error={error}
@@ -138,7 +151,7 @@ export function ChangePasswordDialog({ trigger }: { trigger: ReactNode }) {
           <DialogFooter>
             <Button type="submit" disabled={mutation.isPending}>
               {mutation.isPending ? <Loader2 className="animate-spin" /> : null}
-              Change password
+              {language === "zh-CN" ? "修改密码" : "Change password"}
             </Button>
           </DialogFooter>
         </form>

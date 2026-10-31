@@ -1,5 +1,9 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { componentCopy } from "@/lib/component-copy";
+
 import { LoaderCircle, StickyNote } from "lucide-react";
 import type { PlayAcquisitions, TrackedKeywordItem } from "@asobeast/shared";
 import { formatCheckedPosition } from "@asobeast/shared";
@@ -59,6 +63,7 @@ export function PositionCell({
   today: string;
   history: PositionHistoryContext;
 }) {
+  const locale = useInterfaceLanguage();
   const label = formatCheckedPosition(
     keyword.latestPosition,
     keyword.latestDepth,
@@ -68,16 +73,15 @@ export function PositionCell({
       <Tooltip>
         <TooltipTrigger asChild>
           <span
-            aria-label="Position: checking"
+            aria-label={componentCopy(locale, "Position: checking")}
             className="inline-flex items-center gap-1.5 text-muted-foreground"
           >
             <LoaderCircle aria-hidden className="size-3.5 animate-spin" />
-            Checking…
+            {locale === "zh-CN" ? "检查中…" : "Checking…"}
           </span>
         </TooltipTrigger>
         <TooltipContent>
-          Queued for its first check. Scores can land first; the table updates
-          on its own.
+          <LocalizedText en="Queued for its first check. Scores can land first; the table updates on its own." />
         </TooltipContent>
       </Tooltip>
     );
@@ -87,13 +91,15 @@ export function PositionCell({
       <Tooltip>
         <TooltipTrigger asChild>
           <span
-            aria-label="Position: not checked yet"
+            aria-label={componentCopy(locale, "Position: not checked yet")}
             className="text-muted-foreground"
           >
             —
           </span>
         </TooltipTrigger>
-        <TooltipContent>This keyword has not been checked yet</TooltipContent>
+        <TooltipContent>
+          <LocalizedText en="This keyword has not been checked yet" />
+        </TooltipContent>
       </Tooltip>
     );
   }
@@ -112,13 +118,16 @@ export function PositionCell({
 }
 
 export function VolatilityCell({ value }: { value: number | null }) {
+  const locale = useInterfaceLanguage();
   if (value === null) {
     return (
       <Tooltip>
         <TooltipTrigger asChild>
           <span className="text-muted-foreground">—</span>
         </TooltipTrigger>
-        <TooltipContent>Not enough snapshots yet</TooltipContent>
+        <TooltipContent>
+          <LocalizedText en="Not enough snapshots yet" />
+        </TooltipContent>
       </Tooltip>
     );
   }
@@ -129,10 +138,14 @@ export function VolatilityCell({ value }: { value: number | null }) {
         "inline-flex items-center gap-1.5 text-sm font-medium",
         band.text,
       )}
-      aria-label={`${band.label} volatility, ${value} out of 100`}
+      aria-label={
+        locale === "zh-CN"
+          ? `${componentCopy(locale, band.label)}波动度：${value}/100`
+          : `${band.label} volatility, ${value} out of 100`
+      }
     >
       <span className={cn("size-2 rounded-full", band.dot)} aria-hidden />
-      {band.label}
+      {componentCopy(locale, band.label)}
       <span className="numeric font-mono text-xs text-muted-foreground">
         {value}
       </span>
@@ -145,18 +158,21 @@ export function PlayAcquisitionsCell({
 }: {
   value: PlayAcquisitions | null;
 }) {
+  const locale = useInterfaceLanguage();
   if (!value) {
     return (
       <Tooltip>
         <TooltipTrigger asChild>
           <span
             className="text-muted-foreground"
-            aria-label="No Play Console data"
+            aria-label={componentCopy(locale, "No Play Console data")}
           >
             —
           </span>
         </TooltipTrigger>
-        <TooltipContent>No Play Console data</TooltipContent>
+        <TooltipContent>
+          <LocalizedText en="No Play Console data" />
+        </TooltipContent>
       </Tooltip>
     );
   }
@@ -168,14 +184,20 @@ export function PlayAcquisitionsCell({
       <TooltipTrigger asChild>
         <span
           className="numeric font-mono text-sm whitespace-nowrap"
-          aria-label={`${acquisitions} acquisitions from ${visitors} store listing visitors in ${month}`}
+          aria-label={
+            locale === "zh-CN"
+              ? `${month} 获客 ${acquisitions} 次，商品详情页访问 ${visitors} 次`
+              : `${acquisitions} acquisitions from ${visitors} store listing visitors in ${month}`
+          }
         >
           {acquisitions}
           <span className="text-muted-foreground"> · {visitors}</span>
         </span>
       </TooltipTrigger>
       <TooltipContent>
-        Store listing acquisitions and visitors from this search term in {month}
+        {locale === "zh-CN"
+          ? `${month}，此搜索词带来的商品详情页获客量和访问人数`
+          : `Store listing acquisitions and visitors from this search term in ${month}`}
       </TooltipContent>
     </Tooltip>
   );
@@ -207,12 +229,13 @@ export function TagBadges({ tags }: { tags: readonly string[] }) {
 }
 
 export function NoteButton({ note }: { note: string }) {
+  const locale = useInterfaceLanguage();
   return (
     <Popover>
       <PopoverTrigger asChild>
         <button
           type="button"
-          aria-label={`Note: ${note}`}
+          aria-label={locale === "zh-CN" ? `备注：${note}` : `Note: ${note}`}
           className="flex size-6 shrink-0 items-center justify-center rounded-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[state=open]:text-foreground"
         >
           <StickyNote className="size-3.5" aria-hidden />
@@ -220,7 +243,7 @@ export function NoteButton({ note }: { note: string }) {
       </PopoverTrigger>
       <PopoverContent
         align="start"
-        aria-label="Keyword note"
+        aria-label={componentCopy(locale, "Keyword note")}
         className="w-auto max-w-[min(24rem,calc(100vw-2rem))] font-normal break-words whitespace-pre-line"
       >
         {note}
@@ -230,9 +253,13 @@ export function NoteButton({ note }: { note: string }) {
 }
 
 export function AddedCell({ trackedAt }: { trackedAt: string | null }) {
+  const locale = useInterfaceLanguage();
   if (trackedAt === null) {
     return (
-      <span className="text-muted-foreground" aria-label="Added: unknown">
+      <span
+        className="text-muted-foreground"
+        aria-label={componentCopy(locale, "Added: unknown")}
+      >
         —
       </span>
     );
@@ -245,19 +272,23 @@ export function AddedCell({ trackedAt }: { trackedAt: string | null }) {
 }
 
 export function CompetitorsInTop10Cell({ value }: { value: number | null }) {
+  const locale = useInterfaceLanguage();
   if (value === null) {
     return (
       <Tooltip>
         <TooltipTrigger asChild>
           <span
             className="text-muted-foreground"
-            aria-label="Competitors in top 10: not available"
+            aria-label={componentCopy(
+              locale,
+              "Competitors in top 10: not available",
+            )}
           >
             —
           </span>
         </TooltipTrigger>
         <TooltipContent className="max-w-xs">
-          No competitors tracked, or no top 10 snapshot from today or yesterday
+          <LocalizedText en="No competitors tracked, or no top 10 snapshot from today or yesterday" />
         </TooltipContent>
       </Tooltip>
     );
@@ -265,7 +296,11 @@ export function CompetitorsInTop10Cell({ value }: { value: number | null }) {
   return (
     <span
       className="numeric font-mono text-sm"
-      aria-label={`${pluralize(value, "competitor")} in the top 10`}
+      aria-label={
+        locale === "zh-CN"
+          ? `前十名中有 ${value} 个竞品`
+          : `${pluralize(value, "competitor")} in the top 10`
+      }
     >
       {value}
     </span>

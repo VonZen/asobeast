@@ -15,15 +15,21 @@ import { PRODUCT_NAME } from "@/lib/brand";
 import { appVersionLabel, releaseNotesUrl } from "./app-version";
 import { AppSwitcher } from "./AppSwitcher";
 import { SidebarNav } from "./SidebarNav";
+import { getInterfaceLanguage } from "@/lib/interface-language-server";
 
 const DOCUMENTATION_URL = "https://docs.asobeast.com";
 
-export function AppSidebar() {
+export async function AppSidebar() {
+  const { locale } = await getInterfaceLanguage();
+  const chinese = locale === "zh-CN";
   const version = appVersionLabel();
 
   return (
     <Sidebar variant="inset" collapsible="icon">
-      <nav aria-label="Main" className="flex min-h-0 flex-1 flex-col">
+      <nav
+        aria-label={chinese ? "主导航" : "Main"}
+        className="flex min-h-0 flex-1 flex-col"
+      >
         <SidebarHeader>
           <Link
             href="/"
@@ -54,31 +60,40 @@ export function AppSidebar() {
         <SidebarFooter>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Documentation">
+              <SidebarMenuButton
+                asChild
+                tooltip={chinese ? "文档" : "Documentation"}
+              >
                 <a
                   href={DOCUMENTATION_URL}
                   rel="noreferrer noopener"
                   target="_blank"
                 >
                   <BookOpen />
-                  <span>Documentation</span>
+                  <span>{chinese ? "文档" : "Documentation"}</span>
                 </a>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
           <div className="px-2 pb-1 text-caption text-muted-foreground group-data-[collapsible=icon]:hidden">
-            <p>Open source ASO toolkit for the App Store and Google Play.</p>
+            <p>
+              {chinese
+                ? "面向 App Store 和 Google Play 的开源 ASO 工具。"
+                : "Open source ASO toolkit for the App Store and Google Play."}
+            </p>
             {version ? (
               <p>
                 <a
                   href={releaseNotesUrl(version)}
                   rel="noreferrer noopener"
                   target="_blank"
-                  title="Release notes"
+                  title={chinese ? "版本说明" : "Release notes"}
                   className="rounded-sm underline decoration-muted-foreground decoration-dotted underline-offset-4 hover:text-foreground hover:decoration-primary focus-visible:ring-3 focus-visible:ring-sidebar-ring/50 focus-visible:outline-none"
                 >
                   <span translate="no">{version}</span>
-                  <span className="sr-only"> release notes</span>
+                  <span className="sr-only">
+                    {chinese ? " 版本说明" : " release notes"}
+                  </span>
                 </a>
               </p>
             ) : null}

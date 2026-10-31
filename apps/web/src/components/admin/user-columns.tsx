@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { createColumnHelper } from "@tanstack/react-table";
 import { CheckCircle2, CircleDashed } from "lucide-react";
 import { PLANS, type AdminUser } from "@asobeast/shared";
@@ -20,7 +22,9 @@ function Account({ user }: { user: AdminUser }) {
           {user.email}
         </span>
         {user.platformOperator ? (
-          <Badge variant="secondary">Operator</Badge>
+          <Badge variant="secondary">
+            <LocalizedText en="Operator" />
+          </Badge>
         ) : null}
       </span>
       {user.name ? (

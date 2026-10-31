@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useMemo } from "react";
 import { flexRender, useTable } from "@tanstack/react-table";
 import { useQueryStates } from "nuqs";
@@ -141,7 +143,7 @@ export function CoverageTable({
             }
           />
           <Label htmlFor="uncovered-only" className="text-sm">
-            Uncovered only
+            <LocalizedText en="Uncovered only" />
           </Label>
         </div>
         <RowCount shown={shown.length} total={rows.length} noun="keyword" />

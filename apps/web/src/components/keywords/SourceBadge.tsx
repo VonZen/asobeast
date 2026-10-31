@@ -1,4 +1,6 @@
 import type { KeywordSource } from "@asobeast/shared";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 import { Badge } from "@/components/ui/badge";
 
 const VARIANT: Record<
@@ -25,5 +27,10 @@ export const SOURCE_LABELS: Record<KeywordSource, string> = {
 };
 
 export function SourceBadge({ source }: { source: KeywordSource }) {
-  return <Badge variant={VARIANT[source]}>{SOURCE_LABELS[source]}</Badge>;
+  const language = useInterfaceLanguage();
+  return (
+    <Badge variant={VARIANT[source]}>
+      {interfaceCopy(language, SOURCE_LABELS[source])}
+    </Badge>
+  );
 }

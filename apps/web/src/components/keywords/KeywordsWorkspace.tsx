@@ -15,6 +15,7 @@ import { KeywordsTable } from "./KeywordsTable";
 import { KeywordsTableSkeleton } from "./skeletons";
 import { KeywordCombinations } from "./KeywordCombinations";
 import { SuggestionsPanel } from "./SuggestionsPanel";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 
 export function KeywordsWorkspace({
   id,
@@ -27,6 +28,7 @@ export function KeywordsWorkspace({
   store: Store;
   keywordFields: boolean;
 }) {
+  const chinese = useInterfaceLanguage() === "zh-CN";
   const [country] = useQueryState("country", countryParser);
   const market = country || homeCountry;
 
@@ -35,23 +37,25 @@ export function KeywordsWorkspace({
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-lg font-semibold text-balance">
-            Tracked keywords
+            {chinese ? "跟踪的关键词" : "Tracked keywords"}
           </h2>
           <p className="text-sm text-muted-foreground">
-            The phrases you want this app to rank for, tracked per market.
+            {chinese
+              ? "按市场跟踪你希望此 App 获得排名的关键词。"
+              : "The phrases you want this app to rank for, tracked per market."}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <ImportKeywordsDialog appId={id} store={store} country={market}>
             <Button variant="outline">
               <Upload />
-              Import CSV
+              {chinese ? "导入 CSV" : "Import CSV"}
             </Button>
           </ImportKeywordsDialog>
           <AddKeywordsDialog appId={id} store={store} country={market}>
             <Button>
               <Plus />
-              Add keywords
+              {chinese ? "添加关键词" : "Add keywords"}
             </Button>
           </AddKeywordsDialog>
         </div>
@@ -67,8 +71,9 @@ export function KeywordsWorkspace({
       <Alert role="note">
         <Info />
         <AlertDescription>
-          Apple App Store and Google Play popularity and volume scores use
-          different public signals and are not directly comparable.
+          {chinese
+            ? "Apple App Store 和 Google Play 的热度及搜索量评分使用不同的公开信号，不能直接比较。"
+            : "Apple App Store and Google Play popularity and volume scores use different public signals and are not directly comparable."}
         </AlertDescription>
       </Alert>
       <Suspense fallback={<KeywordsTableSkeleton />}>

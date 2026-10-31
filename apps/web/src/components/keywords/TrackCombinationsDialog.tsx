@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import Link from "next/link";
 import { useAuth } from "@/components/auth/use-auth";
 import { Button } from "@/components/ui/button";
@@ -49,7 +51,7 @@ export function TrackCombinationsDialog({
                   href="/settings#daily-capacity"
                   className="font-medium text-foreground underline underline-offset-4"
                 >
-                  Review the daily request budget
+                  <LocalizedText en="Review the daily request budget" />
                 </Link>
               </>
             ) : null}
@@ -61,10 +63,10 @@ export function TrackCombinationsDialog({
             disabled={pending}
             onClick={() => onOpenChange(false)}
           >
-            Cancel
+            <LocalizedText en="Cancel" />
           </Button>
           <Button disabled={pending} onClick={onConfirm}>
-            Track
+            <LocalizedText en="Track" />
           </Button>
         </DialogFooter>
       </DialogContent>

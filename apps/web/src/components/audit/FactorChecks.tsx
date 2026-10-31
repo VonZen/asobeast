@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 import type { AuditCheckResult } from "@asobeast/shared";
 import { SOURCE_LABEL, STATUS_LABEL } from "./audit-copy";
 import { unlockHref } from "./audit-links";
@@ -11,6 +13,7 @@ export function FactorChecks({
   appId: string;
   checks: AuditCheckResult[];
 }) {
+  const language = useInterfaceLanguage();
   return (
     <ul className="flex flex-col gap-3">
       {checks.map((check) => {
@@ -22,15 +25,15 @@ export function FactorChecks({
                 aria-hidden
                 className={`size-4 ${STATUS_TONE[check.status]}`}
               />
-              {check.label}
+              {interfaceCopy(language, check.label)}
               <span className="text-caption text-muted-foreground">
-                {STATUS_LABEL[check.status]}
+                {interfaceCopy(language, STATUS_LABEL[check.status])}
               </span>
             </span>
             <span className="text-muted-foreground">{check.detail}</span>
             {check.source ? (
               <span className="text-caption text-muted-foreground">
-                {SOURCE_LABEL[check.source]}
+                {interfaceCopy(language, SOURCE_LABEL[check.source])}
               </span>
             ) : null}
             {check.unlock ? (

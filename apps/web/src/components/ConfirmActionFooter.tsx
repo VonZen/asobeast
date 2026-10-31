@@ -5,6 +5,7 @@ import {
   AlertDialogCancel,
   AlertDialogFooter,
 } from "@/components/ui/alert-dialog";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 
 export const closeUnlessPending =
   (pending: boolean, setOpen: (open: boolean) => void) =>
@@ -23,6 +24,7 @@ export function ConfirmActionFooter({
   pendingLabel: string;
   onConfirm: () => void;
 }) {
+  const chinese = useInterfaceLanguage() === "zh-CN";
   return (
     <AlertDialogFooter>
       <AlertDialogCancel
@@ -31,7 +33,7 @@ export function ConfirmActionFooter({
           if (pending) event.preventDefault();
         }}
       >
-        Cancel
+        {chinese ? "取消" : "Cancel"}
       </AlertDialogCancel>
       <AlertDialogAction
         variant="destructive"

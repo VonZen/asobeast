@@ -17,6 +17,8 @@ import { ADMIN_ROOT, adminSectionFrom } from "@/lib/admin-sections";
 import { APP_SECTIONS, appRouteFrom, sectionHref } from "@/lib/app-sections";
 import { appDetailOptions } from "@/lib/queries";
 import { useCachedQueryData } from "@/lib/use-cached-query-data";
+import { interfaceCopy } from "@/lib/interface-copy";
+import { useInterfaceLanguage } from "./InterfaceLanguageProvider";
 
 const WORKSPACE_LABELS: Record<string, string> = {
   "/": "Dashboard",
@@ -35,6 +37,7 @@ function sectionLabel(segment: string): string {
 }
 
 function AppCrumbs({ id, segment }: { id: string; segment: string }) {
+  const locale = useInterfaceLanguage();
   const data = useCachedQueryData(appDetailOptions(id).queryKey);
 
   const name = data?.name ?? "Untitled app";
@@ -62,7 +65,7 @@ function AppCrumbs({ id, segment }: { id: string; segment: string }) {
           <BreadcrumbSeparator className="hidden sm:block" />
           <BreadcrumbItem className="min-w-0">
             <BreadcrumbPage className="truncate">
-              {sectionLabel(segment)}
+              {interfaceCopy(locale, sectionLabel(segment))}
             </BreadcrumbPage>
           </BreadcrumbItem>
         </>
@@ -72,22 +75,26 @@ function AppCrumbs({ id, segment }: { id: string; segment: string }) {
 }
 
 function AdminCrumbs({ label }: { label: string }) {
+  const locale = useInterfaceLanguage();
   return (
     <>
       <BreadcrumbItem className="hidden sm:inline-flex">
         <BreadcrumbLink asChild>
-          <Link href={ADMIN_ROOT}>Admin</Link>
+          <Link href={ADMIN_ROOT}>{interfaceCopy(locale, "Admin")}</Link>
         </BreadcrumbLink>
       </BreadcrumbItem>
       <BreadcrumbSeparator className="hidden sm:block" />
       <BreadcrumbItem className="min-w-0">
-        <BreadcrumbPage className="truncate">{label}</BreadcrumbPage>
+        <BreadcrumbPage className="truncate">
+          {interfaceCopy(locale, label)}
+        </BreadcrumbPage>
       </BreadcrumbItem>
     </>
   );
 }
 
 export function Breadcrumbs() {
+  const locale = useInterfaceLanguage();
   const pathname = usePathname();
   const app = appRouteFrom(pathname);
   const { isOperator } = useAuth();
@@ -107,11 +114,14 @@ export function Breadcrumbs() {
             >
               {app ? (
                 <BreadcrumbLink asChild>
-                  <Link href="/">Apps</Link>
+                  <Link href="/">{interfaceCopy(locale, "Apps")}</Link>
                 </BreadcrumbLink>
               ) : (
                 <BreadcrumbPage>
-                  {WORKSPACE_LABELS[pathname] ?? "Dashboard"}
+                  {interfaceCopy(
+                    locale,
+                    WORKSPACE_LABELS[pathname] ?? "Dashboard",
+                  )}
                 </BreadcrumbPage>
               )}
             </BreadcrumbItem>

@@ -15,6 +15,30 @@ describe('selfHostedLimits', () => {
   it('stays unlimited without a cap', () => {
     expect(selfHostedLimits(null)).toEqual(SELF_HOSTED_LIMITS);
   });
+
+  it('keeps the shipped competitor cap when none is configured', () => {
+    expect(selfHostedLimits(null).competitorsPerApp).toBe(
+      SELF_HOSTED_LIMITS.competitorsPerApp,
+    );
+    expect(selfHostedLimits(null, undefined).competitorsPerApp).toBe(
+      SELF_HOSTED_LIMITS.competitorsPerApp,
+    );
+  });
+
+  it('applies a configured competitor cap', () => {
+    expect(selfHostedLimits(null, 25).competitorsPerApp).toBe(25);
+  });
+
+  it('leaves competitors unlimited when configured as unlimited', () => {
+    expect(selfHostedLimits(null, null).competitorsPerApp).toBeNull();
+  });
+
+  it('reads a competitor cap of null as unlimited rather than as unset', () => {
+    expect(selfHostedLimits(null, null)).toEqual({
+      ...SELF_HOSTED_LIMITS,
+      competitorsPerApp: null,
+    });
+  });
 });
 
 describe('planScopeOf', () => {
@@ -25,9 +49,23 @@ describe('planScopeOf', () => {
     ).toBe(40);
   });
 
+  it('uses the configured competitor cap when billing is off', () => {
+    expect(
+      planScopeOf(false, INDIE, NOW, selfHostedLimits(null, null)).limits
+        .competitorsPerApp,
+    ).toBeNull();
+  });
+
   it('keeps the plan allowance when billing is on', () => {
     expect(planScopeOf(true, INDIE, NOW, selfHostedLimits(40)).limits).toBe(
       PLAN_LIMITS.indie,
     );
+  });
+
+  it('keeps the plan competitor cap when billing is on', () => {
+    expect(
+      planScopeOf(true, INDIE, NOW, selfHostedLimits(null, null)).limits
+        .competitorsPerApp,
+    ).toBe(PLAN_LIMITS.indie.competitorsPerApp);
   });
 });

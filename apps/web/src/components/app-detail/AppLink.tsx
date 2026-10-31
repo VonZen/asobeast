@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import {
@@ -8,7 +10,7 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query";
 import { Link2, Link2Off, Loader2, MoreVertical } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import type { AppDetail, AppGroupMember, Store } from "@asobeast/shared";
 import { AppIcon } from "@/components/AppIcon";
 import {
@@ -107,14 +109,16 @@ function LinkedControl({
             }}
           >
             <Link2Off />
-            Unlink
+            <LocalizedText en="Unlink" />
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Unlink store listing?</AlertDialogTitle>
+            <AlertDialogTitle>
+              <LocalizedText en="Unlink store listing?" />
+            </AlertDialogTitle>
             <AlertDialogDescription>
               {counterpart.name ?? "The counterpart app"} will no longer appear
               as this app’s linked listing. Keywords and rankings are
@@ -122,9 +126,11 @@ function LinkedControl({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>
+              <LocalizedText en="Cancel" />
+            </AlertDialogCancel>
             <AlertDialogAction onClick={() => unlinkOnce()}>
-              Unlink
+              <LocalizedText en="Unlink" />
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -142,12 +148,14 @@ function LinkTrigger({ detail }: { detail: AppDetail }) {
       <DialogTrigger asChild>
         <Button variant="ghost" size="sm" className="text-muted-foreground">
           <Link2 />
-          Link store listing
+          <LocalizedText en="Link store listing" />
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Link store listing</DialogTitle>
+          <DialogTitle>
+            <LocalizedText en="Link store listing" />
+          </DialogTitle>
           <DialogDescription>
             Pair this app with its {storeLabel(otherStore)} listing to switch
             between them from the header.

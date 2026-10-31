@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import Link from "next/link";
 import { createColumnHelper } from "@tanstack/react-table";
 import { PLANS, type SupportWorkspaceSummary } from "@asobeast/shared";
@@ -27,7 +29,9 @@ function WorkspaceStatus({
   if (workspace.suspendedAt) {
     return (
       <div className="flex max-w-56 flex-col items-start gap-1">
-        <Badge variant="destructive">Suspended</Badge>
+        <Badge variant="destructive">
+          <LocalizedText en="Suspended" />
+        </Badge>
         {workspace.suspendedReason ? (
           <span className="text-caption text-muted-foreground">
             {workspace.suspendedReason}

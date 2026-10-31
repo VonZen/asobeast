@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatDateTime } from "@/lib/format";
 import { GenerateNowButton } from "./GenerateNowButton";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 
 export function ActionEmptyState({
   generatedAt,
@@ -15,12 +16,18 @@ export function ActionEmptyState({
   filtered: boolean;
   onClearFilters: () => void;
 }) {
+  const locale = useInterfaceLanguage();
+  const chinese = locale === "zh-CN";
   if (generatedAt === null) {
     return (
       <EmptyState
         icon={ListChecks}
-        title="No actions generated yet"
-        body="Actions are generated after the daily pipeline completes. You can also run generation now — it reads stored data only and costs no store requests."
+        title={chinese ? "尚未生成行动" : "No actions generated yet"}
+        body={
+          chinese
+            ? "每日采集流程完成后会生成行动。你也可以立即生成；此操作仅读取已保存的数据，不会产生商店请求。"
+            : "Actions are generated after the daily pipeline completes. You can also run generation now — it reads stored data only and costs no store requests."
+        }
         action={<GenerateNowButton generatedAt={generatedAt} />}
       />
     );
@@ -29,11 +36,17 @@ export function ActionEmptyState({
     return (
       <EmptyState
         icon={Filter}
-        title="No actions match these filters"
-        body="Nothing in this workspace matches the current status, priority and rule filters."
+        title={
+          chinese ? "没有符合筛选条件的行动" : "No actions match these filters"
+        }
+        body={
+          chinese
+            ? "此工作区没有符合当前状态、优先级和规则筛选条件的行动。"
+            : "Nothing in this workspace matches the current status, priority and rule filters."
+        }
         action={
           <Button variant="outline" onClick={onClearFilters}>
-            Clear filters
+            {chinese ? "清除筛选" : "Clear filters"}
           </Button>
         }
       />
@@ -43,8 +56,12 @@ export function ActionEmptyState({
   return (
     <EmptyState
       icon={CircleCheck}
-      title="Nothing to do right now"
-      body={`Last generated ${formatDateTime(generatedAt)}.`}
+      title={chinese ? "目前没有待处理事项" : "Nothing to do right now"}
+      body={
+        chinese
+          ? `上次生成时间：${formatDateTime(generatedAt, locale)}。`
+          : `Last generated ${formatDateTime(generatedAt)}.`
+      }
       action={<GenerateNowButton generatedAt={generatedAt} />}
     />
   );

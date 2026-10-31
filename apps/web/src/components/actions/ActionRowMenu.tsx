@@ -1,7 +1,7 @@
 "use client";
 
 import { MoreHorizontal } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import type { ActionItem, ActionUpdateRequest } from "@asobeast/shared";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ActionDismissSubMenu } from "./ActionDismissMenu";
 import { SNOOZE_PRESET_DAYS, snoozeUntil } from "./ActionSnoozeMenu";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 
 export function ActionRowMenu({
   item,
@@ -27,9 +28,10 @@ export function ActionRowMenu({
   disabled: boolean;
   onUpdate: (body: ActionUpdateRequest) => void;
 }) {
+  const chinese = useInterfaceLanguage() === "zh-CN";
   const copyLink = async () => {
     await navigator.clipboard.writeText(`${window.location.origin}${href}`);
-    toast.success("Link copied");
+    toast.success(chinese ? "链接已复制" : "Link copied");
   };
 
   return (
@@ -39,7 +41,9 @@ export function ActionRowMenu({
           variant="ghost"
           size="icon-sm"
           disabled={disabled}
-          aria-label={`More actions for ${headline}`}
+          aria-label={
+            chinese ? `${headline} 的更多操作` : `More actions for ${headline}`
+          }
           data-command="more"
           className="size-11 @2xl/queue:size-7"
         >
@@ -49,7 +53,7 @@ export function ActionRowMenu({
       <DropdownMenuContent align="end">
         {item.status === "SNOOZED" ? (
           <DropdownMenuItem onSelect={() => onUpdate({ status: "OPEN" })}>
-            Wake now
+            {chinese ? "立即恢复" : "Wake now"}
           </DropdownMenuItem>
         ) : (
           SNOOZE_PRESET_DAYS.map((days) => (
@@ -59,7 +63,7 @@ export function ActionRowMenu({
                 onUpdate({ status: "SNOOZED", snoozedUntil: snoozeUntil(days) })
               }
             >
-              Snooze {days} days
+              {chinese ? `延后 ${days} 天` : `Snooze ${days} days`}
             </DropdownMenuItem>
           ))
         )}
@@ -68,7 +72,7 @@ export function ActionRowMenu({
         />
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={() => void copyLink()}>
-          Copy link
+          {chinese ? "复制链接" : "Copy link"}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

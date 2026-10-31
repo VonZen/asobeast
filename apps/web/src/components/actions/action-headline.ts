@@ -13,6 +13,8 @@ import {
   pluralize,
 } from "@/lib/format";
 import { METADATA_FIELD_LABELS } from "@/lib/metadata-display";
+import type { InterfaceLanguage } from "@/lib/interface-language";
+import { chineseActionHeadline } from "./action-headline-zh";
 
 export const CHANGE_FIELD_WORD: Record<ChangeField, string> = {
   title: "title",
@@ -66,6 +68,15 @@ const KEYWORD_RULES: readonly ActionRule[] = [
   "serp.hold_volatile",
   "keyword.push_to_top10",
 ];
+
+export function localizedActionHeadline(
+  item: ActionItem,
+  locale: InterfaceLanguage,
+): string {
+  return locale === "zh-CN"
+    ? chineseActionHeadline(item)
+    : actionHeadline(item);
+}
 
 export function actionHeadline(item: ActionItem): string {
   const { evidence } = item;

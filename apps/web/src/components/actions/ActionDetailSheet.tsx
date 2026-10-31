@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { componentCopy } from "@/lib/component-copy";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ActionItem, ActionListResult } from "@asobeast/shared";
 import {
@@ -25,13 +27,17 @@ function useListedItem(id: string): ActionItem | undefined {
 }
 
 function PendingHeader({ missing }: { missing: boolean }) {
+  const locale = useInterfaceLanguage();
   return (
     <SheetHeader className="border-b p-4 pr-12">
       <SheetTitle className="text-title">
-        {missing ? "Action not found" : "Loading action"}
+        {componentCopy(locale, missing ? "Action not found" : "Loading action")}
       </SheetTitle>
       <SheetDescription>
-        {missing ? ACTION_NOT_FOUND : "Reading the action and its history."}
+        {componentCopy(
+          locale,
+          missing ? ACTION_NOT_FOUND : "Reading the action and its history.",
+        )}
       </SheetDescription>
     </SheetHeader>
   );

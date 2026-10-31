@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { formatDayMonth } from "@/lib/format";
 import type {
   CategoryCollection,
   ChartMover,
@@ -45,17 +47,26 @@ function Place({
   mover: ChartMover;
   period: string;
 }) {
+  const zh = useInterfaceLanguage() === "zh-CN";
   if (list === "entries") {
-    return <span>New at #{mover.position}</span>;
+    return (
+      <span>
+        {zh ? `新上榜，第 ${mover.position} 名` : `New at #${mover.position}`}
+      </span>
+    );
   }
   if (list === "exits") {
-    return <span>Was #{mover.previous}</span>;
+    return (
+      <span>
+        {zh ? `此前第 ${mover.previous} 名` : `Was #${mover.previous}`}
+      </span>
+    );
   }
   return (
     <span className="inline-flex items-baseline gap-1.5 whitespace-nowrap">
       <DeltaChip value={mover.delta} period={period} />
       <span className="text-caption text-muted-foreground">
-        from #{mover.previous}
+        {zh ? `此前第 ${mover.previous} 名` : `from #${mover.previous}`}
       </span>
     </span>
   );
@@ -72,10 +83,13 @@ function MoverList({
   period: string;
   empty: string;
 }) {
+  const zh = useInterfaceLanguage() === "zh-CN";
   if (movers.length === 0) {
     return (
       <p className="text-body text-muted-foreground">
-        {empty} {period}.
+        {zh
+          ? `暂无${list === "climbers" ? "上升" : list === "entries" ? "新上榜" : list === "fallers" ? "下降" : "跌出榜单"}的 App。`
+          : `${empty} ${period}.`}
       </p>
     );
   }
@@ -100,17 +114,27 @@ function MoverList({
 }
 
 function TrendingLists({ page }: { page: ChartPage }) {
+  const zh = useInterfaceLanguage() === "zh-CN";
   const period = compareLabel(page.compare, page.comparison);
 
   return page.comparison ? (
     <Tabs defaultValue="climbers">
       <TabsList
-        aria-label="Trending list"
+        aria-label={zh ? "排名趋势列表" : "Trending list"}
         className="w-full flex-wrap group-data-horizontal/tabs:h-auto"
       >
         {LISTS.map(({ id, label }) => (
           <TabsTrigger key={id} value={id}>
-            {label}
+            {zh
+              ? (
+                  {
+                    climbers: "上升",
+                    entries: "新上榜",
+                    fallers: "下降",
+                    exits: "跌出榜单",
+                  } as Record<TrendingList, string>
+                )[id]
+              : label}
             <span className="numeric font-mono">
               {page.trending[id].length}
             </span>
@@ -130,7 +154,9 @@ function TrendingLists({ page }: { page: ChartPage }) {
     </Tabs>
   ) : (
     <p className="text-body text-muted-foreground">
-      Capture more days to see movement.
+      {zh
+        ? "采集更多日期的数据后，可查看排名变化。"
+        : "Capture more days to see movement."}
     </p>
   );
 }
@@ -140,6 +166,7 @@ function firstCompared(pages: readonly ChartPage[]): CategoryCollection {
 }
 
 export function TrendingPanel({ pages }: { pages: readonly ChartPage[] }) {
+  const zh = useInterfaceLanguage() === "zh-CN";
   const [kind, setKind] = useState(() => firstCompared(pages));
   const page =
     pages.find((candidate) => candidate.chart.collection === kind) ?? pages[0];
@@ -147,8 +174,14 @@ export function TrendingPanel({ pages }: { pages: readonly ChartPage[] }) {
   return (
     <Card>
       <CardHeader>
-        <CardDescription>Trending</CardDescription>
-        <CardTitle>{compareLabel(page.compare, page.comparison)}</CardTitle>
+        <CardDescription>{zh ? "排名趋势" : "Trending"}</CardDescription>
+        <CardTitle>
+          {zh
+            ? page.comparison
+              ? `对比 ${formatDayMonth(page.comparison.date)}`
+              : `对比${page.compare === "1d" ? "前一天" : page.compare === "7d" ? "7 天前" : "30 天前"}（暂无采集记录）`
+            : compareLabel(page.compare, page.comparison)}
+        </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {pages.length > 1 ? (
@@ -156,7 +189,7 @@ export function TrendingPanel({ pages }: { pages: readonly ChartPage[] }) {
             value={page.chart.collection}
             onValueChange={(next) => setKind(next as CategoryCollection)}
           >
-            <TabsList aria-label="Chart kind">
+            <TabsList aria-label={zh ? "榜单类型" : "Chart kind"}>
               {pages.map(({ chart }) => (
                 <TabsOption key={chart.collection} value={chart.collection}>
                   {COLLECTION_LABELS[chart.collection]}

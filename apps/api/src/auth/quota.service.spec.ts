@@ -45,7 +45,11 @@ interface Stored {
 }
 
 describe('QuotaService', () => {
-  const build = (billingEnabled: boolean, over: Partial<Stored> = {}) => {
+  const build = (
+    billingEnabled: boolean,
+    over: Partial<Stored> = {},
+    competitorCap: number | null | undefined = undefined,
+  ) => {
     const stored: Stored = {
       apps: 0,
       competitors: 0,
@@ -103,7 +107,12 @@ describe('QuotaService', () => {
 
     const workspace = new WorkspaceContext();
     const quota = new QuotaService(prisma, workspace, {
-      get: (key: string) => (key === 'BILLING_ENABLED' ? billingEnabled : null),
+      get: (key: string) =>
+        key === 'BILLING_ENABLED'
+          ? billingEnabled
+          : key === 'SELF_HOSTED_COMPETITORS_PER_APP'
+            ? competitorCap
+            : null,
     } as unknown as ConfigService<Env, true>);
 
     return {
@@ -444,6 +453,57 @@ describe('QuotaService', () => {
     await expect(
       scoped(() => quota.limitFor('chartFollows')),
     ).resolves.toBeNull();
+  });
+
+  it('reports the configured competitor cap', async () => {
+    const { quota, scoped } = build(false, {}, 40);
+
+    await expect(scoped(() => quota.limitFor('competitors'))).resolves.toBe(
+      40,
+    );
+  });
+
+  it('reports competitors as unlimited when configured that way', async () => {
+    const { quota, scoped } = build(false, {}, null);
+
+    await expect(scoped(() => quota.limitFor('competitors'))).resolves.toBeNull();
+  });
+
+  it('admits a competitor past the shipped cap once it is raised', async () => {
+    const { quota, stored, tx, scoped } = build(false, { competitors: 25 }, 40);
+
+    await expect(
+      scoped(() =>
+        quota.admitCompetitor('a1')(tx, () => {
+          stored.competitors += 1;
+          return Promise.resolve(null);
+        }),
+      ),
+    ).resolves.toBeNull();
+    expect(stored.competitors).toBe(26);
+  });
+
+  it('refuses a competitor past a raised cap', async () => {
+    const { quota, stored, tx, scoped } = build(false, { competitors: 40 }, 40);
+
+    await expect(
+      detailOf(() =>
+        scoped(() =>
+          quota.admitCompetitor('a1')(tx, () => {
+            stored.competitors += 1;
+            return Promise.resolve(null);
+          }),
+        ),
+      ),
+    ).resolves.toMatchObject({ limit: 40, used: 40 });
+  });
+
+  it('ignores the self hosted competitor cap while billing is on', async () => {
+    const { quota, scoped } = build(true, { plan: 'indie' }, null);
+
+    await expect(scoped(() => quota.limitFor('competitors'))).resolves.toBe(
+      PLAN_LIMITS.indie.competitorsPerApp,
+    );
   });
 
   it('offers no upgrade path on a self hosted instance', async () => {

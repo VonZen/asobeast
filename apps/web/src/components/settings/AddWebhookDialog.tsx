@@ -1,9 +1,11 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import { REVIEW_SCORES } from "@asobeast/shared";
 import type { WebhookEvent } from "@asobeast/shared";
 import { Input } from "@/components/ui/input";
@@ -107,7 +109,9 @@ export function AddWebhookDialog({ trigger }: { trigger?: ReactNode }) {
       trigger={trigger}
     >
       <div className="flex flex-col gap-2">
-        <Label htmlFor="webhook-url">Endpoint URL</Label>
+        <Label htmlFor="webhook-url">
+          <LocalizedText en="Endpoint URL" />
+        </Label>
         <Input
           id="webhook-url"
           value={url}
@@ -133,7 +137,9 @@ export function AddWebhookDialog({ trigger }: { trigger?: ReactNode }) {
       <ConfirmDropsField checked={confirmDrops} onChange={setConfirmChoice} />
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="webhook-secret">Secret (optional)</Label>
+        <Label htmlFor="webhook-secret">
+          <LocalizedText en="Secret (optional)" />
+        </Label>
         <Input
           id="webhook-secret"
           type="password"

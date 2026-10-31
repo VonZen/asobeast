@@ -1,6 +1,8 @@
 "use client";
 
 import { useId, useMemo, type ReactNode } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 import Link from "next/link";
 import type { AppListItem, ChartPage } from "@asobeast/shared";
 import { AppIcon } from "@/components/AppIcon";
@@ -34,13 +36,14 @@ export function ChartColumn({
   apps: readonly AppListItem[];
   search: Pick<ChartSearch, "compare" | "date">;
 }) {
+  const language = useInterfaceLanguage();
   const headingId = useId();
   const context = useMemo(
     () => rowContextOf({ chart: page.chart, apps: page.apps }, apps),
     [page.chart, page.apps, apps],
   );
   const chart = shownChartKey(page);
-  const label = COLLECTION_LABELS[chart.collection];
+  const label = interfaceCopy(language, COLLECTION_LABELS[chart.collection]);
   const period = compareLabel(page.compare, page.comparison);
   const capturable = capturableToday(page);
   const actions = useFocusGroupClaim(captureFocusKey(chart), capturable);
@@ -72,7 +75,7 @@ export function ChartColumn({
             {label}
           </h2>
           <p className="text-caption text-muted-foreground">
-            {columnCaption(page, search.date)}
+            {columnCaption(page, search.date, language)}
           </p>
         </div>
         <div ref={actions} className="flex flex-wrap items-center gap-2">
@@ -81,7 +84,11 @@ export function ChartColumn({
             href={tableHref(chart, search)}
             className="text-sm underline decoration-primary underline-offset-4"
           >
-            Open table<span className="sr-only"> of {label}</span>
+            {language === "zh-CN" ? "打开表格" : "Open table"}
+            <span className="sr-only">
+              {" "}
+              {language === "zh-CN" ? label : `of ${label}`}
+            </span>
           </Link>
         </div>
       </div>

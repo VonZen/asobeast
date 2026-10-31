@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -41,7 +43,9 @@ export function MarketSwitcher({
         </SelectTrigger>
         <SelectContent>
           {allowAll ? (
-            <SelectItem value={ALL_MARKETS}>All markets</SelectItem>
+            <SelectItem value={ALL_MARKETS}>
+              <LocalizedText en="All markets" />
+            </SelectItem>
           ) : null}
           {markets.map((entry) => (
             <SelectItem key={entry.country} value={entry.country}>

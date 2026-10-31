@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useCallback, useState } from "react";
 import {
   useMutation,
@@ -9,7 +11,7 @@ import {
 } from "@tanstack/react-query";
 import { ChevronDown, Search } from "lucide-react";
 import { useQueryState } from "nuqs";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import type { KeywordSuggestionStrategy, Store } from "@asobeast/shared";
 import { Button } from "@/components/ui/button";
 import {
@@ -95,7 +97,9 @@ export function SuggestionsPanel({
           className="flex w-full items-start justify-between gap-4 text-left"
         >
           <div className="flex flex-col gap-1">
-            <CardTitle>Suggestions</CardTitle>
+            <CardTitle>
+              <LocalizedText en="Suggestions" />
+            </CardTitle>
             <CardDescription>
               {formatList(storeLookupLabels())} run a live {storeLabel(store)}{" "}
               lookup, so results can take a few seconds.
@@ -134,7 +138,7 @@ export function SuggestionsPanel({
             <SpiderDialog appId={id} country={country}>
               <Button variant="outline" size="sm">
                 <Search />
-                Deep search
+                <LocalizedText en="Deep search" />
               </Button>
             </SpiderDialog>
           </div>

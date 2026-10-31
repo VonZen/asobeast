@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -24,7 +26,8 @@ import {
   portfolioOptions,
 } from "@/lib/queries";
 import { ACTION_PRIORITY_LABEL } from "./action-copy";
-import { actionHeadline } from "./action-headline";
+import { localizedActionHeadline } from "./action-headline";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { ActionPriorityBadge } from "./ActionPriorityBadge";
 import { PriorityBar } from "./PriorityBar";
 
@@ -90,6 +93,7 @@ function TopActionLink({
   href: string;
   children?: ReactNode;
 }) {
+  const locale = useInterfaceLanguage();
   return (
     <Link
       href={href}
@@ -97,9 +101,13 @@ function TopActionLink({
     >
       <span className="flex items-start gap-2">
         <ActionPriorityBadge priority={item.priority} />
-        <span>{actionHeadline(item)}</span>
+        <span>{localizedActionHeadline(item, locale)}</span>
         {item.reopenCount > 0 ? (
-          <Badge variant="outline">Reopened {item.reopenCount}×</Badge>
+          <Badge variant="outline">
+            {locale === "zh-CN"
+              ? `已重新打开 ${item.reopenCount} 次`
+              : `Reopened ${item.reopenCount}×`}
+          </Badge>
         ) : null}
       </span>
       {children}
@@ -155,7 +163,7 @@ function AllClear() {
   return (
     <p className="flex items-center gap-2 text-sm text-muted-foreground">
       <CircleCheck className="size-4 text-signal-up" aria-hidden />
-      Nothing needs you right now.
+      <LocalizedText en="Nothing needs you right now." />
     </p>
   );
 }
@@ -192,10 +200,12 @@ export function ActionsSummaryCard({ appId }: { appId?: string }) {
     <Card>
       <CardHeader>
         <CardTitle asChild>
-          <Title>Top actions</Title>
+          <Title>
+            <LocalizedText en="Top actions" />
+          </Title>
         </CardTitle>
         <CardDescription>
-          The highest-impact open work, computed from your stored data.
+          <LocalizedText en="The highest-impact open work, computed from your stored data." />
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
@@ -205,7 +215,7 @@ export function ActionsSummaryCard({ appId }: { appId?: string }) {
           href={href}
           className="inline-flex min-h-6 items-center self-start text-sm font-medium underline-offset-4 hover:underline print:hidden"
         >
-          Open the Action Center
+          <LocalizedText en="Open the Action Center" />
         </Link>
       </CardContent>
     </Card>

@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
@@ -55,7 +57,7 @@ export function ErrorState({
       {recovery.action.kind === "retry" ? (
         <Button variant="outline" onClick={tryAgain}>
           <RotateCw />
-          Try again
+          <LocalizedText en="Try again" />
         </Button>
       ) : (
         <Button asChild variant="outline">

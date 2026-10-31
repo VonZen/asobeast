@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import type { ReactNode } from "react";
 import { ArrowDownToLine } from "lucide-react";
 import type {
@@ -58,7 +60,9 @@ function ScoreButton({
             —
           </span>
         </TooltipTrigger>
-        <TooltipContent>Not scored yet</TooltipContent>
+        <TooltipContent>
+          <LocalizedText en="Not scored yet" />
+        </TooltipContent>
       </Tooltip>
     );
   }
@@ -225,7 +229,7 @@ function ScoreProvenanceDetails({
       <span>{capturedAtLabel(provenance.capturedAt)}</span>
       <Badge variant="secondary">{confidence} confidence</Badge>
       <span className="max-w-xs text-background">
-        Confidence measures input completeness, not ranking accuracy.
+        <LocalizedText en="Confidence measures input completeness, not ranking accuracy." />
       </span>
     </>
   );

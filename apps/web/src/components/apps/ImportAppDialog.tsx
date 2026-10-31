@@ -4,7 +4,7 @@ import { useState } from "react";
 import type { FormEvent, RefObject } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import { STORES, type Store, type StoreSearchResult } from "@asobeast/shared";
 import { useRouter } from "next/navigation";
 import { CountrySelect } from "@/components/CountrySelect";
@@ -30,6 +30,8 @@ import { useSingleFlight } from "@/lib/single-flight";
 import { classifyInput, isStoreAddress } from "./store-search";
 import { StoreSearchField } from "./StoreSearchField";
 import { useStoreSearch } from "./useStoreSearch";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 
 const DEFAULT_STORE: Store = "APP_STORE";
 const DEFAULT_COUNTRY = "us";
@@ -46,9 +48,10 @@ function StoreTabs({
   store: Store;
   onChange: (store: Store) => void;
 }) {
+  const locale = useInterfaceLanguage();
   return (
     <Tabs value={store} onValueChange={(next) => onChange(next as Store)}>
-      <TabsList aria-label="Store">
+      <TabsList aria-label={interfaceCopy(locale, "Store")}>
         {STORES.map((option) => (
           <TabsOption key={option} value={option}>
             {storeLabel(option)}
@@ -68,19 +71,23 @@ function StorefrontField({
   country: string;
   onChange: (country: string) => void;
 }) {
+  const locale = useInterfaceLanguage();
   return (
     <div className="flex flex-col gap-2">
-      <Label htmlFor="import-country">Home storefront</Label>
+      <Label htmlFor="import-country">
+        {interfaceCopy(locale, "Home storefront")}
+      </Label>
       <p className="text-xs text-muted-foreground">
-        Where this app’s metadata and category ranks are read. Add other markets
-        later from the keyword monitor.
+        {locale === "zh-CN"
+          ? "从此市场读取 App 元数据和分类排名。之后可在关键词监控中添加其他市场。"
+          : "Where this app’s metadata and category ranks are read. Add other markets later from the keyword monitor."}
       </p>
       <CountrySelect
         id="import-country"
         store={store}
         value={country}
         onChange={onChange}
-        ariaLabel="Home storefront"
+        ariaLabel={interfaceCopy(locale, "Home storefront")}
       />
     </div>
   );
@@ -97,6 +104,8 @@ export function ImportAppDialog({
   onOpenChange?: (open: boolean) => void;
   returnFocus?: RefObject<HTMLElement | null>;
 }) {
+  const locale = useInterfaceLanguage();
+  const t = (value: string) => interfaceCopy(locale, value);
   const router = useRouter();
   const queryClient = useQueryClient();
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
@@ -116,7 +125,11 @@ export function ImportAppDialog({
       void queryClient.invalidateQueries({ queryKey: appKeys.all });
       void queryClient.invalidateQueries({ queryKey: portfolioKey });
       setOpen(false);
-      toast.success(`Imported ${app.name ?? "app"}`);
+      toast.success(
+        locale === "zh-CN"
+          ? `已导入 ${app.name ?? "App"}`
+          : `Imported ${app.name ?? "app"}`,
+      );
       router.push(`/apps/${app.id}/setup`);
     },
     onError: (err) => {
@@ -128,7 +141,11 @@ export function ImportAppDialog({
         }
         return;
       }
-      setError("Could not reach the api to import this app");
+      setError(
+        locale === "zh-CN"
+          ? "无法连接 API 以导入此 App。"
+          : "Could not reach the api to import this app",
+      );
     },
   });
   const importOnce = useSingleFlight(mutation);
@@ -202,10 +219,11 @@ export function ImportAppDialog({
       {children ? <DialogTrigger asChild>{children}</DialogTrigger> : null}
       <DialogContent onCloseAutoFocus={returnFocusTo(returnFocus)}>
         <DialogHeader>
-          <DialogTitle>Import an app</DialogTitle>
+          <DialogTitle>{t("Import an app")}</DialogTitle>
           <DialogDescription>
-            Search the App Store or Google Play by name, or paste a store URL,
-            to import the app and start tracking its keywords.
+            {locale === "zh-CN"
+              ? "按名称搜索 App Store 或 Google Play，或粘贴商店链接，导入 App 并开始跟踪关键词。"
+              : "Search the App Store or Google Play by name, or paste a store URL, to import the app and start tracking its keywords."}
           </DialogDescription>
         </DialogHeader>
 
@@ -215,8 +233,8 @@ export function ImportAppDialog({
 
             <StoreSearchField
               id="import-url"
-              label="App name or store URL"
-              hint="Type a name to search, or paste a store URL."
+              label={t("App name or store URL")}
+              hint={t("Type a name to search, or paste a store URL.")}
               placeholder={PLACEHOLDERS[store]}
               store={store}
               country={country}
@@ -242,7 +260,7 @@ export function ImportAppDialog({
               disabled={mutation.isPending || value.trim() === ""}
             >
               {mutation.isPending ? <Loader2 className="animate-spin" /> : null}
-              {mutation.isPending ? "Importing…" : "Import"}
+              {t(mutation.isPending ? "Importing…" : "Import")}
             </Button>
           </DialogFooter>
         </form>

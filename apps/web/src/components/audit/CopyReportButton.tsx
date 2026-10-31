@@ -1,7 +1,9 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { Copy } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import type { AppAuditResult } from "@asobeast/shared";
 import { Button } from "@/components/ui/button";
 import { auditMarkdown } from "./audit-report";
@@ -25,7 +27,7 @@ export function CopyReportButton({
   return (
     <Button variant="outline" className="w-fit" onClick={() => void copy()}>
       <Copy />
-      Copy report
+      <LocalizedText en="Copy report" />
     </Button>
   );
 }

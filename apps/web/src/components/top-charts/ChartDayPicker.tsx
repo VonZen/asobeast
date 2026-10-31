@@ -8,6 +8,8 @@ import {
   type KeyboardEvent,
 } from "react";
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { componentCopy } from "@/lib/component-copy";
 import { addUtcDays } from "@asobeast/shared";
 import { Button } from "@/components/ui/button";
 import {
@@ -76,6 +78,7 @@ function DayGrid({
   value: string;
   onSelect: (date: string) => void;
 }) {
+  const locale = useInterfaceLanguage();
   const start = nearestCaptured(dates, value);
   const [month, setMonth] = useState(() => monthOf(start));
   const [focused, setFocused] = useState(start);
@@ -114,18 +117,20 @@ function DayGrid({
         <Button
           variant="ghost"
           size="icon-sm"
-          aria-label="Previous month"
+          aria-label={componentCopy(locale, "Previous month")}
           onClick={() => showMonth(shiftMonth(month, -1))}
         >
           <ChevronLeft aria-hidden />
         </Button>
         <p className="text-body font-medium" aria-live="polite">
-          {monthLabel(month)}
+          {locale === "zh-CN"
+            ? `${month.year}年${month.month}月`
+            : monthLabel(month)}
         </p>
         <Button
           variant="ghost"
           size="icon-sm"
-          aria-label="Next month"
+          aria-label={componentCopy(locale, "Next month")}
           onClick={() => showMonth(shiftMonth(month, 1))}
         >
           <ChevronRight aria-hidden />
@@ -134,7 +139,11 @@ function DayGrid({
       <div
         ref={grid}
         role="grid"
-        aria-label={monthLabel(month)}
+        aria-label={
+          locale === "zh-CN"
+            ? `${month.year}年${month.month}月`
+            : monthLabel(month)
+        }
         onKeyDown={onKeyDown}
         className="flex flex-col gap-1"
       >
@@ -143,10 +152,22 @@ function DayGrid({
             <span
               key={short}
               role="columnheader"
-              aria-label={full}
+              aria-label={componentCopy(locale, full)}
               className="text-center text-caption text-muted-foreground"
             >
-              {short}
+              {locale === "zh-CN"
+                ? (
+                    {
+                      Mon: "一",
+                      Tue: "二",
+                      Wed: "三",
+                      Thu: "四",
+                      Fri: "五",
+                      Sat: "六",
+                      Sun: "日",
+                    } as Record<string, string>
+                  )[short]
+                : short}
             </span>
           ))}
         </div>
@@ -193,6 +214,7 @@ export function ChartDayPicker({
   value: string | null;
   onSelect: (date: string) => void;
 }) {
+  const locale = useInterfaceLanguage();
   const [open, setOpen] = useState(false);
   const anchor = value ?? dates[0] ?? null;
   const previous = value ? stepDate(dates, value, -1) : null;
@@ -209,18 +231,24 @@ export function ChartDayPicker({
           <Button
             variant="outline"
             aria-label={
-              value ? `Captured day, ${formatDate(value)}` : "Captured day"
+              value
+                ? locale === "zh-CN"
+                  ? `采集日期：${formatDate(value)}`
+                  : `Captured day, ${formatDate(value)}`
+                : componentCopy(locale, "Captured day")
             }
             disabled={anchor === null}
             className="min-w-36 justify-start"
           >
             <CalendarDays aria-hidden />
-            {value ? formatDate(value) : "No capture yet"}
+            {value
+              ? formatDate(value)
+              : componentCopy(locale, "No capture yet")}
           </Button>
         </PopoverTrigger>
         <PopoverContent
           align="start"
-          aria-label="Choose captured day"
+          aria-label={componentCopy(locale, "Choose captured day")}
           className="w-auto"
         >
           {anchor ? (
@@ -231,7 +259,7 @@ export function ChartDayPicker({
       <Button
         variant="outline"
         size="icon"
-        aria-label="Previous captured day"
+        aria-label={componentCopy(locale, "Previous captured day")}
         disabled={previous === null}
         onClick={() => previous && onSelect(previous)}
       >
@@ -240,7 +268,7 @@ export function ChartDayPicker({
       <Button
         variant="outline"
         size="icon"
-        aria-label="Next captured day"
+        aria-label={componentCopy(locale, "Next captured day")}
         disabled={next === null}
         onClick={() => next && onSelect(next)}
       >

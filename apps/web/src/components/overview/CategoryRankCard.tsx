@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { Suspense, useDeferredValue } from "react";
 import Link from "next/link";
 import type { AppDetail, CategoryRankSeriesItem } from "@asobeast/shared";
@@ -234,7 +236,9 @@ export function CategoryRankCard({ id }: { id: string }) {
     <Card>
       <CardHeader>
         <CardDescription>Category ranks · Home market</CardDescription>
-        <CardTitle>Top charts position</CardTitle>
+        <CardTitle>
+          <LocalizedText en="Top charts position" />
+        </CardTitle>
         <CardAction>
           <RangePicker
             presets={RANGE_PRESETS}

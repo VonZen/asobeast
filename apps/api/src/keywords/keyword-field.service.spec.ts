@@ -209,7 +209,12 @@ function buildService(prisma: ReturnType<typeof buildPrisma>) {
       prisma as unknown as PrismaService,
       new WorkspaceContext(),
       {
-        get: (key: string) => (key === 'BILLING_ENABLED' ? false : null),
+        get: (key: string) =>
+          key === 'BILLING_ENABLED'
+            ? false
+            : key === 'SELF_HOSTED_COMPETITORS_PER_APP'
+              ? undefined
+              : null,
       } as unknown as ConfigService<Env, true>,
     ),
     { require: () => APP.workspaceId } as unknown as WorkspaceContext,

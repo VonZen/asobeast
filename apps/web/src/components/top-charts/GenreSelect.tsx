@@ -1,5 +1,9 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { componentCopy } from "@/lib/component-copy";
+
 import {
   chartGenreName,
   chartGenresOf,
@@ -42,16 +46,28 @@ export function GenreSelect({
   value: string;
   onChange: (genre: string) => void;
 }) {
+  const locale = useInterfaceLanguage();
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger aria-label="Category" className="w-[220px]">
-        <SelectValue>{chartGenreName(store, value) ?? value}</SelectValue>
+      <SelectTrigger
+        aria-label={componentCopy(locale, "Category")}
+        className="w-[220px]"
+      >
+        <SelectValue>
+          {value === OVERALL_GENRE
+            ? componentCopy(locale, "Overall")
+            : (chartGenreName(store, value) ?? value)}
+        </SelectValue>
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value={OVERALL_GENRE}>Overall</SelectItem>
+        <SelectItem value={OVERALL_GENRE}>
+          <LocalizedText en="Overall" />
+        </SelectItem>
         {groupsOf(store).map(([group, genres]) => (
           <SelectGroup key={group}>
-            <SelectLabel>{GROUP_LABELS[group]}</SelectLabel>
+            <SelectLabel>
+              {componentCopy(locale, GROUP_LABELS[group])}
+            </SelectLabel>
             {genres.map((genre) => (
               <SelectItem key={genre.id} value={genre.id}>
                 {genre.name}

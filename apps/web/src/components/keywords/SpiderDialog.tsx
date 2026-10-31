@@ -1,10 +1,12 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Loader2, Plus, Search } from "lucide-react";
 import { useQueryState } from "nuqs";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import { normalizeText } from "@asobeast/shared";
 import { Button } from "@/components/ui/button";
 import {
@@ -105,7 +107,9 @@ export function SpiderDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent size="md">
         <DialogHeader>
-          <DialogTitle>Deep search</DialogTitle>
+          <DialogTitle>
+            <LocalizedText en="Deep search" />
+          </DialogTitle>
           <DialogDescription>
             Probes App Store autocomplete for your term plus every a–z prefix —
             27 rate-limited lookups, usually about two minutes and longer while
@@ -116,7 +120,9 @@ export function SpiderDialog({
         <DialogBody>
           <div className="flex items-end gap-2">
             <div className="flex flex-1 flex-col gap-2">
-              <Label htmlFor="spider-term">Seed term</Label>
+              <Label htmlFor="spider-term">
+                <LocalizedText en="Seed term" />
+              </Label>
               <Input
                 id="spider-term"
                 value={draft}
@@ -211,14 +217,14 @@ export function SpiderDialog({
                           {already ? (
                             <>
                               <Check />
-                              Tracked
+                              <LocalizedText en="Tracked" />
                             </>
                           ) : pending ? (
                             <Loader2 className="animate-spin" />
                           ) : (
                             <>
                               <Plus />
-                              Track
+                              <LocalizedText en="Track" />
                             </>
                           )}
                         </Button>

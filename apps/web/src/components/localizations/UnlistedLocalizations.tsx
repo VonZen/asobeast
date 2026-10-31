@@ -1,6 +1,7 @@
 "use client";
 
 import type { AppLocalizationsResult } from "@asobeast/shared";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { Button } from "@/components/ui/button";
 import { unlistedReads } from "@/lib/app-localizations";
 import { localizationName } from "@/lib/localizations";
@@ -17,6 +18,7 @@ export function UnlistedLocalizations({
   id: string;
   result: AppLocalizationsResult;
 }) {
+  const zh = useInterfaceLanguage() === "zh-CN";
   const { add, pending, error } = useAddLocalization(id);
   const reads = unlistedReads(result);
   if (reads.length === 0) return null;
@@ -24,15 +26,19 @@ export function UnlistedLocalizations({
   return (
     <section aria-labelledby={HEADING_ID} className="flex flex-col gap-2">
       <h3 id={HEADING_ID} className="font-medium">
-        Not listed yet
+        {zh ? "尚未添加的本地化版本" : "Not listed yet"}
       </h3>
       <p className="text-body text-muted-foreground">
-        Your markets read these localizations. Add one your app ships in App
-        Store Connect to type its keyword field; a localization the store serves
-        is added on its own after the next capture of that market.
+        {zh
+          ? "当前跟踪的市场会读取以下本地化版本。若 App 已在 App Store Connect 中提供相应语言，可以添加后填写关键词字段；系统也会在下一次采集市场数据时自动加入商店已提供的本地化版本。"
+          : "Your markets read these localizations. Add one your app ships in App Store Connect to type its keyword field; a localization the store serves is added on its own after the next capture of that market."}
       </p>
       <ul
-        aria-label="Localizations your markets read that are not listed"
+        aria-label={
+          zh
+            ? "当前市场读取但尚未添加的本地化版本"
+            : "Localizations your markets read that are not listed"
+        }
         className="flex flex-col divide-y divide-border rounded-lg border border-border px-3"
       >
         {reads.map(({ localization, readIn }) => {
@@ -48,11 +54,11 @@ export function UnlistedLocalizations({
                 <Button
                   variant="outline"
                   size="xs"
-                  aria-label={`Add ${name}`}
+                  aria-label={zh ? `添加${name}` : `Add ${name}`}
                   disabled={pending}
                   onClick={() => add(localization)}
                 >
-                  Add
+                  {zh ? "添加" : "Add"}
                 </Button>
               </span>
             </li>
@@ -61,7 +67,9 @@ export function UnlistedLocalizations({
       </ul>
       {error ? (
         <p role="alert" className="text-sm text-destructive">
-          {apiErrorMessage(error, "Could not add the localization")}
+          {zh
+            ? "无法添加本地化版本，请重试。"
+            : apiErrorMessage(error, "Could not add the localization")}
         </p>
       ) : null}
     </section>

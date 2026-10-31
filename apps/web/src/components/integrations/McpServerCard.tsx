@@ -1,11 +1,14 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useState } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import type { FormEvent } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, Copy, Loader2, Plug } from "lucide-react";
 import { useQueryState } from "nuqs";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import type { ApiTokenCreated } from "@asobeast/shared";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -113,7 +116,9 @@ function AgentSnippets({
   return (
     <>
       <div className="flex flex-col gap-2">
-        <Label htmlFor={id}>Agent</Label>
+        <Label htmlFor={id}>
+          <LocalizedText en="Agent" />
+        </Label>
         <Select
           value={client}
           onValueChange={(next) => {
@@ -140,21 +145,30 @@ function AgentSnippets({
 }
 
 function ConnectionSnippets({ token }: { token: string }) {
+  const language = useInterfaceLanguage();
   return (
     <Tabs defaultValue="remote">
       <TabsList>
-        <TabsTrigger value="remote">Hosted endpoint</TabsTrigger>
-        <TabsTrigger value="stdio">Local server</TabsTrigger>
+        <TabsTrigger value="remote">
+          {language === "zh-CN" ? "托管端点" : "Hosted endpoint"}
+        </TabsTrigger>
+        <TabsTrigger value="stdio">
+          {language === "zh-CN" ? "本地服务器" : "Local server"}
+        </TabsTrigger>
       </TabsList>
       <TabsContent value="remote" className="flex flex-col gap-4">
         <p className="text-sm text-muted-foreground">
-          Your client connects straight to this instance. Nothing to install.
+          {language === "zh-CN"
+            ? "客户端直接连接到此实例，无需安装。"
+            : "Your client connects straight to this instance. Nothing to install."}
         </p>
         <AgentSnippets id="mcp-hosted-agent" snippets={hostedSnippets(token)} />
       </TabsContent>
       <TabsContent value="stdio" className="flex flex-col gap-4">
         <p className="text-sm text-muted-foreground">
-          For a checkout of the repository. Hosted users need nothing here.
+          {language === "zh-CN"
+            ? "适用于本地检出的代码仓库；托管用户无需配置此项。"
+            : "For a checkout of the repository. Hosted users need nothing here."}
         </p>
         <AgentSnippets id="mcp-local-agent" snippets={localSnippets(token)} />
       </TabsContent>
@@ -163,6 +177,7 @@ function ConnectionSnippets({ token }: { token: string }) {
 }
 
 function ConnectDialog() {
+  const language = useInterfaceLanguage();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -204,7 +219,9 @@ function ConnectDialog() {
     event.preventDefault();
     setError(null);
     if (name.trim() === "") {
-      setError("Give the token a name.");
+      setError(
+        language === "zh-CN" ? "请为 token 命名。" : "Give the token a name.",
+      );
       return;
     }
     createOnce();
@@ -215,16 +232,22 @@ function ConnectDialog() {
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
           <Plug />
-          Connect an agent
+          {language === "zh-CN" ? "连接 agent" : "Connect an agent"}
         </Button>
       </DialogTrigger>
       <DialogContent size={created ? "lg" : "default"}>
         {created ? (
           <>
             <DialogHeader>
-              <DialogTitle>Connect AsoBeast</DialogTitle>
+              <DialogTitle>
+                {language === "zh-CN" ? "连接 AsoBeast" : "Connect AsoBeast"}
+              </DialogTitle>
               <DialogDescription>
-                {mcpTokenNotice(created.scope)}
+                {language === "zh-CN"
+                  ? created.scope === "write"
+                    ? "此 token 可修改数据且只显示一次。关闭前请复制所需内容，并妥善保密。"
+                    : "此 token 为只读且只显示一次。关闭前请复制所需内容。"
+                  : mcpTokenNotice(created.scope)}
               </DialogDescription>
             </DialogHeader>
             <DialogBody>
@@ -232,22 +255,27 @@ function ConnectDialog() {
             </DialogBody>
             <DialogFooter>
               <Button type="button" onClick={() => reset(false)}>
-                Done
+                {language === "zh-CN" ? "完成" : "Done"}
               </Button>
             </DialogFooter>
           </>
         ) : (
           <form onSubmit={submit} className="flex min-h-0 flex-col gap-4">
             <DialogHeader>
-              <DialogTitle>Connect an agent</DialogTitle>
+              <DialogTitle>
+                {language === "zh-CN" ? "连接 agent" : "Connect an agent"}
+              </DialogTitle>
               <DialogDescription>
-                Name a token for this agent. We mint it read-only unless you
-                allow changes, and show you the ready-to-paste connect snippets.
+                {language === "zh-CN"
+                  ? "为此 agent 的 token 命名。除非你允许修改，否则 token 为只读；创建后会显示可直接粘贴的连接配置。"
+                  : "Name a token for this agent. We mint it read-only unless you allow changes, and show you the ready-to-paste connect snippets."}
               </DialogDescription>
             </DialogHeader>
             <DialogBody>
               <div className="flex flex-col gap-2">
-                <Label htmlFor="mcp-token-name">Token name</Label>
+                <Label htmlFor="mcp-token-name">
+                  {language === "zh-CN" ? "Token 名称" : "Token name"}
+                </Label>
                 <Input
                   id="mcp-token-name"
                   value={name}
@@ -268,13 +296,17 @@ function ConnectDialog() {
                 />
                 <div className="flex flex-col gap-1">
                   <Label htmlFor="mcp-allow-changes">
-                    Allow this agent to make changes
+                    {language === "zh-CN"
+                      ? "允许此 agent 修改数据"
+                      : "Allow this agent to make changes"}
                   </Label>
                   <p
                     id="mcp-allow-changes-hint"
                     className="text-xs text-muted-foreground"
                   >
-                    {MCP_CHANGES_HINT}
+                    {language === "zh-CN"
+                      ? "将增加追踪或取消追踪关键词、添加或移除竞品、修改待办事项状态的工具。可修改数据的 token 也能通过 API 修改其他内容，请妥善保密。"
+                      : MCP_CHANGES_HINT}
                   </p>
                 </div>
               </div>
@@ -287,7 +319,7 @@ function ConnectDialog() {
                 {mutation.isPending ? (
                   <Loader2 className="animate-spin" />
                 ) : null}
-                Mint token
+                {language === "zh-CN" ? "创建 token" : "Mint token"}
               </Button>
             </DialogFooter>
           </form>
@@ -298,6 +330,7 @@ function ConnectDialog() {
 }
 
 export function McpServerCard() {
+  const language = useInterfaceLanguage();
   const { status, isLoading } = useAuth();
 
   if (isLoading || !status?.authenticated) return null;
@@ -306,29 +339,34 @@ export function McpServerCard() {
     <Card>
       <CardHeader className="flex-row items-start justify-between gap-4">
         <div className="flex flex-col gap-1.5">
-          <CardDescription>Automation</CardDescription>
-          <CardTitle>MCP server</CardTitle>
+          <CardDescription>
+            {language === "zh-CN" ? "自动化" : "Automation"}
+          </CardDescription>
+          <CardTitle>
+            {language === "zh-CN" ? "MCP 服务器" : "MCP server"}
+          </CardTitle>
         </div>
         <ConnectDialog />
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <p className="text-sm text-muted-foreground">
-          Point any MCP client at this instance to ask about your apps,
-          keywords, rankings and audits in plain language. Tools are read-only
-          unless you allow an agent to make changes when you connect it, and
-          every connection is authenticated with a personal API token.{" "}
+          {language === "zh-CN"
+            ? "将 MCP 客户端连接到此实例后，可以用自然语言查询 App、关键词、排名和审核结果。除非连接时允许 agent 修改数据，否则工具为只读；每次连接都通过个人 API token 验证。"
+            : "Point any MCP client at this instance to ask about your apps, keywords, rankings and audits in plain language. Tools are read-only unless you allow an agent to make changes when you connect it, and every connection is authenticated with a personal API token."}{" "}
           <a
             href={DOCS_URL}
             target="_blank"
             rel="noreferrer"
             className="font-medium text-foreground underline underline-offset-4"
           >
-            Read the setup guide
+            {language === "zh-CN" ? "阅读设置指南" : "Read the setup guide"}
           </a>
           .
         </p>
         <div className="flex flex-col gap-1.5">
-          <Label className="text-xs font-medium">Endpoint</Label>
+          <Label className="text-xs font-medium">
+            {language === "zh-CN" ? "端点" : "Endpoint"}
+          </Label>
           <code
             translate="no"
             className="block overflow-x-auto rounded-lg border bg-muted px-3 py-2 font-mono text-xs"

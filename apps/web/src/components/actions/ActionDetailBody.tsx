@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import type { UseQueryResult } from "@tanstack/react-query";
 import type { ActionDetail, ActionItem } from "@asobeast/shared";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -34,13 +35,14 @@ function Section({
 }
 
 function SampleReviews({ item }: { item: ActionItem }) {
+  const language = useInterfaceLanguage();
   if (item.evidence?.rule !== "reviews.investigate_theme") return null;
   return (
     <Link
       href={`/apps/${item.scope.appId}/reviews`}
       className="self-start text-sm font-medium underline-offset-4 hover:underline"
     >
-      Read the sample reviews
+      {language === "zh-CN" ? "查看示例评论" : "Read the sample reviews"}
     </Link>
   );
 }
@@ -62,12 +64,13 @@ export function ActionDetailBody({
   detail: UseQueryResult<ActionDetail>;
   item: ActionItem | undefined;
 }) {
+  const language = useInterfaceLanguage();
   if (isNotFound(detail.error)) return null;
   if (detail.error) {
     return (
       <div className="p-4">
         <Alert variant="destructive">
-          <AlertTitle>The action could not be loaded</AlertTitle>
+          <AlertTitle>{language === "zh-CN" ? "无法加载此事项" : "The action could not be loaded"}</AlertTitle>
           <AlertDescription className="flex flex-col items-start gap-2">
             {detail.error.message}
             <Button
@@ -75,7 +78,7 @@ export function ActionDetailBody({
               size="sm"
               onClick={() => void detail.refetch()}
             >
-              Try again
+              {language === "zh-CN" ? "重试" : "Try again"}
             </Button>
           </AlertDescription>
         </Alert>
@@ -88,20 +91,20 @@ export function ActionDetailBody({
   return (
     <div className="@container/sheet flex flex-col gap-6 p-4">
       <ActionImpactMeter impact={shown.impact} />
-      <Section title="Why this">
+      <Section title={language === "zh-CN" ? "为什么建议这样做" : "Why this"}>
         <ActionEvidencePanel evidence={shown.evidence} />
         <SampleReviews item={shown} />
       </Section>
-      <Section title="How to fix">
+      <Section title={language === "zh-CN" ? "如何处理" : "How to fix"}>
         <ActionSteps item={shown} />
       </Section>
       {detail.data?.trend ? (
-        <Section title="Trend">
+        <Section title={language === "zh-CN" ? "趋势" : "Trend"}>
           <ActionTrendChart trend={detail.data.trend} item={shown} />
         </Section>
       ) : null}
       {detail.data?.outcome ? (
-        <Section title="Outcome">
+        <Section title={language === "zh-CN" ? "结果" : "Outcome"}>
           <ActionOutcome
             outcome={detail.data.outcome}
             depth={detail.data.trend?.depth ?? null}
@@ -109,17 +112,16 @@ export function ActionDetailBody({
         </Section>
       ) : null}
       {detail.data ? (
-        <Section title="History">
+        <Section title={language === "zh-CN" ? "历史记录" : "History"}>
           <ActionHistory events={detail.data.events} />
         </Section>
       ) : null}
-      <Section title="Note">
+      <Section title={language === "zh-CN" ? "备注" : "Note"}>
         <ActionNote key={shown.id} item={shown} />
       </Section>
       <ActionExplain item={shown} />
       <p className="text-caption text-muted-foreground">
-        Evidence last confirmed {formatDate(shown.lastSeenAt)} · formula{" "}
-        {shown.formulaVersion}
+        {language === "zh-CN" ? `证据上次确认于 ${formatDate(shown.lastSeenAt, language)} · 公式 ${shown.formulaVersion}` : `Evidence last confirmed ${formatDate(shown.lastSeenAt)} · formula ${shown.formulaVersion}`}
       </p>
     </div>
   );

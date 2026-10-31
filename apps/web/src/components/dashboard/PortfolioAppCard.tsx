@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import type { PortfolioApp, PortfolioAppInsight } from "@asobeast/shared";
 import { RankBandBar } from "@/components/charts/RankBandBar";
 import { AppIcon } from "@/components/AppIcon";
@@ -20,16 +21,29 @@ import { setupChipText } from "./setup-chip";
 import { Sparkline } from "./Sparkline";
 
 export function AppStats({ app }: { app: PortfolioApp }) {
+  const language = useInterfaceLanguage();
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-caption text-muted-foreground">
-      <span>{pluralize(app.trackedKeywords, "keyword")}</span>
-      <span>{pluralize(app.competitors, "competitor")}</span>
-      <span>Updated {formatDate(app.lastCapturedAt)}</span>
+      <span>
+        {language === "zh-CN"
+          ? `${app.trackedKeywords} 个关键词`
+          : pluralize(app.trackedKeywords, "keyword")}
+      </span>
+      <span>
+        {language === "zh-CN"
+          ? `${app.competitors} 个竞品`
+          : pluralize(app.competitors, "competitor")}
+      </span>
+      <span>
+        {language === "zh-CN" ? "更新于 " : "Updated "}
+        {formatDate(app.lastCapturedAt, language)}
+      </span>
     </div>
   );
 }
 
 export function AppBadges({ app }: { app: PortfolioApp }) {
+  const language = useInterfaceLanguage();
   const setup = setupChipText(app.setup);
   return (
     <div className="flex flex-wrap items-center gap-1.5">
@@ -39,7 +53,7 @@ export function AppBadges({ app }: { app: PortfolioApp }) {
       <Badge
         variant="outline"
         className="w-fit"
-        title={`Home storefront · ${formatCountry(app.country)}`}
+        title={`${language === "zh-CN" ? "主市场" : "Home storefront"} · ${formatCountry(app.country)}`}
       >
         {app.country.toUpperCase()}
       </Badge>
@@ -54,11 +68,16 @@ export function AppBadges({ app }: { app: PortfolioApp }) {
 }
 
 function Top10Line({ insight }: { insight: PortfolioAppInsight }) {
+  const language = useInterfaceLanguage();
   return (
     <div className="flex flex-col gap-1">
       <RankBandBar distribution={insight.rankDistribution} />
       <div className="flex flex-wrap items-center gap-2 text-caption text-muted-foreground">
-        <span>{formatNumber(insight.rankDistribution.top10)} in top 10</span>
+        <span>
+          {language === "zh-CN"
+            ? `${formatNumber(insight.rankDistribution.top10)} 个进入前十`
+            : `${formatNumber(insight.rankDistribution.top10)} in top 10`}
+        </span>
         <TrendChip label="7d" value={insight.top10Delta7d} />
       </div>
     </div>
@@ -75,7 +94,9 @@ export function PortfolioAppCard({
   app: PortfolioApp;
   insight: PortfolioAppInsight | undefined;
 }) {
-  const name = app.name ?? "Untitled app";
+  const language = useInterfaceLanguage();
+  const name =
+    app.name ?? (language === "zh-CN" ? "未命名 App" : "Untitled app");
 
   return (
     <Card className="@container/app-card relative h-full gap-0 p-4 transition-colors hover:bg-muted/40">
@@ -102,7 +123,9 @@ export function PortfolioAppCard({
 
         {app.lastCapturedAt === null ? (
           <p className="text-body text-muted-foreground">
-            Collecting the first positions. Visibility appears within the hour.
+            {language === "zh-CN"
+              ? "正在采集首批排名，可见度将在一小时内显示。"
+              : "Collecting the first positions. Visibility appears within the hour."}
           </p>
         ) : (
           <>
@@ -114,7 +137,7 @@ export function PortfolioAppCard({
                 <TrendChip label="7d" value={app.visibility.delta7d} />
               </div>
               <span className="text-caption text-muted-foreground">
-                visibility
+                {language === "zh-CN" ? "可见度" : "visibility"}
               </span>
             </div>
 
@@ -142,7 +165,9 @@ export function PortfolioGroupMember({
   app: PortfolioApp;
   insight: PortfolioAppInsight | undefined;
 }) {
-  const name = app.name ?? "Untitled app";
+  const language = useInterfaceLanguage();
+  const name =
+    app.name ?? (language === "zh-CN" ? "未命名 App" : "Untitled app");
 
   return (
     <div className="relative flex flex-col gap-2 py-3 first:pt-0 last:pb-0">
@@ -176,7 +201,9 @@ export function PortfolioGroupMember({
 
       {app.lastCapturedAt === null ? (
         <p className="text-caption text-muted-foreground">
-          Collecting the first positions.
+          {language === "zh-CN"
+            ? "正在采集首批排名。"
+            : "Collecting the first positions."}
         </p>
       ) : (
         <>

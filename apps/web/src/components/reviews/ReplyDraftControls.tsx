@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Sparkles } from "lucide-react";
 import {
@@ -41,17 +43,17 @@ function DraftNotice({
   result: ReviewReplyDraftResult | undefined;
   store: Store;
 }) {
+  const language = useInterfaceLanguage();
   return (
     <div aria-live="polite" className="flex flex-col gap-1">
       {result ? (
         <p className="text-caption text-muted-foreground">
-          Drafted in {replyLanguageName(result.language)}
+          {language === "zh-CN" ? `草稿语言：${replyLanguageName(result.language)}` : `Drafted in ${replyLanguageName(result.language)}`}
         </p>
       ) : null}
       {result?.truncated ? (
         <p className="text-caption text-warning">
-          Shortened to fit {storeLabel(store)}&apos;s{" "}
-          {REVIEW_REPLY_LIMITS[store]} characters; read it before you copy.
+          {language === "zh-CN" ? `为符合 ${storeLabel(store)} 的 ${REVIEW_REPLY_LIMITS[store]} 字符限制，内容已缩短；复制前请仔细阅读。` : `Shortened to fit ${storeLabel(store)}'s ${REVIEW_REPLY_LIMITS[store]} characters; read it before you copy.`}
         </p>
       ) : null}
     </div>
@@ -71,6 +73,7 @@ export function ReplyDraftControls({
   draft: ReplyDraft;
   text: string;
 }) {
+  const language = useInterfaceLanguage();
   const { data: status } = useQuery(aiStatusOptions);
   const spent = useAiAllowanceSpent();
   const [tone, setTone] = useState<ReviewReplyTone>(
@@ -91,20 +94,20 @@ export function ReplyDraftControls({
             if (picked) setTone(picked);
           }}
         >
-          <SelectTrigger className="w-[130px] bg-card" aria-label="Tone">
+          <SelectTrigger className="w-[130px] bg-card" aria-label={language === "zh-CN" ? "语气" : "Tone"}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {REVIEW_REPLY_TONES.map((option) => (
               <SelectItem key={option} value={option}>
-                {TONE_LABELS[option]}
+                {interfaceCopy(language, TONE_LABELS[option])}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
         <Input
-          aria-label="Instructions (optional)"
-          placeholder="Instructions (optional), e.g. mention the new widgets"
+          aria-label={language === "zh-CN" ? "补充要求（可选）" : "Instructions (optional)"}
+          placeholder={language === "zh-CN" ? "补充要求（可选），例如提及新组件" : "Instructions (optional), e.g. mention the new widgets"}
           value={instructions}
           maxLength={REVIEW_REPLY_INSTRUCTIONS_MAX}
           onChange={(event) => setInstructions(event.target.value)}
@@ -120,7 +123,7 @@ export function ReplyDraftControls({
           disabled={drafting || spent || busy}
         >
           {drafting ? <Loader2 className="animate-spin" /> : <Sparkles />}
-          {review.reply?.text ? "Draft again" : "Draft with AI"}
+          {language === "zh-CN" ? (review.reply?.text ? "重新生成草稿" : "使用 AI 生成草稿") : (review.reply?.text ? "Draft again" : "Draft with AI")}
         </Button>
       </div>
       <AiCallsLeft />

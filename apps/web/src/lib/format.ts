@@ -5,6 +5,7 @@ import {
   type Store,
 } from "@asobeast/shared";
 import { COUNTRY_NAMES } from "./country-names";
+import type { InterfaceLanguage } from "./interface-language";
 
 const numberFormatter = new Intl.NumberFormat("en-US");
 const measureFormatter = new Intl.NumberFormat("en-US", {
@@ -15,6 +16,12 @@ const compactFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 1,
 });
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  timeZone: "UTC",
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+});
+const chineseDateFormatter = new Intl.DateTimeFormat("zh-CN", {
   timeZone: "UTC",
   year: "numeric",
   month: "short",
@@ -83,6 +90,9 @@ const THOUSANDTHS_CURRENCIES = new Set([
 ]);
 const listFormatter = new Intl.ListFormat("en-US", { type: "conjunction" });
 const relativeTimeFormatter = new Intl.RelativeTimeFormat("en-US", {
+  numeric: "auto",
+});
+const chineseRelativeTimeFormatter = new Intl.RelativeTimeFormat("zh-CN", {
   numeric: "auto",
 });
 const RELATIVE_UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
@@ -164,9 +174,14 @@ export function formatPrice(value: number, currency?: string | null): string {
     : bareAmountFormatter.format(value);
 }
 
-export function formatDate(value: string | null): string {
+export function formatDate(
+  value: string | null,
+  locale: InterfaceLanguage = "en",
+): string {
   if (!value) return "—";
-  return dateFormatter.format(new Date(value));
+  return (locale === "zh-CN" ? chineseDateFormatter : dateFormatter).format(
+    new Date(value),
+  );
 }
 
 export function formatDayMonth(value: string): string {
@@ -183,20 +198,34 @@ function formatClock(instant: Date): string {
   return `${hours % 12 || 12}:${minutes} ${hours < 12 ? "AM" : "PM"}`;
 }
 
-export function formatDateTime(value: string): string {
+export function formatDateTime(
+  value: string,
+  locale: InterfaceLanguage = "en",
+): string {
   const instant = new Date(value);
+  if (locale === "zh-CN") {
+    const hours = String(instant.getUTCHours()).padStart(2, "0");
+    const minutes = String(instant.getUTCMinutes()).padStart(2, "0");
+    return `${chineseDateFormatter.format(instant)} ${hours}:${minutes} UTC`;
+  }
   return `${dateFormatter.format(instant)}, ${formatClock(instant)} UTC`;
 }
 
-export function formatRelativeTime(value: string, now: number): string {
+export function formatRelativeTime(
+  value: string,
+  now: number,
+  locale: InterfaceLanguage = "en",
+): string {
   const diff = new Date(value).getTime() - now;
   const magnitude = Math.abs(diff);
+  const formatter =
+    locale === "zh-CN" ? chineseRelativeTimeFormatter : relativeTimeFormatter;
   for (const [unit, ms] of RELATIVE_UNITS) {
     if (magnitude >= ms) {
-      return relativeTimeFormatter.format(Math.round(diff / ms), unit);
+      return formatter.format(Math.round(diff / ms), unit);
     }
   }
-  return relativeTimeFormatter.format(Math.round(diff / 1000), "second");
+  return formatter.format(Math.round(diff / 1000), "second");
 }
 
 export function formatCategoryPosition(value: number | null): string {
@@ -209,4 +238,15 @@ export function storeLabel(store: Store): string {
 
 export function formatCountry(code: string): string {
   return countryNames.get(code.toLowerCase()) ?? code.toUpperCase();
+}
+
+const chineseRegions = new Intl.DisplayNames(["zh-CN"], { type: "region" });
+
+export function localizedCountry(
+  code: string,
+  language: InterfaceLanguage,
+): string {
+  if (language !== "zh-CN" || !countryNames.has(code.toLowerCase()))
+    return formatCountry(code);
+  return chineseRegions.of(code.toUpperCase()) ?? formatCountry(code);
 }

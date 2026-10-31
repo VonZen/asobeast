@@ -173,6 +173,20 @@ export const EnvSchema = z.object({
         : null,
     z.coerce.number().int().min(0).nullable(),
   ),
+  SELF_HOSTED_COMPETITORS_PER_APP: z.preprocess(
+    (value) =>
+      typeof value === 'number'
+        ? value
+        : typeof value === 'string' && value.trim().length > 0
+          ? value.trim().toLowerCase()
+          : undefined,
+    z
+      .union([
+        z.literal('unlimited').transform((): number | null => null),
+        z.coerce.number().int().positive(),
+      ])
+      .optional(),
+  ),
   SCREENSHOT_OCR: z
     .enum(['true', 'false'])
     .default('true')

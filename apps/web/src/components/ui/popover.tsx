@@ -4,6 +4,7 @@ import * as React from "react";
 import { Popover as PopoverPrimitive } from "radix-ui";
 
 import { cn } from "@/lib/utils";
+import { LocalizedText } from "@/components/layout/LocalizedText";
 
 function Popover({
   ...props
@@ -55,18 +56,29 @@ function PopoverHeader({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-function PopoverTitle({ className, ...props }: React.ComponentProps<"h2">) {
+function PopoverTitle({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<"h2">) {
   return (
     <div
       data-slot="popover-title"
       className={cn("font-medium", className)}
       {...props}
-    />
+    >
+      {typeof children === "string" ? (
+        <LocalizedText en={children} />
+      ) : (
+        children
+      )}
+    </div>
   );
 }
 
 function PopoverDescription({
   className,
+  children,
   ...props
 }: React.ComponentProps<"p">) {
   return (
@@ -74,7 +86,13 @@ function PopoverDescription({
       data-slot="popover-description"
       className={cn("text-muted-foreground", className)}
       {...props}
-    />
+    >
+      {typeof children === "string" ? (
+        <LocalizedText en={children} />
+      ) : (
+        children
+      )}
+    </p>
   );
 }
 

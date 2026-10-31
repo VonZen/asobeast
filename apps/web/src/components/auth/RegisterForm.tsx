@@ -26,8 +26,12 @@ import { FieldErrorMessage } from "./FieldErrorMessage";
 import { SessionNotKeptAlert } from "./SessionNotKeptAlert";
 import { useSessionEntry } from "./use-session-entry";
 import { useSingleFlight } from "@/lib/single-flight";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 
 export function RegisterForm() {
+  const locale = useInterfaceLanguage();
+  const t = (value: string) => interfaceCopy(locale, value);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -41,7 +45,9 @@ export function RegisterForm() {
         name: name.trim() === "" ? undefined : name.trim(),
       }),
     onFailure: (err) =>
-      setError(authFieldError(err, "Could not create the account. Try again.")),
+      setError(
+        authFieldError(err, t("Could not create the account. Try again.")),
+      ),
   });
   const submitOnce = useSingleFlight(mutation);
 
@@ -61,14 +67,16 @@ export function RegisterForm() {
       <Card>
         <CardHeader>
           <CardTitle asChild>
-            <h1>Create account</h1>
+            <h1>{t("Create account")}</h1>
           </CardTitle>
-          <CardDescription>Set up your AsoBeast workspace.</CardDescription>
+          <CardDescription>
+            {t("Set up your AsoBeast workspace.")}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={submit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
-              <Label htmlFor="name">Name (optional)</Label>
+              <Label htmlFor="name">{t("Name (optional)")}</Label>
               <Input
                 id="name"
                 name="name"
@@ -78,7 +86,7 @@ export function RegisterForm() {
               />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("Email")}</Label>
               <Input
                 id="email"
                 name="email"
@@ -94,7 +102,7 @@ export function RegisterForm() {
               <FieldErrorMessage error={error} field="email" id="email-error" />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("Password")}</Label>
               <Input
                 id="password"
                 name="password"
@@ -111,7 +119,9 @@ export function RegisterForm() {
                 required
               />
               <p id="password-rule" className="text-xs text-muted-foreground">
-                {PASSWORD_RULE}
+                {locale === "zh-CN"
+                  ? "密码须包含至少 10 个非空白字符。"
+                  : PASSWORD_RULE}
               </p>
               <FieldErrorMessage
                 error={error}
@@ -131,15 +141,15 @@ export function RegisterForm() {
               disabled={mutation.isPending || sessionDropped}
             >
               {mutation.isPending ? <Loader2 className="animate-spin" /> : null}
-              Create account
+              {t("Create account")}
             </Button>
           </form>
         </CardContent>
       </Card>
       <p className="text-center text-sm text-muted-foreground">
-        Already have an account?{" "}
+        {t("Already have an account?")}{" "}
         <Link href="/login" className="font-medium underline">
-          Sign in
+          {t("Sign in")}
         </Link>
       </p>
     </div>

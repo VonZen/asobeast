@@ -9,6 +9,8 @@ import {
   type ChartKey,
 } from "@asobeast/shared";
 import { SelectFilter } from "@/components/data-table/SelectFilter";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 import { Tabs, TabsList, TabsOption } from "@/components/ui/tabs";
 import type { ChartView } from "@/lib/search-params";
 import { ChartCountry } from "./ChartCountry";
@@ -59,6 +61,7 @@ export function ChartGenreFilter({ chart, onChange }: ChartFilterProps) {
 }
 
 export function ChartKindFilter({ chart, view, onChange }: ChartFilterProps) {
+  const language = useInterfaceLanguage();
   if (view !== "table") return null;
   return (
     <Tabs
@@ -70,7 +73,7 @@ export function ChartKindFilter({ chart, view, onChange }: ChartFilterProps) {
       <TabsList aria-label="Chart">
         {CATEGORY_COLLECTIONS.map((collection) => (
           <TabsOption key={collection} value={collection}>
-            {COLLECTION_LABELS[collection]}
+            {interfaceCopy(language, COLLECTION_LABELS[collection])}
           </TabsOption>
         ))}
       </TabsList>
@@ -79,11 +82,15 @@ export function ChartKindFilter({ chart, view, onChange }: ChartFilterProps) {
 }
 
 export function ChartCompareFilter({ compare, onChange }: ChartFilterProps) {
+  const language = useInterfaceLanguage();
   return (
     <SelectFilter
-      title="Compare"
+      title={language === "zh-CN" ? "对比" : "Compare"}
       value={compare}
-      options={COMPARE_OPTIONS}
+      options={COMPARE_OPTIONS.map((option) => ({
+        ...option,
+        label: interfaceCopy(language, option.label),
+      }))}
       onChange={(next) => onChange({ compare: next })}
     />
   );
@@ -99,10 +106,11 @@ export function ChartLayoutFilter({ view, onChange }: ChartFilterProps) {
 }
 
 export function ChartDeviceFilter({ chart, onChange }: ChartFilterProps) {
+  const language = useInterfaceLanguage();
   if (!showsDevice(chart.store)) return null;
   return (
     <SelectFilter
-      title="Device"
+      title={language === "zh-CN" ? "设备" : "Device"}
       value={chart.device}
       options={chartDevicesOf(chart.store).map((device) => ({
         value: device,

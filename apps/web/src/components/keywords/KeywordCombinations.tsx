@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { Suspense } from "react";
 import { ChevronDown } from "lucide-react";
 import { useQueryState, useQueryStates } from "nuqs";
@@ -57,7 +59,7 @@ export function KeywordCombinations({
               onClick={() => void setParams({ open: !params.open })}
               className="flex w-full items-center justify-between gap-4 text-left"
             >
-              Keyword combinations
+              <LocalizedText en="Keyword combinations" />
               <ChevronDown
                 aria-hidden
                 className={cn(

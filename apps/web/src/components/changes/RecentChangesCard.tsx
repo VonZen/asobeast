@@ -1,6 +1,8 @@
 "use client";
 
 import { Suspense, useState } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { formatDate } from "@/lib/format";
 import Link from "next/link";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useQueryState } from "nuqs";
@@ -41,6 +43,7 @@ const ownedBy =
     owner === "all" || event.isCompetitor === (owner === "competitors");
 
 function RecentChangesList({ today }: { today: string }) {
+  const language = useInterfaceLanguage();
   const { data } = useSuspenseQuery(recentChangesOptions());
   const { data: portfolio } = useSuspenseQuery(portfolioOptions);
   const [owner, setOwner] = useQueryState("changes", changeOwnerParser);
@@ -49,8 +52,12 @@ function RecentChangesList({ today }: { today: string }) {
   if (data.events.length === 0) {
     return (
       <EmptyState
-        title="No changes yet"
-        body="Metadata changes across your portfolio appear after daily refreshes."
+        title={language === "zh-CN" ? "暂无变化" : "No changes yet"}
+        body={
+          language === "zh-CN"
+            ? "每日刷新后，所有 App 的元数据变化会显示在这里。"
+            : "Metadata changes across your portfolio appear after daily refreshes."
+        }
       />
     );
   }
@@ -76,7 +83,11 @@ function RecentChangesList({ today }: { today: string }) {
           <TabsList>
             {OWNER_TABS.map((tab) => (
               <TabsOption key={tab.value} value={tab.value}>
-                {tab.label}
+                {language === "zh-CN"
+                  ? { all: "全部", yours: "你的 App", competitors: "竞品" }[
+                      tab.value
+                    ]
+                  : tab.label}
               </TabsOption>
             ))}
           </TabsList>
@@ -85,13 +96,25 @@ function RecentChangesList({ today }: { today: string }) {
 
       {events.length === 0 ? (
         <p className="text-body text-muted-foreground">
-          {EMPTY_FILTER[active]}
+          {language === "zh-CN"
+            ? {
+                all: "此时间范围内没有变化。",
+                yours: "此时间范围内你的 App 没有变化。",
+                competitors: "此时间范围内竞品没有变化。",
+              }[active]
+            : EMPTY_FILTER[active]}
         </p>
       ) : (
         groupChangesByDay(shown, today).map((group) => (
           <section key={group.day} className="flex flex-col gap-1">
             <h3 className="text-label text-muted-foreground uppercase">
-              {group.label}
+              {language === "zh-CN"
+                ? group.label === "Today"
+                  ? "今天"
+                  : group.label === "Yesterday"
+                    ? "昨天"
+                    : formatDate(group.day, language)
+                : group.label}
             </h3>
             <div className="divide-y">
               {group.events.map((event) => (
@@ -122,7 +145,7 @@ function RecentChangesList({ today }: { today: string }) {
           className="self-start"
           onClick={() => setExpanded(true)}
         >
-          Show {hidden} more
+          {language === "zh-CN" ? `再显示 ${hidden} 条` : `Show ${hidden} more`}
         </Button>
       ) : null}
     </div>
@@ -130,13 +153,16 @@ function RecentChangesList({ today }: { today: string }) {
 }
 
 export function RecentChangesCard({ today }: { today: string }) {
+  const language = useInterfaceLanguage();
   return (
     <Card>
       <CardHeader>
         <CardTitle asChild>
-          <h2>Recent changes</h2>
+          <h2>{language === "zh-CN" ? "最近变化" : "Recent changes"}</h2>
         </CardTitle>
-        <CardDescription>Across your portfolio</CardDescription>
+        <CardDescription>
+          {language === "zh-CN" ? "所有 App" : "Across your portfolio"}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Suspense fallback={<ChangeTimelineSkeleton />}>

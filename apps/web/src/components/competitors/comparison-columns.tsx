@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { createColumnHelper } from "@tanstack/react-table";
 import { formatRankPosition } from "@asobeast/shared";
 import type { KeywordComparisonRow } from "@asobeast/shared";
@@ -83,7 +85,9 @@ export function PositionCell({
         className={cn(pill, "text-muted-foreground")}
       >
         <span aria-hidden>—</span>
-        <span className="sr-only">Not checked yet</span>
+        <span className="sr-only">
+          <LocalizedText en="Not checked yet" />
+        </span>
       </span>
     );
   }
@@ -94,7 +98,9 @@ export function PositionCell({
         className={cn(pill, "numeric font-mono text-muted-foreground")}
       >
         <span aria-hidden>{formatRankPosition(value)}</span>
-        <span className="sr-only">Not ranking</span>
+        <span className="sr-only">
+          <LocalizedText en="Not ranking" />
+        </span>
       </span>
     );
   }

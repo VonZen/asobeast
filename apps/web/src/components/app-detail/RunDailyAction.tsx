@@ -6,7 +6,8 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { CalendarClock, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { Button } from "@/components/ui/button";
 import { ApiError, runDaily } from "@/lib/api";
 import { pluralize } from "@/lib/format";
@@ -15,6 +16,7 @@ import { queuedToast } from "@/lib/queued-toast";
 import { useSingleFlight } from "@/lib/single-flight";
 
 export function RunDailyAction({ appId }: { appId: string }) {
+  const language = useInterfaceLanguage();
   const queryClient = useQueryClient();
   const busy = useIsMutating({ mutationKey: ["app-action", appId] }) > 0;
 
@@ -26,10 +28,17 @@ export function RunDailyAction({ appId }: { appId: string }) {
       const { apps, keywords, categories, reviews } = result.enqueued;
       const jobs = apps + keywords + categories + reviews;
       if (jobs === 0) {
-        toast.info("Nothing new to queue", {
-          description:
-            "Today's checks for this app are already queued, running or done.",
-        });
+        toast.info(
+          language === "zh-CN"
+            ? "没有新的任务需要加入队列"
+            : "Nothing new to queue",
+          {
+            description:
+              language === "zh-CN"
+                ? "此 App 今天的检查已在队列中、正在运行或已完成。"
+                : "Today's checks for this app are already queued, running or done.",
+          },
+        );
         return;
       }
       queuedToast(
@@ -41,7 +50,11 @@ export function RunDailyAction({ appId }: { appId: string }) {
     },
     onError: (error) => {
       toast.error(
-        error instanceof ApiError ? error.envelope.message : "Run daily failed",
+        error instanceof ApiError
+          ? error.envelope.message
+          : language === "zh-CN"
+            ? "每日任务运行失败"
+            : "Run daily failed",
       );
     },
   });
@@ -54,14 +67,16 @@ export function RunDailyAction({ appId }: { appId: string }) {
       onClick={() => {
         if (!busy) runOnce();
       }}
-      aria-label="Run daily"
+      aria-label={language === "zh-CN" ? "运行每日任务" : "Run daily"}
     >
       {mutation.isPending ? (
         <Loader2 className="animate-spin" />
       ) : (
         <CalendarClock />
       )}
-      <span className="hidden lg:inline">Run daily</span>
+      <span className="hidden lg:inline">
+        {language === "zh-CN" ? "运行每日任务" : "Run daily"}
+      </span>
     </Button>
   );
 }

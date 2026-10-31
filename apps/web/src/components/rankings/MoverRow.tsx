@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { formatRankPosition } from "@asobeast/shared";
@@ -68,13 +69,18 @@ export function MoverList<T extends KeywordMover>({
   renderContext?: (mover: T) => ReactNode;
   rowClassName?: string;
 }) {
+  const language = useInterfaceLanguage();
   return (
     <div className="flex min-w-0 flex-col gap-2">
       {title ? (
         <p className="text-sm font-medium text-muted-foreground">{title}</p>
       ) : null}
       {movers.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No movement this week.</p>
+        <p className="text-sm text-muted-foreground">
+          {language === "zh-CN"
+            ? "本周没有排名变化。"
+            : "No movement this week."}
+        </p>
       ) : (
         <ul className="flex flex-col gap-0.5">
           {movers.map((mover) => {

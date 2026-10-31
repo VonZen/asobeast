@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import type { RefObject } from "react";
 import type { SnapshotDiffResult } from "@asobeast/shared";
 import {
@@ -61,14 +63,19 @@ export function SnapshotDiffDialog({
           {changes.length > 0 ? (
             <Table>
               <TableCaption className="sr-only">
-                Store listing fields that changed since the last snapshot, with
-                before and after values.
+                <LocalizedText en="Store listing fields that changed since the last snapshot, with before and after values." />
               </TableCaption>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Field</TableHead>
-                  <TableHead>Before</TableHead>
-                  <TableHead>After</TableHead>
+                  <TableHead>
+                    <LocalizedText en="Field" />
+                  </TableHead>
+                  <TableHead>
+                    <LocalizedText en="Before" />
+                  </TableHead>
+                  <TableHead>
+                    <LocalizedText en="After" />
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -94,7 +101,7 @@ export function SnapshotDiffDialog({
             </Table>
           ) : (
             <p className="text-sm text-muted-foreground">
-              No changes detected.
+              <LocalizedText en="No changes detected." />
             </p>
           )}
         </DialogBody>

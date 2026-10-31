@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -63,7 +65,9 @@ function Row({
 export function PrimitiveGallery() {
   return (
     <section aria-label="Primitives" className="flex flex-col gap-6">
-      <h2 className="text-sm font-semibold">Primitives</h2>
+      <h2 className="text-sm font-semibold">
+        <LocalizedText en="Primitives" />
+      </h2>
 
       <Row title="button variants">
         {BUTTON_VARIANTS.map((variant) => (
@@ -108,7 +112,9 @@ export function PrimitiveGallery() {
       </Row>
 
       <Row title="form controls">
-        <Label htmlFor="token-input">Label</Label>
+        <Label htmlFor="token-input">
+          <LocalizedText en="Label" />
+        </Label>
         <Input
           id="token-input"
           placeholder="Placeholder"
@@ -157,9 +163,13 @@ export function PrimitiveGallery() {
 
       <Row title="separator">
         <div className="flex w-64 flex-col gap-2">
-          <span className="text-sm">Above</span>
+          <span className="text-sm">
+            <LocalizedText en="Above" />
+          </span>
           <Separator />
-          <span className="text-sm">Below</span>
+          <span className="text-sm">
+            <LocalizedText en="Below" />
+          </span>
         </div>
       </Row>
 
@@ -167,17 +177,27 @@ export function PrimitiveGallery() {
         <code className="text-[11px] text-muted-foreground">alerts</code>
         <div className="flex max-w-md flex-col gap-2">
           <Alert>
-            <AlertTitle>Default</AlertTitle>
-            <AlertDescription>A neutral notice.</AlertDescription>
+            <AlertTitle>
+              <LocalizedText en="Default" />
+            </AlertTitle>
+            <AlertDescription>
+              <LocalizedText en="A neutral notice." />
+            </AlertDescription>
           </Alert>
           <Alert variant="success">
-            <AlertTitle>Success</AlertTitle>
+            <AlertTitle>
+              <LocalizedText en="Success" />
+            </AlertTitle>
           </Alert>
           <Alert variant="warning">
-            <AlertTitle>Warning</AlertTitle>
+            <AlertTitle>
+              <LocalizedText en="Warning" />
+            </AlertTitle>
           </Alert>
           <Alert variant="destructive">
-            <AlertTitle>Destructive</AlertTitle>
+            <AlertTitle>
+              <LocalizedText en="Destructive" />
+            </AlertTitle>
           </Alert>
         </div>
       </div>
@@ -188,18 +208,26 @@ export function PrimitiveGallery() {
         </code>
         <Card className="max-w-lg">
           <CardHeader>
-            <CardTitle>Tracked keywords</CardTitle>
+            <CardTitle>
+              <LocalizedText en="Tracked keywords" />
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
               <TableCaption className="sr-only">
-                Primitive table sample with a numeric column.
+                <LocalizedText en="Primitive table sample with a numeric column." />
               </TableCaption>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Keyword</TableHead>
-                  <TableHead>Position</TableHead>
-                  <TableHead>Popularity</TableHead>
+                  <TableHead>
+                    <LocalizedText en="Keyword" />
+                  </TableHead>
+                  <TableHead>
+                    <LocalizedText en="Position" />
+                  </TableHead>
+                  <TableHead>
+                    <LocalizedText en="Popularity" />
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

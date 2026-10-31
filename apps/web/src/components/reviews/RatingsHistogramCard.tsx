@@ -1,6 +1,7 @@
 "use client";
 
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { RATING_STARS, type RatingCounts } from "@asobeast/shared";
 import {
   Card,
@@ -22,6 +23,7 @@ function HistogramBars({
   counts: RatingCounts;
   total: number;
 }) {
+  const language = useInterfaceLanguage();
   return (
     <ul className="flex flex-col gap-2">
       {[...RATING_STARS].reverse().map((star) => {
@@ -30,14 +32,16 @@ function HistogramBars({
         return (
           <li key={star} className="flex items-center gap-3 text-sm">
             <span className="w-14 shrink-0 numeric font-mono whitespace-nowrap text-muted-foreground">
-              {star} star
+              {star} {language === "zh-CN" ? "星" : "star"}
             </span>
             <span
               role="meter"
               aria-valuenow={Math.round(percent)}
               aria-valuemin={0}
               aria-valuemax={100}
-              aria-label={`${star} star ratings`}
+              aria-label={
+                language === "zh-CN" ? `${star} 星评分` : `${star} star ratings`
+              }
               className="h-2 flex-1 overflow-hidden rounded-full bg-muted"
             >
               <span
@@ -56,6 +60,7 @@ function HistogramBars({
 }
 
 export function RatingsHistogramCard({ id }: { id: string }) {
+  const language = useInterfaceLanguage();
   const { data } = useSuspenseQuery(ratingsHistogramOptions(id));
 
   if (!data.available || data.counts === null || data.total === null) {
@@ -65,10 +70,18 @@ export function RatingsHistogramCard({ id }: { id: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardDescription>Ratings distribution</CardDescription>
+        <CardDescription>
+          {language === "zh-CN" ? "评分分布" : "Ratings distribution"}
+        </CardDescription>
         <CardTitle>
-          {pluralize(data.total, "rating")}
-          {data.capturedAt ? ` as of ${formatDate(data.capturedAt)}` : ""}
+          {language === "zh-CN"
+            ? `${formatNumber(data.total)} 条评分`
+            : pluralize(data.total, "rating")}
+          {data.capturedAt
+            ? language === "zh-CN"
+              ? `，截至 ${formatDate(data.capturedAt, language)}`
+              : ` as of ${formatDate(data.capturedAt)}`
+            : ""}
         </CardTitle>
       </CardHeader>
       <CardContent>

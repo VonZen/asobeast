@@ -8,6 +8,8 @@ import type { ActionPriority } from "@asobeast/shared";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { ACTION_PRIORITY_LABEL } from "./action-copy";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 
 const PRIORITY_ICON = {
   critical: AlertOctagon,
@@ -32,6 +34,7 @@ export function ActionPriorityBadge({
   priority: ActionPriority;
   compact?: boolean;
 }) {
+  const locale = useInterfaceLanguage();
   const Icon = PRIORITY_ICON[priority];
   return (
     <Badge
@@ -40,7 +43,7 @@ export function ActionPriorityBadge({
     >
       <Icon aria-hidden className="size-3.5" />
       <span className={cn(compact && "sr-only @2xl/queue:not-sr-only")}>
-        {ACTION_PRIORITY_LABEL[priority]}
+        {interfaceCopy(locale, ACTION_PRIORITY_LABEL[priority])}
       </span>
     </Badge>
   );

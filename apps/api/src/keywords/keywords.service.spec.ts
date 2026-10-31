@@ -13,7 +13,12 @@ import { MarketListingRequests } from './market-listing.requests';
 
 const quotaOff = (prisma: PrismaService) =>
   new QuotaService(prisma, new WorkspaceContext(), {
-    get: (key: string) => (key === 'BILLING_ENABLED' ? false : null),
+    get: (key: string) =>
+      key === 'BILLING_ENABLED'
+        ? false
+        : key === 'SELF_HOSTED_COMPETITORS_PER_APP'
+          ? undefined
+          : null,
   } as unknown as ConfigService<Env, true>);
 
 describe('KeywordsService.syncFromSnapshot', () => {

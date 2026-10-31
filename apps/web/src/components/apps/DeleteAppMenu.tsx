@@ -1,9 +1,11 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { MoreVertical, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -61,7 +63,7 @@ export function DeleteAppMenu({ id, name }: { id: string; name: string }) {
             onSelect={() => setConfirmOpen(true)}
           >
             <Trash2 />
-            Delete app
+            <LocalizedText en="Delete app" />
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -71,13 +73,12 @@ export function DeleteAppMenu({ id, name }: { id: string; name: string }) {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete {name}?</AlertDialogTitle>
             <AlertDialogDescription>
-              This permanently removes the app and all of its snapshots, tracked
-              keywords and ranking history. This cannot be undone.
+              <LocalizedText en="This permanently removes the app and all of its snapshots, tracked keywords and ranking history. This cannot be undone." />
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={mutation.isPending}>
-              Cancel
+              <LocalizedText en="Cancel" />
             </AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"

@@ -4,6 +4,7 @@ import { Suspense, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { BellOff, ListChecks, Loader2 } from "lucide-react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -33,6 +34,7 @@ function FollowRow({
   onNavigate: () => void;
   onSettled: (stop: HTMLElement | null) => void;
 }) {
+  const zh = useInterfaceLanguage() === "zh-CN";
   const stop = useRef<HTMLButtonElement>(null);
   const handOff = () => onSettled(stop.current);
   const mutation = useUnfollowChart(handOff, handOff);
@@ -58,7 +60,7 @@ function FollowRow({
         ref={stop}
         variant="ghost"
         size="icon-sm"
-        aria-label={`Stop following ${title}`}
+        aria-label={zh ? `取消关注${title}` : `Stop following ${title}`}
         aria-disabled={mutation.isPending || undefined}
         onClick={() =>
           unfollowOnce(category.follows.map((follow) => follow.id))
@@ -75,6 +77,7 @@ function FollowRow({
 }
 
 function FollowList({ onNavigate }: { onNavigate: () => void }) {
+  const zh = useInterfaceLanguage() === "zh-CN";
   const { data: follows } = useSuspenseQuery(chartFollowsOptions);
   const handOffFocus = useFocusAfterCommit();
   const categories = followedCategories(follows);
@@ -84,13 +87,16 @@ function FollowList({ onNavigate }: { onNavigate: () => void }) {
     <div className="flex flex-col gap-2">
       {limit === undefined ? null : (
         <p className="text-caption text-muted-foreground">
-          {formatQuotaUsage({ used: categories.length, limit }, "followed")}
+          {zh
+            ? `已关注 ${categories.length} / ${limit} 个榜单类别`
+            : formatQuotaUsage({ used: categories.length, limit }, "followed")}
         </p>
       )}
       {categories.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          No categories followed yet. Follow a category to have the daily run
-          capture its charts.
+          {zh
+            ? "尚未关注任何榜单类别。关注后，每日采集任务将自动记录相关排行榜。"
+            : "No categories followed yet. Follow a category to have the daily run capture its charts."}
         </p>
       ) : (
         <ul className="-mx-2 flex max-h-80 flex-col gap-0.5 overflow-y-auto">
@@ -111,6 +117,7 @@ function FollowList({ onNavigate }: { onNavigate: () => void }) {
 }
 
 export function FollowedCharts() {
+  const zh = useInterfaceLanguage() === "zh-CN";
   const [open, setOpen] = useState(false);
   const titleId = useId();
   const descriptionId = useId();
@@ -120,7 +127,7 @@ export function FollowedCharts() {
       <PopoverTrigger asChild>
         <Button variant="outline">
           <ListChecks aria-hidden />
-          Followed charts
+          {zh ? "已关注的榜单" : "Followed charts"}
         </Button>
       </PopoverTrigger>
       <PopoverContent
@@ -130,9 +137,13 @@ export function FollowedCharts() {
         aria-describedby={descriptionId}
       >
         <PopoverHeader>
-          <PopoverTitle id={titleId}>Followed charts</PopoverTitle>
+          <PopoverTitle id={titleId}>
+            {zh ? "已关注的榜单" : "Followed charts"}
+          </PopoverTitle>
           <PopoverDescription id={descriptionId}>
-            The daily run captures these every day.
+            {zh
+              ? "每日任务会自动采集这些榜单。"
+              : "The daily run captures these every day."}
           </PopoverDescription>
         </PopoverHeader>
         <Suspense fallback={<Skeleton className="h-16 w-full" />}>

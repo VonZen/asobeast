@@ -2,6 +2,8 @@
 
 import type { FormEvent, ReactNode } from "react";
 import { Loader2, Plus } from "lucide-react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { componentCopy } from "@/lib/component-copy";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -37,21 +39,26 @@ export function AlertChannelDialog({
   trigger?: ReactNode;
   children: ReactNode;
 }) {
+  const locale = useInterfaceLanguage();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
         {trigger ?? (
           <Button variant="outline" size="sm">
             <Plus />
-            {label}
+            {componentCopy(locale, label)}
           </Button>
         )}
       </DialogTrigger>
       <DialogContent>
         <form onSubmit={onSubmit} className="flex min-h-0 flex-col gap-4">
           <DialogHeader>
-            <DialogTitle>{label}</DialogTitle>
-            <DialogDescription>{description}</DialogDescription>
+            <DialogTitle>{componentCopy(locale, label)}</DialogTitle>
+            <DialogDescription>
+              {typeof description === "string"
+                ? componentCopy(locale, description)
+                : description}
+            </DialogDescription>
           </DialogHeader>
 
           <DialogBody>
@@ -59,7 +66,7 @@ export function AlertChannelDialog({
 
             {error ? (
               <p role="alert" className="text-sm text-destructive">
-                {error}
+                {componentCopy(locale, error)}
               </p>
             ) : null}
           </DialogBody>
@@ -67,7 +74,7 @@ export function AlertChannelDialog({
           <DialogFooter>
             <Button type="submit" aria-disabled={pending || undefined}>
               {pending ? <Loader2 className="animate-spin" /> : null}
-              {submitLabel}
+              {componentCopy(locale, submitLabel)}
             </Button>
           </DialogFooter>
         </form>

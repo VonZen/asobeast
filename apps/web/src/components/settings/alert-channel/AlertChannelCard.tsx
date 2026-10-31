@@ -1,6 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 import {
   Card,
   CardContent,
@@ -18,12 +20,13 @@ export function AlertChannelCard({
   action?: ReactNode;
   children: ReactNode;
 }) {
+  const locale = useInterfaceLanguage();
   return (
     <Card>
       <CardHeader className="flex-row items-start justify-between gap-4">
         <div className="flex flex-col gap-1.5">
-          <CardDescription>Alerts</CardDescription>
-          <CardTitle>{title}</CardTitle>
+          <CardDescription>{interfaceCopy(locale, "Alerts")}</CardDescription>
+          <CardTitle>{interfaceCopy(locale, title)}</CardTitle>
         </div>
         {action}
       </CardHeader>

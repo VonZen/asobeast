@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { Button } from "@/components/ui/button";
 import type { ClosedAdminAccess } from "@/lib/admin-access";
 
@@ -23,6 +26,17 @@ const NOTICES: Record<
 
 export function AdminAccessNotice({ access }: { access: ClosedAdminAccess }) {
   const { title, body, offersPlans } = NOTICES[access];
+  const locale = useInterfaceLanguage();
+  const zh = locale === "zh-CN";
+  const translated = access === "needs-plan"
+    ? {
+        title: "工作区需要有效套餐才能访问管理后台",
+        body: "只有管理员所属工作区拥有有效套餐时，才能访问管理页面、队列面板、API 文档和指标接口。当前工作区没有有效套餐，因此这些地址会返回未找到。自托管且启用计费的实例也可以在数据库中为初始工作区设置套餐。",
+      }
+    : {
+        title: "验证邮箱后即可访问管理后台",
+        body: "验证邮箱后，工作区的免费试用将开始，同时开放管理后台。请使用邮件中的验证链接，或通过上方横幅重新发送验证邮件。",
+      };
 
   return (
     <section
@@ -31,19 +45,19 @@ export function AdminAccessNotice({ access }: { access: ClosedAdminAccess }) {
     >
       <div className="flex flex-col gap-1">
         <h2 id="admin-access-title" className="font-medium">
-          {title}
+          {zh ? translated.title : title}
         </h2>
-        <p className="max-w-lg text-body text-muted-foreground">{body}</p>
+        <p className="max-w-lg text-body text-muted-foreground">{zh ? translated.body : body}</p>
       </div>
       {offersPlans ? (
         <div className="flex flex-wrap justify-center gap-2">
           <Button asChild>
-            <Link href="/upgrade">Choose a plan</Link>
+            <Link href="/upgrade">{zh ? "选择套餐" : "Choose a plan"}</Link>
           </Button>
           <Button asChild variant="outline">
             <a href={GUIDE_URL} target="_blank" rel="noreferrer">
-              Read the guide
-              <span className="sr-only"> (opens in a new tab)</span>
+              {zh ? "阅读指南" : "Read the guide"}
+              <span className="sr-only">{zh ? "（在新标签页打开）" : " (opens in a new tab)"}</span>
             </a>
           </Button>
         </div>

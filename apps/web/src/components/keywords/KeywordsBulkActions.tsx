@@ -1,9 +1,11 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useRef, useState, type RefObject } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Pause, Play, Trash2, X } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import type { KeywordBulkAction, TrackedKeywordItem } from "@asobeast/shared";
 import {
   AlertDialog,
@@ -76,7 +78,7 @@ function ConfirmRemove({
       <AlertDialogTrigger asChild>
         <Button variant="outline" size="sm" aria-disabled={busy || undefined}>
           <Trash2 />
-          Remove
+          <LocalizedText en="Remove" />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent
@@ -89,8 +91,7 @@ function ConfirmRemove({
             Stop tracking {pluralize(count, "keyword")}?
           </AlertDialogTitle>
           <AlertDialogDescription>
-            Ranking history for the selected keywords stops accruing. You can
-            add them again later, but the gap in history will remain.
+            <LocalizedText en="Ranking history for the selected keywords stops accruing. You can add them again later, but the gap in history will remain." />
           </AlertDialogDescription>
         </AlertDialogHeader>
         <ConfirmActionFooter
@@ -184,7 +185,7 @@ export function KeywordsBulkActions({
           onClick={() => run("pause")}
         >
           <Pause />
-          Pause
+          <LocalizedText en="Pause" />
         </Button>
         <Button
           variant="outline"
@@ -193,7 +194,7 @@ export function KeywordsBulkActions({
           onClick={() => run("resume")}
         >
           <Play />
-          Activate
+          <LocalizedText en="Activate" />
         </Button>
         <BulkTagPopover
           keywords={selectedKeywords}
@@ -221,7 +222,7 @@ export function KeywordsBulkActions({
           aria-label="Clear selection"
         >
           <X />
-          Clear
+          <LocalizedText en="Clear" />
         </Button>
       </div>
     </div>

@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -12,7 +14,7 @@ export function PrintReportButton() {
       onClick={() => window.print()}
     >
       <Printer />
-      Print report
+      <LocalizedText en="Print report" />
     </Button>
   );
 }

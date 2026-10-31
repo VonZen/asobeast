@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useRef, type ReactNode, type RefObject } from "react";
 import Link from "next/link";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
@@ -88,7 +90,7 @@ function PositionHistoryControls({
         {image}
         <Button asChild variant="link" size="sm" className="px-0">
           <Link href={rankingsHistoryHref(appId, keywordId, range)}>
-            Open in Rankings
+            <LocalizedText en="Open in Rankings" />
           </Link>
         </Button>
       </div>

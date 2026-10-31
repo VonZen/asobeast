@@ -1,3 +1,4 @@
+import { LocalizedText } from "@/components/layout/LocalizedText";
 import { Badge } from "@/components/ui/badge";
 import { GradedNumber } from "@/components/ui/graded";
 import { TableCell, TableRow } from "@/components/ui/table";
@@ -59,8 +60,16 @@ export function MarketRatingRow({
         <span className="flex flex-wrap items-center gap-2">
           <span className="numeric font-mono">{row.country.toUpperCase()}</span>
           <span>{name}</span>
-          {row.home ? <Badge variant="secondary">Home</Badge> : null}
-          {selected ? <Badge variant="info">Selected</Badge> : null}
+          {row.home ? (
+            <Badge variant="secondary">
+              <LocalizedText en="Home" />
+            </Badge>
+          ) : null}
+          {selected ? (
+            <Badge variant="info">
+              <LocalizedText en="Selected" />
+            </Badge>
+          ) : null}
         </span>
       </TableCell>
       <TableCell className="text-right">

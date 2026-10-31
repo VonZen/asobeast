@@ -1,6 +1,8 @@
 import { SearchX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 
 export function FilteredEmpty({
   title,
@@ -11,15 +13,16 @@ export function FilteredEmpty({
   body?: string;
   onClear: () => void;
 }) {
+  const locale = useInterfaceLanguage();
   return (
     <EmptyState
       icon={SearchX}
-      title={title}
-      body={body}
+      title={interfaceCopy(locale, title)}
+      body={interfaceCopy(locale, body)}
       className="border-0"
       action={
         <Button variant="outline" size="sm" onClick={onClear}>
-          Clear filters
+          {interfaceCopy(locale, "Clear filters")}
         </Button>
       }
     />

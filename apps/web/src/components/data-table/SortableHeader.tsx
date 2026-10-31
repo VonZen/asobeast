@@ -4,6 +4,8 @@ import type { ComponentProps, ReactNode } from "react";
 import type { SortDirection } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { componentCopy } from "@/lib/component-copy";
 
 interface SortableColumn {
   getIsSorted: () => SortDirection | false;
@@ -19,6 +21,7 @@ export function SortableHeader({
   column: SortableColumn;
   label: ReactNode;
 }) {
+  const locale = useInterfaceLanguage();
   const sorted = column.getIsSorted();
   const Icon =
     sorted === "asc" ? ArrowUp : sorted === "desc" ? ArrowDown : ArrowUpDown;
@@ -33,7 +36,7 @@ export function SortableHeader({
         className,
       )}
     >
-      {label}
+      {typeof label === "string" ? componentCopy(locale, label) : label}
       <Icon className={cn("size-3.5", !sorted && "opacity-40")} aria-hidden />
     </button>
   );

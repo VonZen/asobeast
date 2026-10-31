@@ -1,6 +1,8 @@
 "use client";
 
 import { useQueries, useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 import { CheckCircle2, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -80,6 +82,7 @@ function ActiveSetup({
   setup: AppSetupState;
   apply: Apply;
 }) {
+  const language = useInterfaceLanguage();
   const router = useRouter();
   const competitors = useQuery(competitorsOptions(app.id));
   const collecting = useFirstRunDiscovery(app.id);
@@ -126,8 +129,9 @@ function ActiveSetup({
           states={states}
         />
         <p className="text-sm text-muted-foreground">
-          Three short steps. Each one is done once its number is reached, or
-          skipped when it does not apply.
+          {language === "zh-CN"
+            ? "只需三个简短步骤。达到目标数量即可完成，也可以跳过不适用的步骤。"
+            : "Three short steps. Each one is done once its number is reached, or skipped when it does not apply."}
         </p>
       </div>
       <CompetitorsStep
@@ -185,18 +189,23 @@ function SetupActions({
   onDismiss: () => void;
   onComplete: () => void;
 }) {
+  const language = useInterfaceLanguage();
   return (
     <>
       {!ready ? (
         <Alert role="status" className="items-center">
           <AlertDescription className="flex flex-wrap items-center gap-3">
-            {failed
-              ? "Some live counts could not be loaded."
-              : "Finish loading every live count before completing setup."}
+            {language === "zh-CN"
+              ? failed
+                ? "部分实时数量无法加载。"
+                : "完成设置前，请等待所有实时数量加载完成。"
+              : failed
+                ? "Some live counts could not be loaded."
+                : "Finish loading every live count before completing setup."}
             {failed ? (
               <Button size="sm" variant="outline" onClick={onRetry}>
                 <RefreshCw />
-                Retry
+                {language === "zh-CN" ? "重试" : "Retry"}
               </Button>
             ) : null}
           </AlertDescription>
@@ -204,11 +213,11 @@ function SetupActions({
       ) : null}
       <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-6">
         <Button variant="ghost" onClick={onDismiss}>
-          Dismiss setup
+          {language === "zh-CN" ? "关闭设置向导" : "Dismiss setup"}
         </Button>
         <Button disabled={!completable} onClick={onComplete}>
           <CheckCircle2 />
-          Complete setup
+          {language === "zh-CN" ? "完成设置" : "Complete setup"}
         </Button>
       </div>
     </>
@@ -235,6 +244,7 @@ function TerminalStatus({
   completed: boolean;
   onRestart: () => void;
 }) {
+  const language = useInterfaceLanguage();
   if (!completed) {
     return (
       <SetupStatus
@@ -248,17 +258,23 @@ function TerminalStatus({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Setup complete</CardTitle>
+        <CardTitle>
+          {language === "zh-CN" ? "设置完成" : "Setup complete"}
+        </CardTitle>
         <CardDescription>
-          Positions, competitors and countries are being collected.
+          {language === "zh-CN"
+            ? "正在采集排名、竞品和国家或地区数据。"
+            : "Positions, competitors and countries are being collected."}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-wrap gap-2">
         <Button asChild>
-          <Link href={`/apps/${appId}`}>Open the overview</Link>
+          <Link href={`/apps/${appId}`}>
+            {language === "zh-CN" ? "打开概览" : "Open the overview"}
+          </Link>
         </Button>
         <Button variant="outline" onClick={onRestart}>
-          Restart setup
+          {language === "zh-CN" ? "重新开始设置" : "Restart setup"}
         </Button>
       </CardContent>
     </Card>
@@ -276,16 +292,21 @@ function SetupStatus({
   action: string;
   onAction: () => void;
 }) {
+  const language = useInterfaceLanguage();
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
+        <CardTitle>{interfaceCopy(language, title)}</CardTitle>
+        <CardDescription>
+          {interfaceCopy(language, description)}
+        </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-wrap gap-2">
-        <Button onClick={onAction}>{action}</Button>
+        <Button onClick={onAction}>{interfaceCopy(language, action)}</Button>
         <Button asChild variant="outline">
-          <Link href="/">Back to apps</Link>
+          <Link href="/">
+            {language === "zh-CN" ? "返回 App 列表" : "Back to apps"}
+          </Link>
         </Button>
       </CardContent>
     </Card>

@@ -12,6 +12,26 @@ const tiles = (summary = ACTION_SUMMARY) =>
   );
 
 describe("overviewTiles", () => {
+  it("localizes overview labels and preserves the same counts", () => {
+    const english = overviewTiles(ACTION_SUMMARY, ACTION_ACTIVITY, ACTIONS);
+    const chinese = overviewTiles(
+      ACTION_SUMMARY,
+      ACTION_ACTIVITY,
+      ACTIONS,
+      "zh-CN",
+    );
+    expect(chinese.map((tile) => tile.label)).toEqual([
+      "待处理",
+      "本周新增",
+      "已确认修复",
+      "已推迟",
+    ]);
+    expect(chinese.map((tile) => tile.value)).toEqual(
+      english.map((tile) => tile.value),
+    );
+    expect(chinese[0].note).toContain("紧急");
+  });
+
   it("counts the open actions by their open priorities", () => {
     expect(tiles().Open).toEqual({
       label: "Open",

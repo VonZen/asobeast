@@ -1,3 +1,6 @@
+"use client";
+
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import type {
   LocalizationReader,
   LocalizationReadRole,
@@ -17,7 +20,12 @@ export function ReadRoleBadge({
   role: LocalizationReadRole;
   prefix?: string;
 }) {
-  const label = READ_ROLE_LABELS[role];
+  const zh = useInterfaceLanguage() === "zh-CN";
+  const label = zh
+    ? role === "default"
+      ? "默认"
+      : "额外"
+    : READ_ROLE_LABELS[role];
   return (
     <Badge variant={ROLE_VARIANT[role]}>
       {prefix === undefined ? label : `${prefix} · ${label}`}
@@ -30,8 +38,13 @@ export function ReaderChips({
 }: {
   readers: readonly LocalizationReader[];
 }) {
+  const zh = useInterfaceLanguage() === "zh-CN";
   if (readers.length === 0) {
-    return <Badge variant="outline">Not read in your markets</Badge>;
+    return (
+      <Badge variant="outline">
+        {zh ? "当前市场不读取" : "Not read in your markets"}
+      </Badge>
+    );
   }
   return (
     <>

@@ -2,6 +2,7 @@
 
 import { Suspense } from "react";
 import Link from "next/link";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import type { ListingMarket } from "@asobeast/shared";
 import { useMarket } from "@/components/app-detail/use-market";
 import { CollapsedSectionsProvider } from "@/components/layout/CollapsedSections";
@@ -36,25 +37,29 @@ function RatingsTable({
   markets: readonly ListingMarket[];
   selected: string | undefined;
 }) {
+  const language = useInterfaceLanguage();
   const rows = marketRatingRows(markets);
   const total = ratingTotal(rows);
   return (
     <Table scrollLabel="Market ratings table" scrollFocus="overflow">
       <TableCaption>
-        Rating and number of ratings on the newest listing captured in each
-        market
+        {language === "zh-CN"
+          ? "各市场最新商品页的评分和评分数量"
+          : "Rating and number of ratings on the newest listing captured in each market"}
       </TableCaption>
       <TableHeader>
         <TableRow>
-          <TableHead scope="col">Market</TableHead>
-          <TableHead scope="col" className="text-right">
-            Average
+          <TableHead scope="col">
+            {language === "zh-CN" ? "市场" : "Market"}
           </TableHead>
           <TableHead scope="col" className="text-right">
-            Ratings
+            {language === "zh-CN" ? "平均评分" : "Average"}
           </TableHead>
           <TableHead scope="col" className="text-right">
-            Captured
+            {language === "zh-CN" ? "评分数" : "Ratings"}
+          </TableHead>
+          <TableHead scope="col" className="text-right">
+            {language === "zh-CN" ? "采集时间" : "Captured"}
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -70,7 +75,9 @@ function RatingsTable({
       {total ? (
         <TableFooter>
           <TableRow>
-            <TableCell>All listed markets</TableCell>
+            <TableCell>
+              {language === "zh-CN" ? "所有列出的市场" : "All listed markets"}
+            </TableCell>
             <TableCell className="text-right">
               <GradedNumber
                 value={formatRating(total.average)}
@@ -82,7 +89,9 @@ function RatingsTable({
               {formatNumber(total.count)}
             </TableCell>
             <TableCell className="text-right text-muted-foreground">
-              {pluralize(total.markets, "market")}
+              {language === "zh-CN"
+                ? `${total.markets} 个市场`
+                : pluralize(total.markets, "market")}
             </TableCell>
           </TableRow>
         </TableFooter>
@@ -92,16 +101,25 @@ function RatingsTable({
 }
 
 function SingleMarket({ id, canTrack }: { id: string; canTrack: boolean }) {
+  const language = useInterfaceLanguage();
   return (
     <EmptyState
       className="py-8"
-      title="Only one market so far"
-      body="The App Store keeps a rating for each storefront. Track a keyword in another market and the daily run captures the listing there, so its rating appears next to this one."
+      title={
+        language === "zh-CN" ? "目前只有一个市场" : "Only one market so far"
+      }
+      body={
+        language === "zh-CN"
+          ? "App Store 为每个商店市场分别记录评分。在其他市场追踪关键词后，每日任务会采集该市场的商品页，并在此处显示评分。"
+          : "The App Store keeps a rating for each storefront. Track a keyword in another market and the daily run captures the listing there, so its rating appears next to this one."
+      }
       action={
         canTrack ? (
           <Button asChild variant="outline">
             <Link href={`/apps/${id}/keywords`}>
-              Track keywords in another market
+              {language === "zh-CN"
+                ? "在其他市场追踪关键词"
+                : "Track keywords in another market"}
             </Link>
           </Button>
         ) : undefined
@@ -134,12 +152,13 @@ export function RatingsByMarketCard({
   canTrack: boolean;
   collapsed: readonly string[];
 }) {
+  const language = useInterfaceLanguage();
   return (
     <CollapsedSectionsProvider initial={collapsed} known={KNOWN_SECTIONS}>
       <CollapsibleCard
         section={OVERVIEW_SECTION.ratingsByMarket}
-        eyebrow="Store ratings"
-        title="Ratings by market"
+        eyebrow={language === "zh-CN" ? "商店评分" : "Store ratings"}
+        title={language === "zh-CN" ? "各市场评分" : "Ratings by market"}
         actions={<RatingsByMarketHelp />}
       >
         <Suspense fallback={<RatingsByMarketSkeleton />}>

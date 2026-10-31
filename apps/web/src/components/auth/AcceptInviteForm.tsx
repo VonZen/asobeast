@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useState } from "react";
 import type { FormEvent } from "react";
 import Link from "next/link";
@@ -61,16 +63,19 @@ export function AcceptInviteForm() {
       <Card className="mx-auto w-full max-w-sm">
         <CardHeader>
           <CardTitle asChild>
-            <h1>Invitation link incomplete</h1>
+            <h1>
+              <LocalizedText en="Invitation link incomplete" />
+            </h1>
           </CardTitle>
           <CardDescription>
-            Open the link from your invitation email, or ask the workspace owner
-            to send it again.
+            <LocalizedText en="Open the link from your invitation email, or ask the workspace owner to send it again." />
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Button asChild variant="outline">
-            <Link href="/login">Back to sign in</Link>
+            <Link href="/login">
+              <LocalizedText en="Back to sign in" />
+            </Link>
           </Button>
         </CardContent>
       </Card>
@@ -82,17 +87,20 @@ export function AcceptInviteForm() {
       <Card>
         <CardHeader>
           <CardTitle asChild>
-            <h1>Join the workspace</h1>
+            <h1>
+              <LocalizedText en="Join the workspace" />
+            </h1>
           </CardTitle>
           <CardDescription>
-            Choose a password and you are in. Your email came with the
-            invitation.
+            <LocalizedText en="Choose a password and you are in. Your email came with the invitation." />
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={submit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
-              <Label htmlFor="name">Name (optional)</Label>
+              <Label htmlFor="name">
+                <LocalizedText en="Name (optional)" />
+              </Label>
               <Input
                 id="name"
                 name="name"
@@ -102,7 +110,9 @@ export function AcceptInviteForm() {
               />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">
+                <LocalizedText en="Password" />
+              </Label>
               <Input
                 id="password"
                 name="password"
@@ -147,7 +157,7 @@ export function AcceptInviteForm() {
       <p className="text-center text-body text-muted-foreground">
         Already have an account?{" "}
         <Link href="/login" className="font-medium underline">
-          Sign in
+          <LocalizedText en="Sign in" />
         </Link>
       </p>
     </div>

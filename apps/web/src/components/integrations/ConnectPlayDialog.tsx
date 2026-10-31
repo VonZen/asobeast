@@ -1,9 +1,13 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { componentCopy } from "@/lib/component-copy";
+
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -68,6 +72,7 @@ export function ConnectPlayDialog({
   label: string;
   googleSignIn: boolean;
 }) {
+  const locale = useInterfaceLanguage();
   const queryClient = useQueryClient();
   const initial: Method = googleSignIn ? "google" : "key";
   const [open, setOpen] = useState(false);
@@ -138,8 +143,11 @@ export function ConnectPlayDialog({
       open={open}
       onOpenChange={reset}
       label={label}
-      submitLabel={method === "google" ? SIGN_IN_LABEL : label}
-      description={METHODS[method].description}
+      submitLabel={componentCopy(
+        locale,
+        method === "google" ? SIGN_IN_LABEL : label,
+      )}
+      description={componentCopy(locale, METHODS[method].description)}
       error={error}
       pending={pending}
       onSubmit={submit}
@@ -160,17 +168,19 @@ export function ConnectPlayDialog({
             setError(null);
           }}
         >
-          <TabsList aria-label="How to connect">
+          <TabsList aria-label={componentCopy(locale, "How to connect")}>
             {METHOD_ORDER.map((each) => (
               <TabsOption key={each} value={each}>
-                {METHODS[each].label}
+                {componentCopy(locale, METHODS[each].label)}
               </TabsOption>
             ))}
           </TabsList>
         </Tabs>
       ) : null}
       <div className="flex flex-col gap-2">
-        <Label htmlFor="play-bucket">Bucket id</Label>
+        <Label htmlFor="play-bucket">
+          <LocalizedText en="Bucket id" />
+        </Label>
         <Input
           id="play-bucket"
           value={bucket}
@@ -181,8 +191,9 @@ export function ConnectPlayDialog({
           className="font-mono text-xs"
         />
         <p className="text-xs text-muted-foreground">
-          Play Console shows it under Download reports, as the Cloud Storage URI
-          after gs://.
+          {locale === "zh-CN"
+            ? "在 Play Console 的「下载报告」中，可找到以 gs:// 开头的 Cloud Storage URI，其中包含存储桶 ID。"
+            : "Play Console shows it under Download reports, as the Cloud Storage URI after gs://."}
         </p>
       </div>
       {method === "key" ? (

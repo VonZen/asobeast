@@ -1,0 +1,12 @@
+# Local-only fast deployment: reuse Linux runtime dependencies from the verified
+# existing image, replacing only the current host-built Next.js server and assets.
+# Intended for this Apple Container development instance, not for release CI.
+FROM asobeast-web:local-zh-20261031-v3
+USER root
+WORKDIR /repo
+COPY --chown=node:node apps/web/.next/standalone/apps/web/server.js ./apps/web/server.js
+COPY --chown=node:node apps/web/.next/standalone/apps/web/.next/ ./apps/web/.next/
+COPY --chown=node:node apps/web/.next/static/ ./apps/web/.next/static/
+USER node
+EXPOSE 3000
+CMD ["node", "apps/web/server.js"]

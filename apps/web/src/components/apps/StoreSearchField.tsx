@@ -1,6 +1,8 @@
 "use client";
 
 import { useId, type ReactNode, type Ref } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 import { Info } from "lucide-react";
 import type { Store, StoreSearchResult } from "@asobeast/shared";
 import { AppIcon } from "@/components/AppIcon";
@@ -11,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   formatCountry,
+  localizedCountry,
   formatNumber,
   formatRating,
   storeLabel,
@@ -79,11 +82,12 @@ function StoreSearchResults({
   search: StoreSearch;
   onPick: (result: StoreSearchResult) => void;
 }) {
+  const language = useInterfaceLanguage();
   if (search.error) {
     return (
       <div className="flex items-center justify-between gap-3">
         <p role="alert" className="text-body text-destructive">
-          {searchErrorText(search.error)}
+          {interfaceCopy(language, searchErrorText(search.error))}
         </p>
         {searchRetryable(search.error) ? (
           <Button
@@ -92,7 +96,7 @@ function StoreSearchResults({
             size="sm"
             onClick={search.retry}
           >
-            Retry
+            {language === "zh-CN" ? "重试" : "Retry"}
           </Button>
         ) : null}
       </div>
@@ -110,7 +114,9 @@ function StoreSearchResults({
   if (search.settled && search.results.length === 0) {
     return (
       <p role="status" className="text-body text-muted-foreground">
-        No listing named “{search.q}” in {formatCountry(country)}.
+        {language === "zh-CN"
+          ? `在${localizedCountry(country, language)}没有找到名为“${search.q}”的商品页。`
+          : `No listing named “${search.q}” in ${formatCountry(country)}.`}
       </p>
     );
   }
@@ -118,7 +124,11 @@ function StoreSearchResults({
     <ul
       id={listId}
       role="list"
-      aria-label={`Results from ${storeLabel(store)} in ${formatCountry(country)}`}
+      aria-label={
+        language === "zh-CN"
+          ? `${localizedCountry(country, language)} ${storeLabel(store)} 的搜索结果`
+          : `Results from ${storeLabel(store)} in ${formatCountry(country)}`
+      }
       aria-busy={search.pending}
       className="flex max-h-64 flex-col gap-1 overflow-y-auto"
     >

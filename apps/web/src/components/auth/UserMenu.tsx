@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { LogOut, Settings, User } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import type { AuthUser } from "@asobeast/shared";
 import { logout } from "@/lib/api";
 import { invalidateAuth } from "@/lib/queries";
@@ -21,6 +21,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ChangePasswordDialog } from "./ChangePasswordDialog";
 import { useAuth } from "./use-auth";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 
 function PlanInForceBadge({ user }: { user: AuthUser }) {
   return (
@@ -31,6 +33,8 @@ function PlanInForceBadge({ user }: { user: AuthUser }) {
 }
 
 export function UserMenu() {
+  const locale = useInterfaceLanguage();
+  const t = (value: string) => interfaceCopy(locale, value);
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
@@ -40,7 +44,7 @@ export function UserMenu() {
       invalidateAuth(queryClient);
       window.location.replace("/login");
     },
-    onError: () => toast.error("Could not sign out."),
+    onError: () => toast.error(t("Could not sign out.")),
   });
 
   if (!user) return null;
@@ -48,7 +52,7 @@ export function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon-sm" aria-label="Account menu">
+        <Button variant="ghost" size="icon-sm" aria-label={t("Account menu")}>
           <User />
         </Button>
       </DropdownMenuTrigger>
@@ -61,13 +65,13 @@ export function UserMenu() {
         <DropdownMenuItem asChild className="sm:hidden">
           <Link href="/settings">
             <Settings />
-            Settings
+            {t("Settings")}
           </Link>
         </DropdownMenuItem>
         <ChangePasswordDialog
           trigger={
             <DropdownMenuItem onSelect={(event) => event.preventDefault()}>
-              Change password
+              {t("Change password")}
             </DropdownMenuItem>
           }
         />
@@ -75,19 +79,19 @@ export function UserMenu() {
           <>
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="text-xs text-muted-foreground">
-              Admin
+              {t("Admin")}
             </DropdownMenuLabel>
             <DropdownMenuItem asChild>
               <Link href={ADMIN_ENTRY.href}>
                 <ADMIN_ENTRY.icon />
-                Admin area
+                {t("Admin area")}
               </Link>
             </DropdownMenuItem>
             {ADMIN_TOOLS.map(({ href, label, Icon }) => (
               <DropdownMenuItem key={href} asChild>
                 <a href={href} target="_blank" rel="noreferrer">
                   <Icon />
-                  {label}
+                  {t(label)}
                 </a>
               </DropdownMenuItem>
             ))}
@@ -102,7 +106,7 @@ export function UserMenu() {
           }}
         >
           <LogOut />
-          Sign out
+          {t("Sign out")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import Link from "next/link";
 import { TriangleAlert } from "lucide-react";
 import { UPGRADE_PATH, type KeywordImportResult } from "@asobeast/shared";
@@ -23,7 +25,9 @@ export function ImportQuotaNotice({
           <>
             {" "}
             <Button asChild variant="link" className="h-auto p-0">
-              <Link href={UPGRADE_PATH}>See plans</Link>
+              <Link href={UPGRADE_PATH}>
+                <LocalizedText en="See plans" />
+              </Link>
             </Button>
           </>
         ) : null}

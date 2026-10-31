@@ -1,3 +1,4 @@
+import { LocalizedText } from "@/components/layout/LocalizedText";
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
@@ -27,9 +28,13 @@ export function EmptyState({
         <Icon aria-hidden className="size-6 text-muted-foreground" />
       ) : null}
       <div className="flex flex-col gap-1">
-        <p className="text-body font-medium">{title}</p>
+        <p className="text-body font-medium">
+          <LocalizedText en={title} />
+        </p>
         {body ? (
-          <p className="max-w-md text-body text-muted-foreground">{body}</p>
+          <p className="max-w-md text-body text-muted-foreground">
+            {typeof body === "string" ? <LocalizedText en={body} /> : body}
+          </p>
         ) : null}
       </div>
       {action}

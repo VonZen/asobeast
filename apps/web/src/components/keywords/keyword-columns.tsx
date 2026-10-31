@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import type { FilterFn } from "@tanstack/react-table";
 import { ListOrdered } from "lucide-react";
 import type {
@@ -146,7 +148,7 @@ function identityColumns() {
           {row.original.note ? <NoteButton note={row.original.note} /> : null}
           {!row.original.active ? (
             <Badge variant="secondary" className="shrink-0">
-              Paused
+              <LocalizedText en="Paused" />
             </Badge>
           ) : null}
         </span>
@@ -342,8 +344,7 @@ function volatilityColumn() {
           <SortableHeader column={column} label="Volatility" />
         </TooltipTrigger>
         <TooltipContent className="max-w-xs">
-          How much the top 10 changed day to day over the last week. High churn
-          means rankings here are unstable.
+          <LocalizedText en="How much the top 10 changed day to day over the last week. High churn means rankings here are unstable." />
         </TooltipContent>
       </Tooltip>
     ),
@@ -361,7 +362,11 @@ function actionsColumn({
   return columnHelper.display({
     id: "actions",
     enableHiding: false,
-    header: () => <span className="sr-only">Actions</span>,
+    header: () => (
+      <span className="sr-only">
+        <LocalizedText en="Actions" />
+      </span>
+    ),
     cell: ({ row, table }) => (
       <div className="flex items-center justify-end gap-1 transition-opacity group-hover/row:opacity-100 group-focus-within/row:opacity-100 has-data-[state=open]:opacity-100 pointer-fine:opacity-0">
         <Button

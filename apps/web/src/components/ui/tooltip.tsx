@@ -1,6 +1,8 @@
 "use client";
 
 import * as React from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { componentCopy } from "@/lib/component-copy";
 import { Tooltip as TooltipPrimitive } from "radix-ui";
 
 import { cn } from "@/lib/utils";
@@ -36,6 +38,7 @@ function TooltipContent({
   children,
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Content>) {
+  const locale = useInterfaceLanguage();
   return (
     <TooltipPrimitive.Portal>
       <TooltipPrimitive.Content
@@ -47,7 +50,9 @@ function TooltipContent({
         )}
         {...props}
       >
-        {children}
+        {typeof children === "string"
+          ? componentCopy(locale, children)
+          : children}
         <TooltipPrimitive.Arrow className="z-50 size-2.5 translate-y-[calc(-50%_-_2px)] rotate-45 rounded-[2px] bg-foreground fill-foreground" />
       </TooltipPrimitive.Content>
     </TooltipPrimitive.Portal>

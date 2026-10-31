@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
@@ -37,15 +39,19 @@ export function VerifyEmailContent() {
       <Card className="mx-auto w-full max-w-sm">
         <CardHeader>
           <CardTitle asChild>
-            <h1>Confirmation link incomplete</h1>
+            <h1>
+              <LocalizedText en="Confirmation link incomplete" />
+            </h1>
           </CardTitle>
           <CardDescription>
-            Open the link from your confirmation email.
+            <LocalizedText en="Open the link from your confirmation email." />
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Button asChild variant="outline">
-            <Link href="/login">Back to sign in</Link>
+            <Link href="/login">
+              <LocalizedText en="Back to sign in" />
+            </Link>
           </Button>
         </CardContent>
       </Card>
@@ -66,11 +72,12 @@ export function VerifyEmailContent() {
     <Card className="mx-auto w-full max-w-sm">
       <CardHeader>
         <CardTitle asChild>
-          <h1>Confirm your email</h1>
+          <h1>
+            <LocalizedText en="Confirm your email" />
+          </h1>
         </CardTitle>
         <CardDescription>
-          Confirming marks this address as yours and signs you in on this
-          device.
+          <LocalizedText en="Confirming marks this address as yours and signs you in on this device." />
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
@@ -107,7 +114,7 @@ export function VerifyEmailContent() {
       </CardContent>
       <CardFooter>
         <p className="text-caption text-muted-foreground">
-          Signed in as someone else? Sign out first, then open this link again.
+          <LocalizedText en="Signed in as someone else? Sign out first, then open this link again." />
         </p>
       </CardFooter>
     </Card>

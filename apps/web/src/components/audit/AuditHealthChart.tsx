@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useSuspenseQuery } from "@tanstack/react-query";
 import {
   CartesianGrid,
@@ -102,9 +104,13 @@ export function AuditHealthChart({ id }: { id: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardDescription>ASO health</CardDescription>
+        <CardDescription>
+          <LocalizedText en="ASO health" />
+        </CardDescription>
         <CardTitle asChild>
-          <h2>Score history</h2>
+          <h2>
+            <LocalizedText en="Score history" />
+          </h2>
         </CardTitle>
         <CardAction>
           <DeltaChip delta={computeDelta(data.points)} />

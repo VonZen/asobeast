@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useId } from "react";
 import { useQueryState } from "nuqs";
 import {
@@ -46,7 +48,7 @@ export function DraftLocalizationSelect({ appId }: { appId: string }) {
         htmlFor={DRAFT_LOCALIZATION_ID}
         className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
       >
-        Localization
+        <LocalizedText en="Localization" />
       </label>
       <Select
         value={draftLocale ?? PRIMARY_LISTING}
@@ -62,7 +64,9 @@ export function DraftLocalizationSelect({ appId }: { appId: string }) {
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={PRIMARY_LISTING}>Primary listing</SelectItem>
+          <SelectItem value={PRIMARY_LISTING}>
+            <LocalizedText en="Primary listing" />
+          </SelectItem>
           {options.map((localization) => (
             <SelectItem key={localization} value={localization}>
               {APP_STORE_LOCALIZATIONS[localization]}

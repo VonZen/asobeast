@@ -2,6 +2,9 @@
 
 import * as React from "react";
 import { Command as CommandPrimitive } from "cmdk";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { componentCopy } from "@/lib/component-copy";
+import { LocalizedText } from "@/components/layout/LocalizedText";
 
 import { cn } from "@/lib/utils";
 import {
@@ -64,13 +67,26 @@ function CommandDialog({
 
 function CommandInput({
   className,
+  placeholder,
+  "aria-label": ariaLabel,
   ...props
 }: React.ComponentProps<typeof CommandPrimitive.Input>) {
+  const locale = useInterfaceLanguage();
   return (
     <div data-slot="command-input-wrapper" className="p-1 pb-0">
       <InputGroup className="h-8! rounded-lg! border-input/30 bg-input/30 shadow-none! *:data-[slot=input-group-addon]:pl-2!">
         <CommandPrimitive.Input
           data-slot="command-input"
+          placeholder={
+            typeof placeholder === "string"
+              ? componentCopy(locale, placeholder)
+              : placeholder
+          }
+          aria-label={
+            typeof ariaLabel === "string"
+              ? componentCopy(locale, ariaLabel)
+              : ariaLabel
+          }
           className={cn(
             "w-full text-sm outline-hidden disabled:cursor-not-allowed disabled:opacity-50",
             className,
@@ -103,6 +119,7 @@ function CommandList({
 
 function CommandEmpty({
   className,
+  children,
   ...props
 }: React.ComponentProps<typeof CommandPrimitive.Empty>) {
   return (
@@ -110,17 +127,28 @@ function CommandEmpty({
       data-slot="command-empty"
       className={cn("py-6 text-center text-sm", className)}
       {...props}
-    />
+    >
+      {typeof children === "string" ? (
+        <LocalizedText en={children} />
+      ) : (
+        children
+      )}
+    </CommandPrimitive.Empty>
   );
 }
 
 function CommandGroup({
   className,
+  heading,
   ...props
 }: React.ComponentProps<typeof CommandPrimitive.Group>) {
+  const locale = useInterfaceLanguage();
   return (
     <CommandPrimitive.Group
       data-slot="command-group"
+      heading={
+        typeof heading === "string" ? componentCopy(locale, heading) : heading
+      }
       className={cn(
         "overflow-hidden p-1 text-foreground **:[[cmdk-group-heading]]:px-2 **:[[cmdk-group-heading]]:py-1.5 **:[[cmdk-group-heading]]:text-xs **:[[cmdk-group-heading]]:font-medium **:[[cmdk-group-heading]]:text-muted-foreground",
         className,

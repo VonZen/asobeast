@@ -6,6 +6,7 @@ import { formatCountry } from "@/lib/format";
 import { appDetailOptions } from "@/lib/queries";
 import { rangeLabel, type DayPreset } from "@/lib/ranges";
 import { usePrintedDate } from "./use-printed-date";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 
 export interface ReportRange {
   label: string;
@@ -21,16 +22,17 @@ export function ReportHeader({
   page: string;
   ranges: readonly ReportRange[];
 }) {
+  const chinese = useInterfaceLanguage() === "zh-CN";
   const { data: detail } = useSuspenseQuery(appDetailOptions(id));
   const printedDate = usePrintedDate();
   const facts = [
-    `Home storefront: ${formatCountry(detail.country)}`,
+    `${chinese ? "主要商店市场" : "Home storefront"}: ${formatCountry(detail.country)}`,
     ...ranges.map((range) => `${range.label}: ${rangeLabel(range.preset)}`),
   ];
 
   return (
     <div className="hidden flex-col gap-1 print:flex">
-      <p className="text-title">{page} report</p>
+      <p className="text-title">{chinese ? `${page}报告` : `${page} report`}</p>
       <ul className="flex flex-wrap gap-x-4 gap-y-1 text-body text-muted-foreground">
         {facts.map((fact) => (
           <li key={fact}>{fact}</li>
@@ -40,7 +42,9 @@ export function ReportHeader({
         className="text-caption text-muted-foreground"
         suppressHydrationWarning
       >
-        {`Printed ${printedDate} (UTC) from ${PRODUCT_NAME}`}
+        {chinese
+          ? `由 ${PRODUCT_NAME} 于 ${printedDate}（UTC）打印`
+          : `Printed ${printedDate} (UTC) from ${PRODUCT_NAME}`}
       </p>
     </div>
   );

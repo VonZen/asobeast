@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { LocalizedText } from "@/components/layout/LocalizedText";
 import { cn } from "@/lib/utils";
 
 export function StatTileGroup({
@@ -54,7 +55,7 @@ export function StatTile({
       )}
     >
       <span className="text-label text-balance text-muted-foreground uppercase">
-        {label}
+        <LocalizedText en={label} />
         {info ? <span className="ml-1 normal-case">{info}</span> : null}
       </span>
       <span className="numeric self-end font-mono text-display">{value}</span>

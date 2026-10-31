@@ -39,6 +39,8 @@ import {
   sectionHref,
 } from "@/lib/app-sections";
 import { appsOptions } from "@/lib/queries";
+import { useInterfaceLanguage } from "./InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 
 const GENERAL = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -49,6 +51,9 @@ const GENERAL = [
 ] as const;
 
 export function CommandPalette() {
+  const locale = useInterfaceLanguage();
+  const chinese = locale === "zh-CN";
+  const t = (value: string) => interfaceCopy(locale, value);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const router = useRouter();
@@ -95,32 +100,42 @@ export function CommandPalette() {
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label="Open command palette"
+            aria-label={chinese ? "打开命令面板" : "Open command palette"}
             onClick={() => handleOpenChange(true)}
           >
             <Search />
           </Button>
         </TooltipTrigger>
-        <TooltipContent>Search — ⌘ K</TooltipContent>
+        <TooltipContent>
+          {chinese ? "搜索 — ⌘ K" : "Search — ⌘ K"}
+        </TooltipContent>
       </Tooltip>
 
       <CommandDialog
         open={open}
         onOpenChange={handleOpenChange}
-        title="Command palette"
-        description="Jump to an app, a section or a page."
+        title={chinese ? "命令面板" : "Command palette"}
+        description={
+          chinese
+            ? "跳转到 App、栏目或页面。"
+            : "Jump to an app, a section or a page."
+        }
       >
         <Command>
           <CommandInput
             value={query}
             onValueChange={setQuery}
-            placeholder="Search apps and sections…"
+            placeholder={
+              chinese ? "搜索 App 和栏目…" : "Search apps and sections…"
+            }
           />
           <CommandList>
-            <CommandEmpty>No matches.</CommandEmpty>
+            <CommandEmpty>
+              {chinese ? "没有匹配结果。" : "No matches."}
+            </CommandEmpty>
 
             {apps && apps.length > 0 ? (
-              <CommandGroup heading="Apps">
+              <CommandGroup heading={chinese ? "App" : "Apps"}>
                 {apps.map((item) => (
                   <CommandItem
                     key={item.id}
@@ -136,7 +151,7 @@ export function CommandPalette() {
                   >
                     <AppIcon src={item.iconUrl} name={item.name} size={20} />
                     <span className="truncate">
-                      {item.name ?? "Untitled app"}
+                      {item.name ?? (chinese ? "未命名 App" : "Untitled app")}
                     </span>
                     <Badge variant="secondary" className="ml-auto">
                       {storeLabel(item.store)}
@@ -147,28 +162,34 @@ export function CommandPalette() {
             ) : null}
 
             {appId ? (
-              <CommandGroup heading="Sections">
+              <CommandGroup heading={chinese ? "栏目" : "Sections"}>
                 {APP_SECTIONS.map((section) => (
                   <CommandItem
                     key={section.segment || "overview"}
-                    value={`section ${section.label}`}
+                    value={
+                      chinese
+                        ? `section ${section.label} ${t(section.label)}`
+                        : `section ${section.label}`
+                    }
                     onSelect={() => go(sectionHref(appId, section.segment))}
                   >
-                    {section.label}
+                    {t(section.label)}
                   </CommandItem>
                 ))}
               </CommandGroup>
             ) : null}
 
-            <CommandGroup heading="General">
+            <CommandGroup heading={chinese ? "常用" : "General"}>
               {general.map((entry) => (
                 <CommandItem
                   key={entry.href}
-                  value={entry.label}
+                  value={
+                    chinese ? `${entry.label} ${t(entry.label)}` : entry.label
+                  }
                   onSelect={() => go(entry.href)}
                 >
                   <entry.icon />
-                  {entry.label}
+                  {t(entry.label)}
                 </CommandItem>
               ))}
             </CommandGroup>

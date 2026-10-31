@@ -1,4 +1,6 @@
 import { Check } from "lucide-react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 import { Progress } from "@/components/ui/progress";
 import {
   SETUP_STEPS,
@@ -23,17 +25,24 @@ export function SetupProgress({
   progress: SetupStepProgress;
   states: Record<SetupStep, SetupStepState>;
 }) {
+  const language = useInterfaceLanguage();
   return (
     <div className="flex flex-col gap-3">
       <h2 className="text-xl font-semibold tracking-tight text-balance">
-        {progressSentence(name, progress)}
+        {language === "zh-CN"
+          ? `设置 ${name ?? "此 App"} · ${progress.done} / ${progress.total} · ${progress.next === null ? "可以完成" : `下一步：${interfaceCopy(language, STEP_TITLES[progress.next])}`}`
+          : progressSentence(name, progress)}
       </h2>
       <Progress
         value={progressPercent(progress)}
-        aria-label="Setup progress"
-        getValueLabel={() => progressValueLabel(progress)}
+        aria-label={language === "zh-CN" ? "设置进度" : "Setup progress"}
+        getValueLabel={() =>
+          language === "zh-CN"
+            ? `${progress.total} 步中已完成 ${progress.done} 步`
+            : progressValueLabel(progress)
+        }
       />
-      <nav aria-label="Setup steps">
+      <nav aria-label={language === "zh-CN" ? "设置步骤" : "Setup steps"}>
         <ol className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
           {SETUP_STEPS.map((step) => (
             <li key={step}>
@@ -50,7 +59,7 @@ export function SetupProgress({
                 {states[step] === "done" ? (
                   <Check aria-hidden="true" className="size-4" />
                 ) : null}
-                {STEP_TITLES[step]}
+                {interfaceCopy(language, STEP_TITLES[step])}
               </a>
             </li>
           ))}

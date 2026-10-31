@@ -1,6 +1,8 @@
 "use client";
 
 import { Check, ListFilter } from "lucide-react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,6 +40,8 @@ export function FacetFilter<T extends string>({
   counts: ReadonlyMap<unknown, number>;
   onChange: (next: T[]) => void;
 }) {
+  const language = useInterfaceLanguage();
+  const label = interfaceCopy(language, title);
   const toggle = (value: T) =>
     onChange(
       selected.includes(value)
@@ -53,13 +57,17 @@ export function FacetFilter<T extends string>({
           size="sm"
           className="border-dashed"
           aria-label={
-            selected.length > 0
-              ? `Filter by ${title.toLowerCase()}, ${selected.length} selected`
-              : `Filter by ${title.toLowerCase()}`
+            language === "zh-CN"
+              ? selected.length > 0
+                ? `按${label}筛选，已选择 ${selected.length} 项`
+                : `按${label}筛选`
+              : selected.length > 0
+                ? `Filter by ${title.toLowerCase()}, ${selected.length} selected`
+                : `Filter by ${title.toLowerCase()}`
           }
         >
           <ListFilter aria-hidden />
-          {title}
+          {label}
           {selected.length > 0 ? (
             <Badge variant="secondary" className="numeric font-mono">
               {selected.length}
@@ -69,16 +77,26 @@ export function FacetFilter<T extends string>({
       </PopoverTrigger>
       <PopoverContent
         align="start"
-        aria-label={`Filter by ${title.toLowerCase()}`}
+        aria-label={
+          language === "zh-CN"
+            ? `按${label}筛选`
+            : `Filter by ${title.toLowerCase()}`
+        }
         className="w-60 p-0"
       >
         <Command>
           <CommandInput
-            placeholder={title}
-            aria-label={`Search ${title.toLowerCase()}`}
+            placeholder={label}
+            aria-label={
+              language === "zh-CN"
+                ? `搜索${label}`
+                : `Search ${title.toLowerCase()}`
+            }
           />
           <CommandList>
-            <CommandEmpty>No matches</CommandEmpty>
+            <CommandEmpty>
+              {language === "zh-CN" ? "没有匹配项" : "No matches"}
+            </CommandEmpty>
             <CommandGroup>
               {options.map((option) => {
                 const checked = selected.includes(option.value);
@@ -121,7 +139,7 @@ export function FacetFilter<T extends string>({
                     onSelect={() => onChange([])}
                     className="justify-center"
                   >
-                    Clear
+                    {language === "zh-CN" ? "清除" : "Clear"}
                   </CommandItem>
                 </CommandGroup>
               </>

@@ -12,9 +12,12 @@ import {
 } from "@/components/ui/select";
 import { COUNTRY_OPTIONS, OTHER, marketError } from "@/lib/countries";
 import { formatCountry } from "@/lib/format";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 
-const countryLabel = (code: string) =>
-  `${code.toUpperCase()} · ${formatCountry(code)}`;
+const chineseRegions = new Intl.DisplayNames(["zh-CN"], { type: "region" });
+
+const countryLabel = (code: string, chinese: boolean) =>
+  `${code.toUpperCase()} · ${chinese ? (chineseRegions.of(code.toUpperCase()) ?? formatCountry(code)) : formatCountry(code)}`;
 
 export function CountrySelect({
   id,
@@ -29,6 +32,7 @@ export function CountrySelect({
   onChange: (code: string) => void;
   ariaLabel?: string;
 }) {
+  const chinese = useInterfaceLanguage() === "zh-CN";
   const errorId = useId();
   const other = value === "" || !COUNTRY_OPTIONS.includes(value);
   const error = other && value.length === 2 ? marketError(store, value) : null;
@@ -40,23 +44,33 @@ export function CountrySelect({
         onValueChange={(next) => onChange(next === OTHER ? "" : next)}
       >
         <SelectTrigger id={id} aria-label={ariaLabel} className="w-[220px]">
-          <SelectValue>{other ? "Other…" : countryLabel(value)}</SelectValue>
+          <SelectValue>
+            {other
+              ? chinese
+                ? "其他…"
+                : "Other…"
+              : countryLabel(value, chinese)}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           {COUNTRY_OPTIONS.map((code) => (
             <SelectItem key={code} value={code}>
-              {countryLabel(code)}
+              {countryLabel(code, chinese)}
             </SelectItem>
           ))}
-          <SelectItem value={OTHER}>Other…</SelectItem>
+          <SelectItem value={OTHER}>{chinese ? "其他…" : "Other…"}</SelectItem>
         </SelectContent>
       </Select>
       {other ? (
         <Input
-          aria-label="Storefront country code"
+          aria-label={
+            chinese ? "商店市场国家或地区代码" : "Storefront country code"
+          }
           value={value}
           onChange={(event) => onChange(event.target.value.toLowerCase())}
-          placeholder="two letter code, e.g. se"
+          placeholder={
+            chinese ? "双字母代码，例如 se" : "two letter code, e.g. se"
+          }
           maxLength={2}
           className="w-[220px]"
           aria-invalid={error !== null}

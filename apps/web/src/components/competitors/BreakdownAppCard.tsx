@@ -1,3 +1,4 @@
+import { LocalizedText } from "@/components/layout/LocalizedText";
 import { useId } from "react";
 import Link from "next/link";
 import {
@@ -77,7 +78,7 @@ function ListingBlock({
             href={editLocalizationHref(appId, localization)}
             className="underline decoration-primary underline-offset-4"
           >
-            Edit it on the metadata page
+            <LocalizedText en="Edit it on the metadata page" />
           </Link>
         </p>
       ) : null}

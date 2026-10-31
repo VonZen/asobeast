@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useId, useState } from "react";
 import { ChartLine, History } from "lucide-react";
 import {
@@ -71,7 +73,10 @@ function PositionHistoryContent({
             {keyword.text}
           </PopoverTitle>
           <PopoverDescription>
-            <span id={ids.eyebrow}>Position history</span> ·{" "}
+            <span id={ids.eyebrow}>
+              <LocalizedText en="Position history" />
+            </span>{" "}
+            ·{" "}
             <span id={ids.market}>
               {storeLabel(store)} · {formatCountry(keyword.country)}
             </span>

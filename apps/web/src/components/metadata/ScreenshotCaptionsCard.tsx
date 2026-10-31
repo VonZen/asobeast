@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ScreenshotThumb } from "@/components/screenshots/ScreenshotThumb";
 import { Badge } from "@/components/ui/badge";
@@ -30,7 +32,7 @@ export function ScreenshotCaptionsCard({
   return (
     <section aria-labelledby={HEADING_ID} className="flex flex-col gap-3">
       <h2 id={HEADING_ID} className="text-lg font-medium">
-        Screenshot captions
+        <LocalizedText en="Screenshot captions" />
       </h2>
       <Card className="min-w-0">
         <CardContent className="flex flex-col gap-4">

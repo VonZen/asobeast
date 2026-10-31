@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ export function KeywordPicker({
   value: string[];
   onChange: (next: string[]) => void;
 }) {
+  const language = useInterfaceLanguage();
   const [open, setOpen] = useState(false);
   const { data: tracked } = useSuspenseQuery(keywordsOptions(id));
 
@@ -49,19 +51,27 @@ export function KeywordPicker({
           variant="outline"
           className="justify-between gap-2 print:hidden"
         >
-          {value.length} selected
+          {language === "zh-CN"
+            ? `已选择 ${value.length} 个`
+            : `${value.length} selected`}
           <ChevronsUpDown className="size-4 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        aria-label="Choose keywords"
+        aria-label={language === "zh-CN" ? "选择关键词" : "Choose keywords"}
         className="w-72 p-0"
         align="start"
       >
         <Command>
-          <CommandInput placeholder="Search keywords…" />
+          <CommandInput
+            placeholder={
+              language === "zh-CN" ? "搜索关键词…" : "Search keywords…"
+            }
+          />
           <CommandList>
-            <CommandEmpty>No keywords found.</CommandEmpty>
+            <CommandEmpty>
+              {language === "zh-CN" ? "未找到关键词。" : "No keywords found."}
+            </CommandEmpty>
             <CommandGroup>
               {tracked.map((keyword) => (
                 <CommandItem
@@ -88,9 +98,13 @@ export function KeywordPicker({
                   onChange(topByOpportunity(tracked, DEFAULT_SELECTION))
                 }
               >
-                Top {DEFAULT_SELECTION} by opportunity
+                {language === "zh-CN"
+                  ? `按机会值选择前 ${DEFAULT_SELECTION} 个`
+                  : `Top ${DEFAULT_SELECTION} by opportunity`}
               </CommandItem>
-              <CommandItem onSelect={() => onChange([])}>Clear</CommandItem>
+              <CommandItem onSelect={() => onChange([])}>
+                {language === "zh-CN" ? "清除" : "Clear"}
+              </CommandItem>
             </CommandGroup>
           </CommandList>
         </Command>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import type { FormEvent } from "react";
 import {
   useMutation,
@@ -8,7 +9,7 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query";
 import { Loader2, Plus } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import type { Store, StoreSearchResult } from "@asobeast/shared";
 import { StoreSearchField } from "@/components/apps/StoreSearchField";
 import { useStoreSearch } from "@/components/apps/useStoreSearch";
@@ -25,6 +26,7 @@ const STORE_URL_EXAMPLES: Record<Store, string> = {
 };
 
 export function AddCompetitorForm({ id }: { id: string }) {
+  const language = useInterfaceLanguage();
   const queryClient = useQueryClient();
   const { data: detail } = useSuspenseQuery(appDetailOptions(id));
   const [url, setUrl] = useState("");
@@ -37,7 +39,11 @@ export function AddCompetitorForm({ id }: { id: string }) {
     onSuccess: (competitor) => {
       invalidateCompetitorMutation(queryClient, id);
       setUrl("");
-      toast.success(`Added ${competitor.name ?? "competitor"}`);
+      toast.success(
+        language === "zh-CN"
+          ? `已添加 ${competitor.name ?? "竞品"}`
+          : `Added ${competitor.name ?? "competitor"}`,
+      );
     },
     onError: (err) => {
       if (err instanceof ApiError) {
@@ -48,7 +54,11 @@ export function AddCompetitorForm({ id }: { id: string }) {
         }
         return;
       }
-      setError("Could not reach the api to add this competitor");
+      setError(
+        language === "zh-CN"
+          ? "无法连接 API 来添加此竞品。"
+          : "Could not reach the api to add this competitor",
+      );
     },
   });
   const addOnce = useSingleFlight(mutation);
@@ -88,8 +98,16 @@ export function AddCompetitorForm({ id }: { id: string }) {
     <form onSubmit={submit}>
       <StoreSearchField
         id="competitor-search"
-        label={`Competitor name or ${storeLabel(detail.store)} URL`}
-        hint="Type a name to search, or paste a store URL. A new competitor gets positions on the next keyword check."
+        label={
+          language === "zh-CN"
+            ? `竞品名称或 ${storeLabel(detail.store)} 链接`
+            : `Competitor name or ${storeLabel(detail.store)} URL`
+        }
+        hint={
+          language === "zh-CN"
+            ? "输入名称搜索，或粘贴商店链接。下次关键词检查时会获取新竞品的排名。"
+            : "Type a name to search, or paste a store URL. A new competitor gets positions on the next keyword check."
+        }
         placeholder={STORE_URL_EXAMPLES[detail.store]}
         store={detail.store}
         country={detail.country}
@@ -102,7 +120,13 @@ export function AddCompetitorForm({ id }: { id: string }) {
       >
         <Button type="submit" aria-disabled={inert || undefined}>
           {mutation.isPending ? <Loader2 className="animate-spin" /> : <Plus />}
-          {mutation.isPending ? "Adding…" : "Add competitor"}
+          {language === "zh-CN"
+            ? mutation.isPending
+              ? "正在添加…"
+              : "添加竞品"
+            : mutation.isPending
+              ? "Adding…"
+              : "Add competitor"}
         </Button>
       </StoreSearchField>
     </form>

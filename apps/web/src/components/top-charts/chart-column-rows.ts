@@ -4,6 +4,7 @@ import type {
   ChartPage,
 } from "@asobeast/shared";
 import { formatDayMonth } from "@/lib/format";
+import type { InterfaceLanguage } from "@/lib/interface-language";
 
 export const CHART_COLUMN_ROWS = 25;
 
@@ -16,7 +17,26 @@ export function columnRows(page: Pick<ChartPage, "entries">): ChartEntryItem[] {
 export function columnCaption(
   page: Pick<ChartPage, "capture" | "dates" | "entries" | "today">,
   date: string | null,
+  language: InterfaceLanguage = "en",
 ): string {
+  if (language === "zh-CN") {
+    const dateLabel = (value: string) =>
+      new Intl.DateTimeFormat("zh-CN", {
+        month: "short",
+        day: "numeric",
+        timeZone: "UTC",
+      }).format(new Date(value));
+    if (page.dates.length === 0) return "尚未采集";
+    if (!page.capture) return `${dateLabel(date ?? page.today)} 尚未采集`;
+    const total = page.entries.length;
+    const count =
+      total === 0
+        ? "没有 App"
+        : total > CHART_COLUMN_ROWS
+          ? `共 ${total} 个，显示前 ${CHART_COLUMN_ROWS} 个`
+          : `${total} 个 App`;
+    return `${count} · ${dateLabel(page.capture.date)}`;
+  }
   if (page.dates.length === 0) return "Not captured yet";
   if (!page.capture) {
     return `Not captured on ${formatDayMonth(date ?? page.today)}`;

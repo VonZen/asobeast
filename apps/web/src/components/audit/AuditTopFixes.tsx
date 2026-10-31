@@ -3,12 +3,14 @@ import type { AuditRecommendations } from "@asobeast/shared";
 import { Card, CardContent } from "@/components/ui/card";
 import { liftLabel } from "./audit-copy";
 import { topFixes } from "./top-fixes";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 
 export function AuditTopFixes({
   recommendations,
 }: {
   recommendations: AuditRecommendations;
 }) {
+  const chinese = useInterfaceLanguage() === "zh-CN";
   const fixes = topFixes(recommendations);
 
   return (
@@ -19,11 +21,13 @@ export function AuditTopFixes({
           className="flex flex-col gap-3"
         >
           <h2 id="top-fixes-heading" className="text-lg font-medium">
-            Top fixes
+            {chinese ? "优先改进" : "Top fixes"}
           </h2>
           {fixes.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              No change is waiting on you right now.
+              {chinese
+                ? "目前没有待处理的改进项。"
+                : "No change is waiting on you right now."}
             </p>
           ) : (
             <ol className="flex flex-col gap-2">
@@ -49,7 +53,7 @@ export function AuditTopFixes({
             href="#action-plan"
             className="w-fit text-sm font-medium underline-offset-4 hover:underline"
           >
-            View the full plan
+            {chinese ? "查看完整计划" : "View the full plan"}
           </Link>
         </section>
       </CardContent>

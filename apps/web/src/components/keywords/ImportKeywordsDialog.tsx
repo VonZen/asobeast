@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useState, type ReactNode } from "react";
 import { Loader2 } from "lucide-react";
 import type { Store } from "@asobeast/shared";
@@ -66,10 +68,11 @@ export function ImportKeywordsDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent size="lg">
         <DialogHeader>
-          <DialogTitle>Import keywords from CSV</DialogTitle>
+          <DialogTitle>
+            <LocalizedText en="Import keywords from CSV" />
+          </DialogTitle>
           <DialogDescription>
-            Choose a file with one keyword per row. Country, tags and note are
-            optional columns. Nothing is saved until you confirm.
+            <LocalizedText en="Choose a file with one keyword per row. Country, tags and note are optional columns. Nothing is saved until you confirm." />
           </DialogDescription>
         </DialogHeader>
 
@@ -118,7 +121,7 @@ export function ImportKeywordsDialog({
             disabled={flow.importing}
             onClick={() => onOpenChange(false)}
           >
-            Cancel
+            <LocalizedText en="Cancel" />
           </Button>
           <Button disabled={!flow.canImport} onClick={flow.submit}>
             {flow.importing ? <Loader2 className="animate-spin" /> : null}

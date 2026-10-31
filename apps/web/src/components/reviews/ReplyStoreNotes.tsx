@@ -1,3 +1,4 @@
+import { LocalizedText } from "@/components/layout/LocalizedText";
 import Link from "next/link";
 import type { ReviewItem, Store } from "@asobeast/shared";
 import { storeLabel } from "@/lib/format";
@@ -40,7 +41,7 @@ export function ReplyFooter({
               href={STORE_CONNECTIONS_PATH}
               className="font-medium text-foreground underline decoration-primary underline-offset-4 hover:decoration-2"
             >
-              Open store connections
+              <LocalizedText en="Open store connections" />
             </Link>
           </>
         )}

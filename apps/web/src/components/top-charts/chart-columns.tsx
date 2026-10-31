@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { createColumnHelper } from "@tanstack/react-table";
 import type { ChartEntryItem } from "@asobeast/shared";
 import { AppIcon } from "@/components/AppIcon";
@@ -98,7 +100,11 @@ export function chartColumns(
     columnHelper.display({
       id: "actions",
       enableHiding: false,
-      header: () => <span className="sr-only">Actions</span>,
+      header: () => (
+        <span className="sr-only">
+          <LocalizedText en="Actions" />
+        </span>
+      ),
       cell: ({ row }) => <RowActions entry={row.original} context={context} />,
     }),
   ]);

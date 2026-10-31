@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 import {
   ACTION_CATEGORIES,
   ACTION_RULES,
@@ -133,23 +135,25 @@ function QueueFacets({
   counts: QueueFacetCounts;
   options: FacetOptions;
 }) {
+  const language = useInterfaceLanguage();
+  const t = (text: string) => interfaceCopy(language, text);
   return (
     <>
       <FacetFilter
-        title="Rule"
+        title={t("Rule")}
         options={options.rules.map((rule) => ({
           value: rule,
-          label: ACTION_RULE_LABEL[rule],
+          label: t(ACTION_RULE_LABEL[rule]),
         }))}
         selected={view.rule}
         counts={counts.rule}
         onChange={(rule) => void setView({ rule })}
       />
       <FacetFilter
-        title="Category"
+        title={t("Category")}
         options={options.categories.map((category) => ({
           value: category,
-          label: ACTION_CATEGORY_LABEL[category],
+          label: t(ACTION_CATEGORY_LABEL[category]),
         }))}
         selected={view.category}
         counts={counts.category}
@@ -157,7 +161,7 @@ function QueueFacets({
       />
       {appId ? null : (
         <FacetFilter
-          title="App"
+          title={t("App")}
           options={[...options.apps].map(([value, label]) => ({
             value,
             label,
@@ -168,7 +172,7 @@ function QueueFacets({
         />
       )}
       <FacetFilter
-        title="Market"
+        title={t("Market")}
         options={options.markets.map((market) => ({
           value: market,
           label: formatCountry(market),
@@ -179,7 +183,7 @@ function QueueFacets({
       />
       {options.stores.length > 1 ? (
         <FacetFilter
-          title="Store"
+          title={t("Store")}
           options={options.stores.map((store) => ({
             value: store,
             label: storeLabel(store),
@@ -210,6 +214,8 @@ export function ActionToolbar({
   loadedTotal: number;
   onShowShortcuts: () => void;
 }) {
+  const language = useInterfaceLanguage();
+  const t = (text: string) => interfaceCopy(language, text);
   const counts = facetCounts(items, view);
   const options = useFacetOptions(items, view);
   const groups = appId
@@ -250,13 +256,20 @@ export function ActionToolbar({
             <QueueSelect
               label="Group by"
               value={view.group}
-              labels={groups}
+              labels={Object.fromEntries(
+                Object.entries(groups).map(([key, value]) => [key, t(value)]),
+              )}
               onChange={(group) => void setView({ group })}
             />
             <QueueSelect
               label="Sort by"
               value={view.sort}
-              labels={SORT_LABEL}
+              labels={Object.fromEntries(
+                Object.entries(SORT_LABEL).map(([key, value]) => [
+                  key,
+                  t(value),
+                ]),
+              )}
               onChange={(sort) => void setView({ sort })}
             />
           </div>
@@ -274,13 +287,14 @@ export function ActionToolbar({
         <RowCount shown={shown} total={items.length} noun="action" />
         <Button variant="link" size="sm" onClick={onShowShortcuts}>
           <Keyboard aria-hidden />
-          Shortcuts
+          {t("Shortcuts")}
         </Button>
       </div>
       {loadedTotal > items.length ? (
         <p className="text-caption text-muted-foreground">
-          Only the {items.length} highest-impact actions are loaded; narrow the
-          status or scope to see the rest.
+          {language === "zh-CN"
+            ? `仅加载了影响最大的 ${items.length} 项；请缩小状态或范围以查看其余事项。`
+            : `Only the ${items.length} highest-impact actions are loaded; narrow the status or scope to see the rest.`}
         </p>
       ) : null}
     </div>

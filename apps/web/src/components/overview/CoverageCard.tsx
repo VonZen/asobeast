@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useKeywordScope } from "@/components/app-detail/use-market";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +26,7 @@ function CoverageStat({ label, value }: { label: string; value: number }) {
 }
 
 export function CoverageCard({ id }: { id: string }) {
+  const language = useInterfaceLanguage();
   const { country, switchable } = useKeywordScope(id);
   const { data: summary } = useSuspenseQuery(appSummaryOptions(id, country));
   const { data: detail } = useSuspenseQuery(appDetailOptions(id));
@@ -40,10 +43,14 @@ export function CoverageCard({ id }: { id: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Metadata coverage</CardTitle>
+        <CardTitle>
+          {language === "zh-CN" ? "元数据覆盖情况" : "Metadata coverage"}
+        </CardTitle>
         {switchable ? (
           <CardDescription>
-            All markets, judged against the home listing
+            {language === "zh-CN"
+              ? "所有市场，以主市场商品页为基准"
+              : "All markets, judged against the home listing"}
           </CardDescription>
         ) : null}
       </CardHeader>
@@ -57,7 +64,7 @@ export function CoverageCard({ id }: { id: string }) {
           {stats.map((stat) => (
             <CoverageStat
               key={stat.label}
-              label={stat.label}
+              label={interfaceCopy(language, stat.label)}
               value={stat.value}
             />
           ))}
@@ -65,11 +72,15 @@ export function CoverageCard({ id }: { id: string }) {
 
         <div className="flex flex-col gap-2">
           <p className="text-sm text-muted-foreground">
-            High-opportunity keywords absent from your metadata
+            {language === "zh-CN"
+              ? "元数据中缺少的高机会关键词"
+              : "High-opportunity keywords absent from your metadata"}
           </p>
           {coverage.uncoveredHighOpportunity.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Your metadata covers your top opportunities.
+              {language === "zh-CN"
+                ? "元数据已覆盖最有潜力的关键词。"
+                : "Your metadata covers your top opportunities."}
             </p>
           ) : (
             <div className="flex flex-wrap gap-2">

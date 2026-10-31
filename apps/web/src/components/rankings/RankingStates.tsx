@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { CHART_HEIGHT } from "@/components/charts/theme";
 import { cn } from "@/lib/utils";
 import { lastCheckedIndex, NOT_CHECKED, type RankingChartData } from "./pivot";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 
 function Frame({
   title,
@@ -18,6 +20,7 @@ function Frame({
   action?: React.ReactNode;
   children?: React.ReactNode;
 }) {
+  const locale = useInterfaceLanguage();
   return (
     <div
       className={cn(
@@ -25,8 +28,10 @@ function Frame({
         CHART_HEIGHT.hero,
       )}
     >
-      <p className="text-body font-medium">{title}</p>
-      <p className="max-w-md text-caption text-muted-foreground">{body}</p>
+      <p className="text-body font-medium">{interfaceCopy(locale, title)}</p>
+      <p className="max-w-md text-caption text-muted-foreground">
+        {interfaceCopy(locale, body)}
+      </p>
       {children}
       {action}
     </div>
@@ -34,13 +39,16 @@ function Frame({
 }
 
 export function NoKeywordsTracked({ id }: { id: string }) {
+  const locale = useInterfaceLanguage();
   return (
     <Frame
       title="No keywords tracked yet"
       body="Ranking history is drawn from the keywords you track for this app."
       action={
         <Button asChild size="sm" className="print:hidden">
-          <Link href={`/apps/${id}/keywords`}>Go to keywords</Link>
+          <Link href={`/apps/${id}/keywords`}>
+            {interfaceCopy(locale, "Go to keywords")}
+          </Link>
         </Button>
       }
     />
@@ -57,6 +65,7 @@ export function NoPositionsYet() {
 }
 
 export function NoDataInRange({ onWiden }: { onWiden?: () => void }) {
+  const locale = useInterfaceLanguage();
   return (
     <Frame
       title="Nothing captured in this range"
@@ -69,7 +78,7 @@ export function NoDataInRange({ onWiden }: { onWiden?: () => void }) {
             className="print:hidden"
             onClick={onWiden}
           >
-            Widen to 90 days
+            {interfaceCopy(locale, "Widen to 90 days")}
           </Button>
         ) : null
       }

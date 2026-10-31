@@ -1,4 +1,5 @@
 import * as React from "react";
+import { LocalizedText } from "@/components/layout/LocalizedText";
 import { cva, type VariantProps } from "class-variance-authority";
 import { Slot } from "radix-ui";
 
@@ -91,7 +92,13 @@ function textInSpans(children: React.ReactNode): React.ReactNode {
   return nodes.map((node, index) => {
     const run = runs.get(index);
     if (run !== undefined) {
-      return run.text.trim() ? <span key={run.key}>{run.text}</span> : run.text;
+      return run.text.trim() ? (
+        <span key={run.key}>
+          <LocalizedText en={run.text} />
+        </span>
+      ) : (
+        run.text
+      );
     }
     if (isText(node)) return null;
     if (Array.isArray(node)) return textInSpans(node);

@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { createColumnHelper } from "@tanstack/react-table";
 import { Check, CircleDashed, Minus } from "lucide-react";
 import {
@@ -120,7 +122,7 @@ export function coverageColumns(
           {row.original.text}
           {row.original.uncovered ? (
             <Badge variant="outline" className="border-warning/40 text-warning">
-              Uncovered
+              <LocalizedText en="Uncovered" />
             </Badge>
           ) : null}
         </span>

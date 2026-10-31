@@ -10,6 +10,8 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { cn } from "@/lib/utils";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { componentCopy } from "@/lib/component-copy";
 
 const SEARCH_DEBOUNCE_MS = 200;
 
@@ -24,6 +26,8 @@ export function SearchInput({
   onSearch: (value: string, options: Options) => void;
   className?: string;
 }) {
+  const locale = useInterfaceLanguage();
+  const translatedLabel = componentCopy(locale, label);
   const input = useRef<HTMLInputElement>(null);
   const search = (next: string) =>
     onSearch(next, {
@@ -37,8 +41,8 @@ export function SearchInput({
       </InputGroupAddon>
       <InputGroupInput
         ref={input}
-        aria-label={label}
-        placeholder={label}
+        aria-label={translatedLabel}
+        placeholder={translatedLabel}
         value={value}
         onChange={(event) => search(event.target.value)}
       />
@@ -46,7 +50,7 @@ export function SearchInput({
         <InputGroupAddon align="inline-end">
           <InputGroupButton
             size="icon-xs"
-            aria-label="Clear search"
+            aria-label={componentCopy(locale, "Clear search")}
             onClick={() => {
               search("");
               input.current?.focus();

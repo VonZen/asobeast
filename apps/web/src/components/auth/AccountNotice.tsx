@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import type { ReactNode } from "react";
 import Link from "next/link";
 import {
@@ -34,7 +36,11 @@ function PausedBanner({ isMember }: { isMember: boolean }) {
         {COLLECTION_PAUSED}
         {isMember ? ` ${ASK_THE_OWNER}` : null}
       </span>
-      {isMember ? null : <UpgradeLink>Choose a plan</UpgradeLink>}
+      {isMember ? null : (
+        <UpgradeLink>
+          <LocalizedText en="Choose a plan" />
+        </UpgradeLink>
+      )}
     </div>
   );
 }
@@ -52,7 +58,11 @@ function TrialBanner({
         Trial ends in {remaining} day{remaining === 1 ? "" : "s"}.
         {isMember ? ` ${ASK_THE_OWNER}` : null}
       </span>
-      {isMember ? null : <UpgradeLink>Upgrade</UpgradeLink>}
+      {isMember ? null : (
+        <UpgradeLink>
+          <LocalizedText en="Upgrade" />
+        </UpgradeLink>
+      )}
     </div>
   );
 }

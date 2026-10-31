@@ -23,6 +23,7 @@ import {
 } from "../alert-event-copy";
 import { AlertSubscriptionFields } from "../alert-events";
 import { ConfirmDropsField } from "../ConfirmDropsField";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 
 export function EditEventsDialog({
   label,
@@ -39,6 +40,7 @@ export function EditEventsDialog({
   pending: boolean;
   onSave: (change: AlertSubscriptionChange) => Promise<unknown>;
 }) {
+  const chinese = useInterfaceLanguage() === "zh-CN";
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<WebhookEvent[]>(events);
   const [stars, setStars] = useState<number[]>(
@@ -78,16 +80,17 @@ export function EditEventsDialog({
       <DialogTrigger asChild>
         <Button variant="ghost" size="xs">
           <Pencil />
-          Edit events
+          {chinese ? "编辑事件" : "Edit events"}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <form onSubmit={submit} className="flex min-h-0 flex-col gap-4">
           <DialogHeader>
-            <DialogTitle>Edit events</DialogTitle>
+            <DialogTitle>{chinese ? "编辑事件" : "Edit events"}</DialogTitle>
             <DialogDescription>
-              Choose the events delivered to{" "}
-              <span className="break-all text-foreground">{label}</span>.
+              {chinese ? "选择要发送至 " : "Choose the events delivered to "}
+              <span className="break-all text-foreground">{label}</span>
+              {chinese ? " 的事件。" : "."}
             </DialogDescription>
           </DialogHeader>
           <DialogBody>
@@ -100,14 +103,16 @@ export function EditEventsDialog({
             <ConfirmDropsField checked={confirming} onChange={setConfirming} />
             {selected.length === 0 ? (
               <p className="text-sm text-muted-foreground">
-                Select at least one event to save.
+                {chinese
+                  ? "请至少选择一个事件才能保存。"
+                  : "Select at least one event to save."}
               </p>
             ) : null}
           </DialogBody>
           <DialogFooter>
             <Button type="submit" disabled={pending || blocked}>
               {pending ? <Loader2 className="animate-spin" /> : null}
-              Save events
+              {chinese ? "保存事件" : "Save events"}
             </Button>
           </DialogFooter>
         </form>

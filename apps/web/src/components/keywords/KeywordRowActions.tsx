@@ -1,5 +1,9 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { componentCopy } from "@/lib/component-copy";
+
 import { useState } from "react";
 import {
   useIsMutating,
@@ -7,7 +11,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { MoreHorizontal, Sparkles, Tag, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import type { TrackedKeywordItem } from "@asobeast/shared";
 import {
   AlertDialog,
@@ -44,6 +48,7 @@ export function KeywordRowActions({
   keyword: TrackedKeywordItem;
   marketTags: () => string[];
 }) {
+  const locale = useInterfaceLanguage();
   const queryClient = useQueryClient();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -83,7 +88,7 @@ export function KeywordRowActions({
         checked={keyword.active}
         disabled={toggle.isPending}
         onCheckedChange={(next) => toggle.mutate({ active: next })}
-        aria-label="Track keyword"
+        aria-label={componentCopy(locale, "Track keyword")}
       />
 
       <DropdownMenu>
@@ -92,7 +97,7 @@ export function KeywordRowActions({
             variant="ghost"
             size="icon-sm"
             className="pointer-coarse:size-11"
-            aria-label="Keyword actions"
+            aria-label={componentCopy(locale, "Keyword actions")}
           >
             <MoreHorizontal />
           </Button>
@@ -100,11 +105,11 @@ export function KeywordRowActions({
         <DropdownMenuContent align="end">
           <DropdownMenuItem onSelect={() => setEditOpen(true)}>
             <Tag />
-            Edit tags and note
+            <LocalizedText en="Edit tags and note" />
           </DropdownMenuItem>
           <DropdownMenuItem disabled={scoring} onSelect={() => scoreOnce()}>
             <Sparkles />
-            Score now
+            <LocalizedText en="Score now" />
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
@@ -112,7 +117,7 @@ export function KeywordRowActions({
             onSelect={() => setConfirmOpen(true)}
           >
             <Trash2 />
-            Stop tracking
+            <LocalizedText en="Stop tracking" />
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -128,15 +133,18 @@ export function KeywordRowActions({
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Stop tracking {keyword.text}?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {locale === "zh-CN"
+                ? `停止跟踪“${keyword.text}”？`
+                : `Stop tracking ${keyword.text}?`}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Ranking history for this keyword stops accruing. You can add it
-              again later, but the gap in history will remain.
+              <LocalizedText en="Ranking history for this keyword stops accruing. You can add it again later, but the gap in history will remain." />
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={remove.isPending}>
-              Cancel
+              <LocalizedText en="Cancel" />
             </AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
@@ -146,7 +154,10 @@ export function KeywordRowActions({
                 removeOnce();
               }}
             >
-              {remove.isPending ? "Removing…" : "Stop tracking"}
+              {componentCopy(
+                locale,
+                remove.isPending ? "Removing…" : "Stop tracking",
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

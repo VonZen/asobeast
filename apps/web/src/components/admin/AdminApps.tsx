@@ -14,6 +14,7 @@ import { AdminList } from "./AdminList";
 import { appColumns } from "./app-columns";
 import { useAdminTable } from "./useAdminTable";
 import { workspaceChip } from "./workspace-chip";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 
 const STORE_OPTIONS = STORES.map((store) => ({
   value: store,
@@ -21,6 +22,7 @@ const STORE_OPTIONS = STORES.map((store) => ({
 }));
 
 export function AdminApps() {
+  const zh = useInterfaceLanguage() === "zh-CN";
   const [, startTransition] = useTransition();
   const [{ q, workspace, store, sort, dir }, setList] = useQueryStates(
     adminAppListParsers,
@@ -73,7 +75,7 @@ export function AdminApps() {
       chips={[
         ...store.map((value) => ({
           key: `store-${value}`,
-          label: `Store: ${storeLabel(value)}`,
+          label: zh ? `商店：${storeLabel(value)}` : `Store: ${storeLabel(value)}`,
           onRemove: () =>
             void setList({ store: store.filter((entry) => entry !== value) }),
         })),

@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useQueryState } from "nuqs";
@@ -78,9 +80,11 @@ function BreakdownBody({
   if (isNotFound(read.error)) {
     return (
       <div className="flex flex-col items-start gap-3 text-sm">
-        <p>This keyword is not tracked any more.</p>
+        <p>
+          <LocalizedText en="This keyword is not tracked any more." />
+        </p>
         <Button variant="outline" size="sm" onClick={onClose}>
-          Close
+          <LocalizedText en="Close" />
         </Button>
       </div>
     );
@@ -136,7 +140,9 @@ export function KeywordBreakdownSheet({ appId }: { appId: string }) {
         }}
       >
         <SheetHeader>
-          <SheetTitle>Why apps rank for this keyword</SheetTitle>
+          <SheetTitle>
+            <LocalizedText en="Why apps rank for this keyword" />
+          </SheetTitle>
           <SheetDescription>{descriptionOf(read)}</SheetDescription>
         </SheetHeader>
         <BreakdownBody appId={appId} read={read} onClose={close} />

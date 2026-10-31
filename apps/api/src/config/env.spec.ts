@@ -89,6 +89,41 @@ describe('AI_CALLS_PER_MONTH', () => {
   });
 });
 
+describe('SELF_HOSTED_COMPETITORS_PER_APP', () => {
+  const withCap = (value: string | number) =>
+    validateEnv({
+      AUTH_SECRET: 'a'.repeat(32),
+      SELF_HOSTED_COMPETITORS_PER_APP: value,
+    }).SELF_HOSTED_COMPETITORS_PER_APP;
+
+  it('leaves the shipped competitor cap in place when unset', () => {
+    expect(
+      validateEnv({ AUTH_SECRET: 'a'.repeat(32) }).SELF_HOSTED_COMPETITORS_PER_APP,
+    ).toBeUndefined();
+  });
+
+  it('treats a blank value as unset', () => {
+    expect(withCap('  ')).toBeUndefined();
+  });
+
+  it('reads a whole number of competitors', () => {
+    expect(withCap('25')).toBe(25);
+    expect(withCap(25)).toBe(25);
+  });
+
+  it('reads unlimited as no cap at all', () => {
+    expect(withCap('unlimited')).toBeNull();
+    expect(withCap(' Unlimited ')).toBeNull();
+  });
+
+  it.each(['-1', 'abc', '2.5', '0', 'unlimiteed'])(
+    'refuses a competitor cap of %s',
+    (value) => {
+      expect(() => withCap(value)).toThrow();
+    },
+  );
+});
+
 describe('OPENAI_BASE_URL', () => {
   const withAddress = (value: string) =>
     validateEnv({ AUTH_SECRET: 'a'.repeat(32), OPENAI_BASE_URL: value });

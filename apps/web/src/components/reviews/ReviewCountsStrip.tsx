@@ -1,6 +1,8 @@
 "use client";
 
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 import type { ReviewReplyState } from "@asobeast/shared";
 import { InfoTip } from "@/components/ui/info-tip";
 import { StatTile, StatTileGroup } from "@/components/ui/stat-tile";
@@ -19,6 +21,7 @@ export function ReviewCountsStrip({
   view: ReviewView;
   onSelect: (state: ReviewReplyState | null) => void;
 }) {
+  const language = useInterfaceLanguage();
   const { data } = useSuspenseQuery(reviewsOptions(id, countsFilters(view)));
   const counts = data.counts;
   if (!counts) return null;
@@ -28,12 +31,16 @@ export function ReviewCountsStrip({
     <section aria-label="Reply status" className="flex flex-col gap-2">
       <div className="flex items-center gap-1">
         <h2 className="text-label text-muted-foreground uppercase">
-          Reply status
+          {language === "zh-CN" ? "回复状态" : "Reply status"}
         </h2>
         <InfoTip
           label="About reply status"
           title="Reply status"
-          summary="Needs reply: no reply anywhere. Draft saved: a reply is kept here and not marked. Replied: the store shows a reply, posted from here or in the console, or you marked the review as replied. Updated after reply: the reviewer edited the review after the Google Play reply, so read it again."
+          summary={
+            language === "zh-CN"
+              ? "需要回复：尚无回复。草稿已保存：回复保存在此处，但尚未标记。已回复：商店中已有回复，或你已将评论标记为已回复。回复后更新：用户在 Google Play 回复后修改了评论，请重新查看。"
+              : "Needs reply: no reply anywhere. Draft saved: a reply is kept here and not marked. Replied: the store shows a reply, posted from here or in the console, or you marked the review as replied. Updated after reply: the reviewer edited the review after the Google Play reply, so read it again."
+          }
         >
           <a
             href={REPLY_STATES_GUIDE}
@@ -41,7 +48,7 @@ export function ReviewCountsStrip({
             rel="noreferrer"
             className="font-medium text-foreground underline decoration-primary underline-offset-4 hover:decoration-2"
           >
-            Read how replies work
+            {language === "zh-CN" ? "了解回复功能" : "Read how replies work"}
           </a>
         </InfoTip>
       </div>
@@ -53,7 +60,7 @@ export function ReviewCountsStrip({
         {states.map(({ value, label }) => (
           <StatTile
             key={value}
-            label={label}
+            label={interfaceCopy(language, label)}
             value={formatNumber(counts[COUNT_OF[value]])}
             selected={view.replyState === value}
             onSelect={() => onSelect(view.replyState === value ? null : value)}

@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import Link from "next/link";
 import type { AccountPlan } from "@asobeast/shared";
 import { Button } from "@/components/ui/button";
@@ -29,10 +31,14 @@ export function MemberBilling({ plan }: { plan: AccountPlan | undefined }) {
       </CardContent>
       <CardFooter className="gap-2">
         <Button asChild>
-          <Link href="/">Back to your apps</Link>
+          <Link href="/">
+            <LocalizedText en="Back to your apps" />
+          </Link>
         </Button>
         <Button asChild variant="outline">
-          <Link href="/settings#team">See the workspace team</Link>
+          <Link href="/settings#team">
+            <LocalizedText en="See the workspace team" />
+          </Link>
         </Button>
       </CardFooter>
     </Card>

@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import type { FormEvent, ReactNode } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import { REVIEW_SCORES } from "@asobeast/shared";
 import type { WebhookEvent } from "@asobeast/shared";
 import { Input } from "@/components/ui/input";
@@ -18,6 +19,7 @@ import { AlertChannelDialog } from "./alert-channel/AlertChannelDialog";
 import { awaitsConfirmation, recipientToast } from "./email-alert-recipient";
 
 export function AddEmailAlertDialog({ trigger }: { trigger?: ReactNode }) {
+  const language = useInterfaceLanguage();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
@@ -38,14 +40,20 @@ export function AddEmailAlertDialog({ trigger }: { trigger?: ReactNode }) {
       invalidateEmailAlertMutation(queryClient);
       if (saved.confirmationSent === false) {
         toast.warning(
-          `Email alert added. The confirmation email to ${saved.email} could not be sent, so use Resend confirmation to try again.`,
+          language === "zh-CN"
+            ? `邮件提醒已添加，但无法向 ${saved.email} 发送确认邮件，请使用“重新发送确认邮件”重试。`
+            : `Email alert added. The confirmation email to ${saved.email} could not be sent, so use Resend confirmation to try again.`,
           recipientToast(saved),
         );
       } else {
         toast.success(
           awaitsConfirmation(saved)
-            ? `Confirmation email sent to ${saved.email}`
-            : "Email alert added",
+            ? language === "zh-CN"
+              ? `确认邮件已发送至 ${saved.email}`
+              : `Confirmation email sent to ${saved.email}`
+            : language === "zh-CN"
+              ? "邮件提醒已添加"
+              : "Email alert added",
           recipientToast(saved),
         );
       }
@@ -55,7 +63,9 @@ export function AddEmailAlertDialog({ trigger }: { trigger?: ReactNode }) {
       setError(
         err instanceof ApiError
           ? err.envelope.message
-          : "Could not add email alert",
+          : language === "zh-CN"
+            ? "无法添加邮件提醒"
+            : "Could not add email alert",
       );
     },
   });
@@ -76,15 +86,25 @@ export function AddEmailAlertDialog({ trigger }: { trigger?: ReactNode }) {
     setError(null);
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError("Enter a valid email address");
+      setError(
+        language === "zh-CN"
+          ? "请输入有效的邮箱地址"
+          : "Enter a valid email address",
+      );
       return;
     }
     if (events.length === 0) {
-      setError("Select at least one event");
+      setError(
+        language === "zh-CN"
+          ? "请至少选择一个事件"
+          : "Select at least one event",
+      );
       return;
     }
     if (needsAStar(events, stars)) {
-      setError("Pick at least one star");
+      setError(
+        language === "zh-CN" ? "请至少选择一个星级" : "Pick at least one star",
+      );
       return;
     }
 
@@ -95,15 +115,21 @@ export function AddEmailAlertDialog({ trigger }: { trigger?: ReactNode }) {
     <AlertChannelDialog
       open={open}
       onOpenChange={onOpenChange}
-      label="Add email alert"
-      description="AsoBeast emails this recipient when a subscribed event fires, using your configured SMTP server. Unless it is the verified account email of a member of this workspace, the recipient confirms the address from the link in a first email."
+      label={language === "zh-CN" ? "添加邮件提醒" : "Add email alert"}
+      description={
+        language === "zh-CN"
+          ? "订阅的事件发生时，AsoBeast 会通过已配置的 SMTP 服务器向此收件人发送邮件。除非该地址是此工作区成员已验证的账号邮箱，否则收件人需要通过首封邮件中的链接确认地址。"
+          : "AsoBeast emails this recipient when a subscribed event fires, using your configured SMTP server. Unless it is the verified account email of a member of this workspace, the recipient confirms the address from the link in a first email."
+      }
       error={error}
       pending={mutation.isPending}
       onSubmit={submit}
       trigger={trigger}
     >
       <div className="flex flex-col gap-2">
-        <Label htmlFor="email-alert-address">Recipient email</Label>
+        <Label htmlFor="email-alert-address">
+          {language === "zh-CN" ? "收件人邮箱" : "Recipient email"}
+        </Label>
         <Input
           id="email-alert-address"
           type="email"

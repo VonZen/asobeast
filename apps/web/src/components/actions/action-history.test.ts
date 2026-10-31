@@ -17,6 +17,10 @@ const event = (overrides: Partial<ActionEventItem>): ActionEventItem => ({
 });
 
 describe("historyEntries", () => {
+  it("localizes the event while preserving the person's name", () => {
+    const [entry] = historyEntries([event({type: "dismissed", actor: "user", actorName: "ASO Team", reason: "handled_elsewhere"})], "zh-CN");
+    expect(entry).toMatchObject({ label: "已忽略", detail: "已在其他地方处理", actor: "ASO Team" });
+  });
   it("lists the newest change first", () => {
     const entries = historyEntries([
       event({ id: "a" }),

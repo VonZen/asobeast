@@ -13,8 +13,18 @@ export interface PlanScope {
   limits: PlanLimits;
 }
 
-export function selfHostedLimits(aiCallsPerMonth: number | null): PlanLimits {
-  return { ...SELF_HOSTED_LIMITS, aiCallsPerMonth };
+export function selfHostedLimits(
+  aiCallsPerMonth: number | null,
+  competitorsPerApp: number | null | undefined = undefined,
+): PlanLimits {
+  return {
+    ...SELF_HOSTED_LIMITS,
+    aiCallsPerMonth,
+    competitorsPerApp:
+      competitorsPerApp === undefined
+        ? SELF_HOSTED_LIMITS.competitorsPerApp
+        : competitorsPerApp,
+  };
 }
 
 export function planScopeOf(

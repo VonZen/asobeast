@@ -2,6 +2,7 @@ import * as React from "react";
 import { Slot } from "radix-ui";
 
 import { cn } from "@/lib/utils";
+import { LocalizedText } from "@/components/layout/LocalizedText";
 
 function Card({
   className,
@@ -37,6 +38,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
 function CardTitle({
   className,
   asChild = false,
+  children,
   ...props
 }: React.ComponentProps<"div"> & { asChild?: boolean }) {
   const Comp = asChild ? Slot.Root : "div";
@@ -49,17 +51,35 @@ function CardTitle({
         className,
       )}
       {...props}
-    />
+    >
+      {asChild ? (
+        children
+      ) : typeof children === "string" ? (
+        <LocalizedText en={children} />
+      ) : (
+        children
+      )}
+    </Comp>
   );
 }
 
-function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
+function CardDescription({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-description"
       className={cn("text-sm text-muted-foreground", className)}
       {...props}
-    />
+    >
+      {typeof children === "string" ? (
+        <LocalizedText en={children} />
+      ) : (
+        children
+      )}
+    </div>
   );
 }
 

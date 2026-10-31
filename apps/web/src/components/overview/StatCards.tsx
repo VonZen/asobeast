@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import {
   Card,
@@ -16,10 +17,11 @@ import { TrendChip } from "@/components/ui/delta-chip";
 import { VisibilityHelp } from "@/components/visibility/VisibilityHelp";
 
 export function StatCards({ id }: { id: string }) {
+  const language = useInterfaceLanguage();
   const { country, switchable } = useKeywordScope(id);
   const { data: summary } = useSuspenseQuery(appSummaryOptions(id, country));
   const label = switchable
-    ? ` · ${country?.toUpperCase() ?? "All markets"}`
+    ? ` · ${country?.toUpperCase() ?? (language === "zh-CN" ? "所有市场" : "All markets")}`
     : "";
 
   return (
@@ -27,7 +29,8 @@ export function StatCards({ id }: { id: string }) {
       <Card>
         <CardHeader>
           <CardDescription className="flex items-center gap-1">
-            Visibility{label}
+            {language === "zh-CN" ? "可见度" : "Visibility"}
+            {label}
             <VisibilityHelp />
           </CardDescription>
           <CardTitle className="numeric font-mono text-3xl">
@@ -42,19 +45,26 @@ export function StatCards({ id }: { id: string }) {
 
       <Card>
         <CardHeader>
-          <CardDescription>Tracked keywords{label}</CardDescription>
+          <CardDescription>
+            {language === "zh-CN" ? "追踪的关键词" : "Tracked keywords"}
+            {label}
+          </CardDescription>
           <CardTitle className="numeric font-mono text-3xl">
             {summary.trackedKeywords}
           </CardTitle>
         </CardHeader>
         <CardContent className="text-xs text-muted-foreground">
-          {summary.rankDistribution.top10} in top 10
+          {language === "zh-CN"
+            ? `${summary.rankDistribution.top10} 个进入前十`
+            : `${summary.rankDistribution.top10} in top 10`}
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardDescription>Competitors</CardDescription>
+          <CardDescription>
+            {language === "zh-CN" ? "竞品" : "Competitors"}
+          </CardDescription>
           <CardTitle className="numeric font-mono text-3xl">
             {summary.competitors}
           </CardTitle>
@@ -64,18 +74,22 @@ export function StatCards({ id }: { id: string }) {
             href={`/apps/${id}/competitors`}
             className="text-xs font-medium text-muted-foreground hover:text-foreground print:hidden"
           >
-            View comparison
+            {language === "zh-CN" ? "查看对比" : "View comparison"}
           </Link>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardDescription>Last refresh</CardDescription>
+          <CardDescription>
+            {language === "zh-CN" ? "上次刷新" : "Last refresh"}
+          </CardDescription>
           <CardTitle className="text-xl">
             {summary.lastRefreshAt
-              ? formatDate(summary.lastRefreshAt)
-              : "never"}
+              ? formatDate(summary.lastRefreshAt, language)
+              : language === "zh-CN"
+                ? "从未"
+                : "never"}
           </CardTitle>
         </CardHeader>
       </Card>

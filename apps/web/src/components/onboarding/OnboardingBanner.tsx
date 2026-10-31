@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ListChecks } from "lucide-react";
 import Link from "next/link";
@@ -56,7 +58,9 @@ function SetupBanner({ app, more }: { app: AppInSetup; more: number }) {
       </AlertDescription>
       <div className="col-span-full flex flex-wrap gap-2 sm:col-span-1 sm:col-start-3 sm:row-span-2">
         <Button asChild size="sm">
-          <Link href={`/apps/${app.id}/setup`}>Resume setup</Link>
+          <Link href={`/apps/${app.id}/setup`}>
+            <LocalizedText en="Resume setup" />
+          </Link>
         </Button>
         <Button
           size="sm"
@@ -64,7 +68,7 @@ function SetupBanner({ app, more }: { app: AppInSetup; more: number }) {
           disabled={dismiss.isPending}
           onClick={() => dismiss.mutate()}
         >
-          Dismiss
+          <LocalizedText en="Dismiss" />
         </Button>
       </div>
     </Alert>

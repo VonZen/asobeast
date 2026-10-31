@@ -1,3 +1,4 @@
+import { LocalizedText } from "@/components/layout/LocalizedText";
 import * as React from "react";
 import { Slot } from "radix-ui";
 
@@ -106,7 +107,9 @@ function BreadcrumbEllipsis({
       {...props}
     >
       <MoreHorizontalIcon />
-      <span className="sr-only">More</span>
+      <span className="sr-only">
+        <LocalizedText en="More" />
+      </span>
     </span>
   );
 }

@@ -78,6 +78,7 @@ function collectorWith(wiring: Wiring = {}) {
     get: jest.fn((key: string) => {
       if (key === 'BILLING_ENABLED') return true;
       if (key === 'AI_CALLS_PER_MONTH') return null;
+      if (key === 'SELF_HOSTED_COMPETITORS_PER_APP') return undefined;
       return '0 3 * * *';
     }),
   };

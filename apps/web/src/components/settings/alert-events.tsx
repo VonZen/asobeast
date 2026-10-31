@@ -7,6 +7,8 @@ import type { ReviewScore, WebhookEvent } from "@asobeast/shared";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { EVENT_LABELS, PICKER_EVENTS } from "./alert-event-copy";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 
 const STARS_HELP =
   "Reviews with these stars arrive as new reviews. When Negative review is ticked too, a low review outside these stars still arrives as a negative review.";
@@ -42,6 +44,7 @@ export function EventSelection({
   value: WebhookEvent[];
   onChange: (next: WebhookEvent[]) => void;
 }) {
+  const locale = useInterfaceLanguage();
   const labelId = useId();
 
   function toggle(event: WebhookEvent) {
@@ -54,7 +57,7 @@ export function EventSelection({
 
   return (
     <div className="flex flex-col gap-2">
-      <Label id={labelId}>Events</Label>
+      <Label id={labelId}>{locale === "zh-CN" ? "事件" : "Events"}</Label>
       <div
         role="group"
         aria-labelledby={labelId}
@@ -66,7 +69,7 @@ export function EventSelection({
             checked={value.includes(event)}
             onClick={() => toggle(event)}
           >
-            {EVENT_LABELS[event]}
+            {interfaceCopy(locale, EVENT_LABELS[event])}
           </ToggleChip>
         ))}
       </div>
@@ -81,6 +84,7 @@ export function ReviewStarSelection({
   value: readonly number[];
   onChange: (next: number[]) => void;
 }) {
+  const chinese = useInterfaceLanguage() === "zh-CN";
   const labelId = useId();
   const helpId = useId();
 
@@ -94,7 +98,7 @@ export function ReviewStarSelection({
 
   return (
     <div className="flex flex-col gap-2">
-      <Label id={labelId}>New review stars</Label>
+      <Label id={labelId}>{chinese ? "新评论星级" : "New review stars"}</Label>
       <div
         role="group"
         aria-labelledby={labelId}
@@ -107,12 +111,22 @@ export function ReviewStarSelection({
             checked={value.includes(score)}
             onClick={() => toggle(score)}
           >
-            {score === 1 ? "1 star" : `${score} stars`}
+            {chinese
+              ? `${score} 星`
+              : score === 1
+                ? "1 star"
+                : `${score} stars`}
           </ToggleChip>
         ))}
       </div>
       <p id={helpId} className="text-sm text-muted-foreground">
-        {value.length === 0 ? "Pick at least one star." : STARS_HELP}
+        {value.length === 0
+          ? chinese
+            ? "请至少选择一个星级。"
+            : "Pick at least one star."
+          : chinese
+            ? "这些星级的评论会作为新评论发送。如果同时选择负面评论，未包含在这些星级中的低分评论仍会作为负面评论发送。"
+            : STARS_HELP}
       </p>
     </div>
   );

@@ -176,6 +176,26 @@ const withoutSecret = (
     : new AiRequestError(message, failure.retryable);
 };
 
+// Some OpenAI-compatible gateways include a JSON code block alongside
+// explanatory prose despite accepting response_format: json_schema.
+// Only accept an unambiguous single JSON block; malformed or multiple blocks
+// remain unusable. The feature service validates the parsed schema.
+const parseStructuredContent = (
+  content: string,
+  provider: AiProvider,
+): unknown => {
+  try {
+    return JSON.parse(content) as unknown;
+  } catch (originalError) {
+    if (provider !== 'compatible') throw originalError;
+    const blocks = [
+      ...content.matchAll(/```(?:json)?[ \t]*\r?\n([\s\S]*?)\r?\n```/gi),
+    ];
+    if (blocks.length !== 1) throw originalError;
+    return JSON.parse(blocks[0][1]) as unknown;
+  }
+};
+
 const DEFAULT_MAX_OUTPUT_TOKENS = 2048;
 const REQUEST_TIMEOUT_MS = 60_000;
 const MAX_RETRIES = 2;
@@ -280,7 +300,7 @@ class OpenAiClient implements AiClient {
       );
     }
     try {
-      return { output: JSON.parse(content) as unknown, usage };
+      return { output: parseStructuredContent(content, this.provider), usage };
     } catch {
       throw new UnusableAnswerError(
         `${name} returned an unreadable response.`,

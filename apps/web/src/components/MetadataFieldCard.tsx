@@ -1,6 +1,8 @@
 "use client";
 
 import { useId, useState } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 import {
   countChars,
   type LintIssue,
@@ -23,11 +25,12 @@ export function MetadataFieldCard({
   limit: number;
   issues: LintIssue[];
 }) {
+  const language = useInterfaceLanguage();
   const countId = useId();
   const [draft, setDraft] = useState(value);
   const used = countChars(draft);
   const over = used > limit;
-  const label = METADATA_FIELD_LABELS[field];
+  const label = interfaceCopy(language, METADATA_FIELD_LABELS[field]);
 
   return (
     <div className="flex min-w-0 flex-col gap-2 rounded-xl border border-border bg-card p-4">
@@ -42,7 +45,11 @@ export function MetadataFieldCard({
           )}
         >
           {used}/{limit}
-          {over ? ` · ${used - limit} over` : ""}
+          {over
+            ? language === "zh-CN"
+              ? ` · 超出 ${used - limit}`
+              : ` · ${used - limit} over`
+            : ""}
         </span>
       </div>
 
@@ -70,7 +77,9 @@ export function MetadataFieldCard({
           ))}
         </ul>
       ) : (
-        <p className="text-body text-success">No issues.</p>
+        <p className="text-body text-success">
+          {language === "zh-CN" ? "没有发现问题。" : "No issues."}
+        </p>
       )}
     </div>
   );

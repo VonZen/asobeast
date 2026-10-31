@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Plus } from "lucide-react";
-import { toast } from "sonner";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { toast } from "@/lib/localized-toast";
 import type { AppListItem } from "@asobeast/shared";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,19 +32,26 @@ export function AddAsCompetitor({
   title: string;
   apps: readonly AppListItem[];
 }) {
+  const zh = useInterfaceLanguage() === "zh-CN";
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: (appId: string) => addCompetitor(appId, storeAppId),
     onSuccess: (competitor, appId) => {
       invalidateCompetitorMutation(queryClient, appId);
       invalidateChartMutation(queryClient);
-      toast.success(`Now tracking ${competitor.name ?? title}`);
+      toast.success(
+        zh
+          ? `已开始跟踪${competitor.name ?? title}`
+          : `Now tracking ${competitor.name ?? title}`,
+      );
     },
     onError: (error) =>
       toast.error(
         error instanceof ApiError
           ? error.envelope.message
-          : `Could not track ${title}`,
+          : zh
+            ? `无法跟踪${title}`
+            : `Could not track ${title}`,
       ),
   });
   const [open, setOpen] = useState(false);
@@ -65,7 +73,11 @@ export function AddAsCompetitor({
       <Button
         variant="ghost"
         size="icon-sm"
-        aria-label={`Add ${title} to ${app.name ?? "your app"}`}
+        aria-label={
+          zh
+            ? `将${title}添加为${app.name ?? "当前 App"}的竞品`
+            : `Add ${title} to ${app.name ?? "your app"}`
+        }
         aria-busy={mutation.isPending}
         aria-disabled={mutation.isPending || undefined}
         onClick={() => add(app.id)}
@@ -83,7 +95,9 @@ export function AddAsCompetitor({
         <Button
           variant="ghost"
           size="icon-sm"
-          aria-label={`Add ${title} as competitor`}
+          aria-label={
+            zh ? `将${title}添加为竞品` : `Add ${title} as competitor`
+          }
           aria-busy={mutation.isPending}
           aria-disabled={mutation.isPending || undefined}
         >
@@ -91,7 +105,9 @@ export function AddAsCompetitor({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuLabel>Add as competitor to</DropdownMenuLabel>
+        <DropdownMenuLabel>
+          {zh ? "添加为以下 App 的竞品" : "Add as competitor to"}
+        </DropdownMenuLabel>
         {apps.map((app) => (
           <DropdownMenuItem key={app.id} onSelect={() => add(app.id)}>
             {app.name ?? app.id}

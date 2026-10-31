@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { Suspense, useState } from "react";
 import {
   useMutation,
@@ -7,7 +9,7 @@ import {
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import { REVIEW_REPLY_GUIDELINES_MAX } from "@asobeast/shared";
 import { Button } from "@/components/ui/button";
 import {
@@ -77,13 +79,15 @@ function GuidelinesForm({ id, onSaved }: { id: string; onSaved: () => void }) {
       </DialogBody>
       <DialogFooter>
         <DialogClose asChild>
-          <Button variant="outline">Cancel</Button>
+          <Button variant="outline">
+            <LocalizedText en="Cancel" />
+          </Button>
         </DialogClose>
         <Button
           disabled={saving.isPending || limit.over > 0}
           onClick={() => saveOnce()}
         >
-          Save
+          <LocalizedText en="Save" />
         </Button>
       </DialogFooter>
     </>
@@ -99,15 +103,16 @@ export function ReplyGuidelinesDialog({ id }: { id: string }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
-          Reply guidelines
+          <LocalizedText en="Reply guidelines" />
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Reply guidelines</DialogTitle>
+          <DialogTitle>
+            <LocalizedText en="Reply guidelines" />
+          </DialogTitle>
           <DialogDescription>
-            Every AI draft for this app follows these lines: who signs, the
-            support address, what never to promise.
+            <LocalizedText en="Every AI draft for this app follows these lines: who signs, the support address, what never to promise." />
           </DialogDescription>
         </DialogHeader>
         <Suspense fallback={<Skeleton className="h-32 w-full" />}>

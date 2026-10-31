@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Plus } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import {
   SETUP_KEYWORD_TARGET,
   type TrackedKeywordItem,
@@ -42,6 +43,7 @@ export function KeywordPicker({
   country: string;
   tracked: TrackedKeywordItem[];
 }) {
+  const language = useInterfaceLanguage();
   const queryClient = useQueryClient();
   const [strategy, setStrategy] = useState<PickerStrategy>("metadata");
   const [selected, setSelected] = useState(NOTHING_SELECTED);
@@ -54,14 +56,18 @@ export function KeywordPicker({
       invalidateKeywordMutation(queryClient, appId);
       setSelected(NOTHING_SELECTED);
       toast.success(
-        `Tracking ${pluralize(texts.length, "keyword")}. Positions arrive within minutes.`,
+        language === "zh-CN"
+          ? `正在追踪 ${texts.length} 个关键词，排名将在几分钟内显示。`
+          : `Tracking ${pluralize(texts.length, "keyword")}. Positions arrive within minutes.`,
       );
     },
     onError: (error) =>
       toast.error(
         error instanceof ApiError
           ? error.envelope.message
-          : "Could not track the selected keywords",
+          : language === "zh-CN"
+            ? "无法追踪所选关键词"
+            : "Could not track the selected keywords",
       ),
   });
   const trackOnce = useSingleFlight(track);
@@ -91,7 +97,11 @@ export function KeywordPicker({
         <TabsList>
           {PICKER_STRATEGIES.map((value) => (
             <TabsOption key={value} value={value}>
-              {PICKER_LABELS[value]}
+              {language === "zh-CN"
+                ? value === "metadata"
+                  ? "来自你的商品页"
+                  : "商店自动补全"
+                : PICKER_LABELS[value]}
             </TabsOption>
           ))}
         </TabsList>
@@ -109,11 +119,17 @@ export function KeywordPicker({
           onClick={() => trackOnce([...selected])}
         >
           {track.isPending ? <Loader2 className="animate-spin" /> : <Plus />}
-          {pickerButtonLabel(selected.size)}
+          {language === "zh-CN"
+            ? selected.size === 0
+              ? "追踪所选关键词"
+              : `追踪所选的 ${selected.size} 个关键词`
+            : pickerButtonLabel(selected.size)}
         </Button>
         {remaining > 0 ? (
           <span className="text-caption text-muted-foreground">
-            {remaining} more to reach {SETUP_KEYWORD_TARGET}
+            {language === "zh-CN"
+              ? `再添加 ${remaining} 个即可达到 ${SETUP_KEYWORD_TARGET} 个`
+              : `${remaining} more to reach ${SETUP_KEYWORD_TARGET}`}
           </span>
         ) : null}
       </div>

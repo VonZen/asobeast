@@ -8,6 +8,8 @@ import "./globals.css";
 import { CheckoutReturn } from "@/components/billing/CheckoutReturn";
 import { STREAMING_SEGMENT_GUARD } from "@/lib/streaming-segment-guard";
 import { PRODUCT_NAME } from "@/lib/brand";
+import { getInterfaceLanguage } from "@/lib/interface-language-server";
+import { InterfaceLanguageProvider } from "@/components/layout/InterfaceLanguageProvider";
 
 export const metadata: Metadata = {
   metadataBase: new URL(
@@ -33,13 +35,14 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { locale } = await getInterfaceLanguage();
   return (
-    <html lang="en" suppressHydrationWarning className="h-full antialiased">
+    <html lang={locale} suppressHydrationWarning className="h-full antialiased">
       <head>
         <script dangerouslySetInnerHTML={{ __html: STREAMING_SEGMENT_GUARD }} />
       </head>
@@ -48,13 +51,15 @@ export default function RootLayout({
           href="#main-content"
           className="sr-only rounded-md bg-background px-4 py-2 text-sm font-medium focus-visible:not-sr-only focus-visible:absolute focus-visible:top-4 focus-visible:left-4 focus-visible:z-50 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none print:hidden"
         >
-          Skip to content
+          {locale === "zh-CN" ? "跳至主要内容" : "Skip to content"}
         </a>
-        <Providers>
-          <CheckoutReturn />
-          {children}
-          <Toaster />
-        </Providers>
+        <InterfaceLanguageProvider locale={locale}>
+          <Providers>
+            <CheckoutReturn />
+            {children}
+            <Toaster />
+          </Providers>
+        </InterfaceLanguageProvider>
       </body>
     </html>
   );

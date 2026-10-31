@@ -1,10 +1,12 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Plus, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import {
   ANNOTATION_LABEL_MAX_LENGTH,
   ANNOTATION_TAG_MAX_LENGTH,
@@ -102,7 +104,7 @@ function AnnotationRow({
           <AlertDialogHeader>
             <AlertDialogTitle>Remove {annotation.label}?</AlertDialogTitle>
             <AlertDialogDescription>
-              The marker disappears from the rank history and visibility charts.
+              <LocalizedText en="The marker disappears from the rank history and visibility charts." />
             </AlertDialogDescription>
           </AlertDialogHeader>
           <ConfirmActionFooter
@@ -248,7 +250,9 @@ function AddAnnotationForm({ id }: { id: string }) {
     <form onSubmit={submit} className="flex flex-col gap-3">
       <div className="grid gap-3 sm:grid-cols-[10rem_1fr]">
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="annotation-date">Date</Label>
+          <Label htmlFor="annotation-date">
+            <LocalizedText en="Date" />
+          </Label>
           <Input
             id="annotation-date"
             type="date"
@@ -258,7 +262,9 @@ function AddAnnotationForm({ id }: { id: string }) {
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="annotation-label">Label</Label>
+          <Label htmlFor="annotation-label">
+            <LocalizedText en="Label" />
+          </Label>
           <Input
             id="annotation-label"
             required
@@ -275,7 +281,9 @@ function AddAnnotationForm({ id }: { id: string }) {
       </div>
       <div className="flex flex-wrap items-end gap-3">
         <div className="flex w-40 flex-col gap-1.5">
-          <Label htmlFor="annotation-tag">Tag (optional)</Label>
+          <Label htmlFor="annotation-tag">
+            <LocalizedText en="Tag (optional)" />
+          </Label>
           <Input
             id="annotation-tag"
             placeholder="wave"
@@ -310,8 +318,12 @@ export function AnnotationsCard({ id }: { id: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardDescription>Event markers</CardDescription>
-        <CardTitle>Annotations</CardTitle>
+        <CardDescription>
+          <LocalizedText en="Event markers" />
+        </CardDescription>
+        <CardTitle>
+          <LocalizedText en="Annotations" />
+        </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <AnnotationsList id={id} />

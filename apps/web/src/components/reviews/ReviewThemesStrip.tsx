@@ -1,6 +1,7 @@
 "use client";
 
 import { useId } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { useQuery } from "@tanstack/react-query";
 import {
   REVIEW_THEME_KINDS,
@@ -27,8 +28,14 @@ const KIND_LABELS: Record<ReviewThemeKind, string> = {
 const THEMES_GUIDE =
   "https://docs.asobeast.com/guides/reviews#see-what-people-mention";
 
-function themeDetail(theme: ReviewTheme, negativeScoreMax: number): string {
-  return `in ${pluralize(theme.mentions, "review")}, ${formatNumber(theme.negative)} at ${pluralize(negativeScoreMax, "star")} or less`;
+function themeDetail(
+  theme: ReviewTheme,
+  negativeScoreMax: number,
+  zh: boolean,
+): string {
+  return zh
+    ? `出现在 ${formatNumber(theme.mentions)} 条评论中，其中 ${formatNumber(theme.negative)} 条评分不高于 ${negativeScoreMax} 星`
+    : `in ${pluralize(theme.mentions, "review")}, ${formatNumber(theme.negative)} at ${pluralize(negativeScoreMax, "star")} or less`;
 }
 
 function ThemeChip({
@@ -42,6 +49,7 @@ function ThemeChip({
   selected: boolean;
   onSelect: (phrase: string) => void;
 }) {
+  const zh = useInterfaceLanguage() === "zh-CN";
   return (
     <Button
       size="sm"
@@ -56,7 +64,9 @@ function ThemeChip({
       >
         {formatNumber(theme.mentions)}
       </span>
-      <span className="sr-only">{themeDetail(theme, negativeScoreMax)}</span>
+      <span className="sr-only">
+        {themeDetail(theme, negativeScoreMax, zh)}
+      </span>
     </Button>
   );
 }
@@ -72,13 +82,16 @@ export function ReviewThemesStrip({
   query: string;
   onSelect: (phrase: string) => void;
 }) {
+  const zh = useInterfaceLanguage() === "zh-CN";
   const headingId = useId();
   const themes = useQuery(reviewThemesOptions(id, reviewFilters(view)));
   const { data } = themes;
   if (failedRead(themes)) {
     return (
       <InlineQueryError
-        message="Could not load what people mention."
+        message={
+          zh ? "无法加载评论主题。" : "Could not load what people mention."
+        }
         read={themes}
       />
     );
@@ -93,16 +106,20 @@ export function ReviewThemesStrip({
           id={headingId}
           className="text-label text-muted-foreground uppercase"
         >
-          What people mention
+          {zh ? "评论提及主题" : "What people mention"}
         </h2>
         <InfoTip
-          label="About what people mention"
-          title="What people mention"
-          summary={themesSummary({
-            negativeScoreMax: data.negativeScoreMax,
-            reviews: data.reviews,
-            sort: view.sort,
-          })}
+          label={zh ? "了解评论提及主题" : "About what people mention"}
+          title={zh ? "评论提及主题" : "What people mention"}
+          summary={
+            zh
+              ? `投诉主题主要来自评分不高于 ${data.negativeScoreMax} 星的评论，表扬主题则主要来自其他评论；以当前版本及时间范围内最近的评论为基准。统计覆盖筛选条件匹配的 ${formatNumber(data.reviews)} 条${view.sort === "newest" ? "最新" : "低分"}评论。点击主题可查看对应评论。`
+              : themesSummary({
+                  negativeScoreMax: data.negativeScoreMax,
+                  reviews: data.reviews,
+                  sort: view.sort,
+                })
+          }
         >
           <a
             href={THEMES_GUIDE}
@@ -110,7 +127,7 @@ export function ReviewThemesStrip({
             rel="noreferrer"
             className="font-medium text-foreground underline decoration-primary underline-offset-4 hover:decoration-2"
           >
-            Read how themes are found
+            {zh ? "了解评论主题如何识别" : "Read how themes are found"}
           </a>
         </InfoTip>
       </div>
@@ -123,7 +140,11 @@ export function ReviewThemesStrip({
               id={`${headingId}-${kind}`}
               className="w-20 shrink-0 text-caption text-muted-foreground"
             >
-              {KIND_LABELS[kind]}
+              {zh
+                ? kind === "complaint"
+                  ? "投诉"
+                  : "表扬"
+                : KIND_LABELS[kind]}
             </span>
             <ul
               aria-labelledby={`${headingId}-${kind}`}

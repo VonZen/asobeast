@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Bar, BarChart, Cell, LabelList, XAxis, YAxis } from "recharts";
 import {
@@ -47,8 +49,12 @@ export function RankDistributionChart({ id }: { id: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardDescription>Rank distribution</CardDescription>
-        <CardTitle>Where your keywords rank</CardTitle>
+        <CardDescription>
+          <LocalizedText en="Rank distribution" />
+        </CardDescription>
+        <CardTitle>
+          <LocalizedText en="Where your keywords rank" />
+        </CardTitle>
       </CardHeader>
       <CardContent>
         {total === 0 ? (

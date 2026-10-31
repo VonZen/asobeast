@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -26,14 +28,14 @@ function StatusBadge({ status }: { status: AlertDeliveryItem["status"] }) {
     return (
       <Badge variant="secondary">
         <CheckCircle2 className="text-success" />
-        Success
+        <LocalizedText en="Success" />
       </Badge>
     );
   }
   return (
     <Badge variant="secondary">
       <XCircle className="text-destructive" />
-      Failed
+      <LocalizedText en="Failed" />
     </Badge>
   );
 }
@@ -99,7 +101,9 @@ export function DeliveriesSection({
         ) : (
           <ChevronRight className="size-4" />
         )}
-        <span>Recent deliveries</span>
+        <span>
+          <LocalizedText en="Recent deliveries" />
+        </span>
       </button>
 
       {open ? (
@@ -121,7 +125,7 @@ export function DeliveriesSection({
             </ul>
           ) : (
             <p className="py-2 text-sm text-muted-foreground">
-              No deliveries yet.
+              <LocalizedText en="No deliveries yet." />
             </p>
           )}
         </div>

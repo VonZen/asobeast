@@ -1,3 +1,4 @@
+import { LocalizedText } from "@/components/layout/LocalizedText";
 import type { VisibilityPoint } from "@asobeast/shared";
 import { cn } from "@/lib/utils";
 import { areaPath, monotonePath, sparklinePoints } from "./sparkline-path";
@@ -8,7 +9,7 @@ export function Sparkline({ points }: { points: VisibilityPoint[] }) {
   if (points.length < 2) {
     return (
       <div className="flex h-12 items-center text-caption text-muted-foreground">
-        Not enough history yet
+        <LocalizedText en="Not enough history yet" />
       </div>
     );
   }

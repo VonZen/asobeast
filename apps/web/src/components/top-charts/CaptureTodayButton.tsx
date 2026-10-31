@@ -2,8 +2,9 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Download, Loader2 } from "lucide-react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { useQueryStates } from "nuqs";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import type { ComponentProps } from "react";
 import type { ChartKey } from "@asobeast/shared";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ export function CaptureTodayButton({
 }: {
   chart: ChartKey;
 } & Pick<ComponentProps<typeof Button>, "variant" | "size">) {
+  const zh = useInterfaceLanguage() === "zh-CN";
   const queryClient = useQueryClient();
   const [, setSearch] = useQueryStates(chartParsers);
   const mutation = useMutation({
@@ -39,7 +41,9 @@ export function CaptureTodayButton({
       toast.success(
         listsNoApps(page)
           ? noAppsToast(page.chart.store)
-          : "Captured today's chart",
+          : zh
+            ? "已采集今日排行榜"
+            : "Captured today's chart",
       );
       void setSearch({ date: null });
     },
@@ -62,7 +66,7 @@ export function CaptureTodayButton({
       ) : (
         <Download aria-hidden />
       )}
-      Capture today
+      {zh ? "采集今日榜单" : "Capture today"}
     </Button>
   );
 }

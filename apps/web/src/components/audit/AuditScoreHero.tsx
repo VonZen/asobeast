@@ -14,6 +14,8 @@ import {
   scoreRingLabel,
 } from "./audit-copy";
 import { unlockHref } from "./audit-links";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 
 export function AuditScoreHero({
   appId,
@@ -22,6 +24,7 @@ export function AuditScoreHero({
   appId: string;
   audit: AppAuditResult;
 }) {
+  const locale = useInterfaceLanguage();
   const { overall, grade, confidence, potential, groups, unlocks } = audit;
 
   return (
@@ -29,7 +32,7 @@ export function AuditScoreHero({
       <CardContent className="flex flex-col gap-4">
         <section aria-labelledby="aso-score-heading" className="contents">
           <h2 id="aso-score-heading" className="sr-only">
-            ASO score
+            {locale === "zh-CN" ? "ASO 评分" : "ASO score"}
           </h2>
           <div className="flex items-center gap-4">
             <ScoreRing
@@ -45,7 +48,7 @@ export function AuditScoreHero({
                 {grade ?? "—"}
               </span>
               <span className="text-body text-muted-foreground">
-                {gradeLabel(grade)}
+                {interfaceCopy(locale, gradeLabel(grade))}
               </span>
               {provisional(confidence) ? (
                 <Badge variant="warning">{provisionalLine(confidence)}</Badge>
@@ -58,7 +61,7 @@ export function AuditScoreHero({
               {groups.map((group) => (
                 <StatTile
                   key={group.id}
-                  label={GROUP_LABEL[group.id]}
+                  label={interfaceCopy(locale, GROUP_LABEL[group.id])}
                   value={
                     group.score === null
                       ? "—"

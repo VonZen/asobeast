@@ -1,9 +1,11 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -68,7 +70,9 @@ export function RevokeTokenButton({ id, name }: { id: string; name: string }) {
       </AlertDialogTrigger>
       <AlertDialogContent onCloseAutoFocus={onCloseAutoFocus}>
         <AlertDialogHeader>
-          <AlertDialogTitle>Revoke this token?</AlertDialogTitle>
+          <AlertDialogTitle>
+            <LocalizedText en="Revoke this token?" />
+          </AlertDialogTitle>
           <AlertDialogDescription>
             Anything using {name} will stop authenticating immediately. This
             cannot be undone.

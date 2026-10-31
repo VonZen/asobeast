@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import type { Store } from "@asobeast/shared";
 import { CountrySelect } from "@/components/CountrySelect";
 import { Label } from "@/components/ui/label";
@@ -59,14 +61,18 @@ export function ImportMapping({
 
   return (
     <fieldset className="flex flex-col gap-3 rounded-lg border p-3">
-      <legend className="px-1 text-sm font-medium">Columns</legend>
+      <legend className="px-1 text-sm font-medium">
+        <LocalizedText en="Columns" />
+      </legend>
       <div className="flex items-center gap-2">
         <Switch
           id="keyword-import-header"
           checked={view.hasHeader}
           onCheckedChange={(hasHeader) => onViewChange({ ...view, hasHeader })}
         />
-        <Label htmlFor="keyword-import-header">First row is a header</Label>
+        <Label htmlFor="keyword-import-header">
+          <LocalizedText en="First row is a header" />
+        </Label>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         {IMPORT_FIELDS.map((field) => {
@@ -87,7 +93,9 @@ export function ImportMapping({
                 </SelectTrigger>
                 <SelectContent>
                   {field === "keyword" ? null : (
-                    <SelectItem value={NONE}>Not in the file</SelectItem>
+                    <SelectItem value={NONE}>
+                      <LocalizedText en="Not in the file" />
+                    </SelectItem>
                   )}
                   {options.map((option) => (
                     <SelectItem key={option.index} value={String(option.index)}>
@@ -103,7 +111,9 @@ export function ImportMapping({
       </div>
       {view.hasHeader && scope.apps.length > 1 ? (
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="keyword-import-app">App to import</Label>
+          <Label htmlFor="keyword-import-app">
+            <LocalizedText en="App to import" />
+          </Label>
           <Select
             value={view.app ?? ""}
             onValueChange={(app) => onViewChange({ ...view, app })}
@@ -126,7 +136,7 @@ export function ImportMapping({
       ) : null}
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="keyword-import-market">
-          Market for rows without a country
+          <LocalizedText en="Market for rows without a country" />
         </Label>
         <CountrySelect
           id="keyword-import-market"

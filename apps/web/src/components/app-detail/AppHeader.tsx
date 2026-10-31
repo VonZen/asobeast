@@ -1,6 +1,7 @@
 "use client";
 
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { ExternalLink } from "lucide-react";
 import type { AppDetail } from "@asobeast/shared";
 import { Badge } from "@/components/ui/badge";
@@ -18,8 +19,10 @@ function storeUrl(detail: AppDetail): string {
 }
 
 export function AppHeader({ id }: { id: string }) {
+  const language = useInterfaceLanguage();
   const { data: detail } = useSuspenseQuery(appDetailOptions(id));
-  const name = detail.name ?? "Untitled app";
+  const name =
+    detail.name ?? (language === "zh-CN" ? "未命名 App" : "Untitled app");
 
   return (
     <>
@@ -35,7 +38,7 @@ export function AppHeader({ id }: { id: string }) {
             <Badge variant="secondary">{storeLabel(detail.store)}</Badge>
             <Badge
               variant="outline"
-              title={`Home storefront · ${formatCountry(detail.country)}`}
+              title={`${language === "zh-CN" ? "主市场" : "Home storefront"} · ${formatCountry(detail.country)}`}
             >
               {detail.country.toUpperCase()}
             </Badge>
@@ -45,7 +48,7 @@ export function AppHeader({ id }: { id: string }) {
               rel="noreferrer"
               className="inline-flex min-h-6 items-center gap-1 rounded-sm hover:text-foreground print:hidden"
             >
-              Store page
+              {language === "zh-CN" ? "商店页面" : "Store page"}
               <ExternalLink className="size-3.5" />
             </a>
           </div>

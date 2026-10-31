@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useId, useState } from "react";
 import type { FormEvent, KeyboardEvent } from "react";
 import { X } from "lucide-react";
@@ -115,7 +117,9 @@ function AnnotationsForm({
     <form onSubmit={submit} className="flex min-h-0 flex-col gap-4">
       <DialogBody className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
-          <Label htmlFor={tagsId}>Tags</Label>
+          <Label htmlFor={tagsId}>
+            <LocalizedText en="Tags" />
+          </Label>
           {tags.length > 0 ? (
             <ul className="flex flex-wrap gap-1" aria-label="Current tags">
               {tags.map((tag) => (
@@ -167,7 +171,9 @@ function AnnotationsForm({
           ) : null}
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor={noteId}>Note</Label>
+          <Label htmlFor={noteId}>
+            <LocalizedText en="Note" />
+          </Label>
           <Textarea
             id={noteId}
             value={note}
@@ -192,11 +198,11 @@ function AnnotationsForm({
       <DialogFooter>
         <DialogClose asChild>
           <Button type="button" variant="outline">
-            Cancel
+            <LocalizedText en="Cancel" />
           </Button>
         </DialogClose>
         <Button type="submit" disabled={update.isPending || noteLimit.over > 0}>
-          Save
+          <LocalizedText en="Save" />
         </Button>
       </DialogFooter>
     </form>
@@ -215,7 +221,9 @@ export function KeywordAnnotationsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit tags and note</DialogTitle>
+          <DialogTitle>
+            <LocalizedText en="Edit tags and note" />
+          </DialogTitle>
           <DialogDescription>
             Tags and a note for {props.keyword.text}, visible to your workspace
             only.

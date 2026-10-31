@@ -1,9 +1,11 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import {
   BILLING_INTERVALS,
   PAID_PLAN_NAMES,
@@ -116,7 +118,9 @@ function PlanOption({
         <CardDescription className="flex items-center gap-2">
           {displayName}
           {action === "current" ? (
-            <Badge variant="secondary">Current</Badge>
+            <Badge variant="secondary">
+              <LocalizedText en="Current" />
+            </Badge>
           ) : null}
         </CardDescription>
         <CardTitle asChild>
@@ -200,7 +204,7 @@ export function UpgradeContent() {
       <div className="flex flex-col items-center gap-3 text-center">
         <div className="flex flex-col gap-1">
           <h1 className="text-display tracking-tight text-balance">
-            Keep optimizing without limits
+            <LocalizedText en="Keep optimizing without limits" />
           </h1>
           <p className="text-body text-muted-foreground">
             {paywallStatusLine(plan, awaitingConfirmation)}
@@ -240,10 +244,12 @@ export function UpgradeContent() {
       <Card>
         <CardHeader>
           <CardTitle asChild>
-            <h2>Every plan includes</h2>
+            <h2>
+              <LocalizedText en="Every plan includes" />
+            </h2>
           </CardTitle>
           <CardDescription>
-            The difference between the plans is volume, never features.
+            <LocalizedText en="The difference between the plans is volume, never features." />
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -263,7 +269,7 @@ export function UpgradeContent() {
               href="mailto:hello@asobeast.dev"
               className="font-medium underline"
             >
-              Contact support
+              <LocalizedText en="Contact support" />
             </a>
             .
           </p>

@@ -10,7 +10,7 @@ import type {
 import { formatCountry } from "@/lib/format";
 import { ACTION_DEFAULT_STATUSES } from "@/lib/search-params";
 import { matchesSearch } from "@/lib/search-text";
-import { actionHeadline } from "./action-headline";
+import { actionHeadline, localizedActionHeadline } from "./action-headline";
 
 export interface QueueView {
   status: readonly ActionStatus[];
@@ -70,6 +70,7 @@ function matchesText(item: ActionItem, query: string): boolean {
   return matchesSearch(
     [
       actionHeadline(item),
+      localizedActionHeadline(item, "zh-CN"),
       item.scope.keywordText ?? "",
       item.scope.appName ?? "",
       formatCountry(item.scope.country),

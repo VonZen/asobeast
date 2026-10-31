@@ -5,6 +5,8 @@ import type {
 } from "@asobeast/shared";
 import { PRODUCT_NAME } from "@/lib/brand";
 import { formatDate } from "@/lib/format";
+import type { InterfaceLanguage } from "@/lib/interface-language";
+import { interfaceCopy } from "@/lib/interface-copy";
 import { ACTION_PRIORITY_LABEL } from "./action-copy";
 
 export const ACTION_EVENT_LABEL: Record<ActionEventType, string> = {
@@ -33,17 +35,17 @@ export interface HistoryEntry {
   actor: string;
 }
 
-function detailOf(event: ActionEventItem): string | null {
+function detailOf(event: ActionEventItem, language: InterfaceLanguage): string | null {
   switch (event.type) {
     case "snoozed":
       return event.snoozedUntil
-        ? `until ${formatDate(event.snoozedUntil)}`
+        ? (language === "zh-CN" ? `推迟至 ${formatDate(event.snoozedUntil, language)}` : `until ${formatDate(event.snoozedUntil)}`)
         : null;
     case "dismissed":
-      return event.reason ? ACTION_DISMISS_REASON_LABEL[event.reason] : null;
+      return event.reason ? interfaceCopy(language, ACTION_DISMISS_REASON_LABEL[event.reason]) : null;
     case "opened":
     case "reopened":
-      return `${ACTION_PRIORITY_LABEL[event.priority]} · impact ${event.impact}`;
+      return language === "zh-CN" ? `${interfaceCopy(language, ACTION_PRIORITY_LABEL[event.priority])} · 影响 ${event.impact}` : `${ACTION_PRIORITY_LABEL[event.priority]} · impact ${event.impact}`;
     default:
       return null;
   }
@@ -51,15 +53,16 @@ function detailOf(event: ActionEventItem): string | null {
 
 export function historyEntries(
   events: readonly ActionEventItem[],
+  language: InterfaceLanguage = "en",
 ): HistoryEntry[] {
   return [...events].reverse().map((event) => ({
     id: event.id,
     date: event.occurredAt,
-    label: ACTION_EVENT_LABEL[event.type],
-    detail: detailOf(event),
+    label: interfaceCopy(language, ACTION_EVENT_LABEL[event.type]),
+    detail: detailOf(event, language),
     actor:
       event.actor === "system"
         ? PRODUCT_NAME
-        : (event.actorName ?? "A teammate"),
+        : (event.actorName ?? (language === "zh-CN" ? "团队成员" : "A teammate")),
   }));
 }

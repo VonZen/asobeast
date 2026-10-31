@@ -21,6 +21,8 @@ import { CONFIRM_DROPS_BADGE } from "../ConfirmDropsField";
 import { DeliveriesSection } from "../DeliveriesSection";
 import { DeleteChannelDialog } from "./DeleteChannelDialog";
 import { EditEventsDialog } from "./EditEventsDialog";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 
 export interface AwaitingConfirmation {
   pending: boolean;
@@ -37,6 +39,7 @@ function RowAction({
   testPending: boolean;
   onTest: () => void;
 }) {
+  const locale = useInterfaceLanguage();
   if (awaiting?.unsubscribed) return null;
   if (awaiting) {
     return (
@@ -51,7 +54,7 @@ function RowAction({
         ) : (
           <MailCheck />
         )}
-        Resend confirmation
+        {interfaceCopy(locale, "Resend confirmation")}
       </Button>
     );
   }
@@ -63,12 +66,13 @@ function RowAction({
       onClick={onTest}
     >
       {testPending ? <Loader2 className="animate-spin" /> : <Send />}
-      Send test
+      {interfaceCopy(locale, "Send test")}
     </Button>
   );
 }
 
 function ConfirmationNotice({ awaiting }: { awaiting?: AwaitingConfirmation }) {
+  const locale = useInterfaceLanguage();
   if (!awaiting) return null;
   const [Icon, title, detail] = awaiting.unsubscribed
     ? [
@@ -85,8 +89,10 @@ function ConfirmationNotice({ awaiting }: { awaiting?: AwaitingConfirmation }) {
     <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
       <Icon className="size-4 shrink-0" aria-hidden />
       <span>
-        <strong className="font-medium text-foreground">{title}</strong>{" "}
-        {detail}
+        <strong className="font-medium text-foreground">
+          {interfaceCopy(locale, title)}
+        </strong>{" "}
+        {interfaceCopy(locale, detail)}
       </span>
     </p>
   );
@@ -133,6 +139,7 @@ export function AlertChannelRow({
   eventsPending: boolean;
   onEventsSave: (change: AlertSubscriptionChange) => Promise<unknown>;
 }) {
+  const locale = useInterfaceLanguage();
   return (
     <li className="flex flex-col gap-3 p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -143,7 +150,9 @@ export function AlertChannelRow({
           <Switch
             checked={active}
             disabled={activePending}
-            aria-label={`Toggle ${label}`}
+            aria-label={
+              locale === "zh-CN" ? `启用或停用 ${label}` : `Toggle ${label}`
+            }
             onCheckedChange={onActiveChange}
           />
           <RowAction
@@ -173,7 +182,10 @@ export function AlertChannelRow({
         ) : null}
         {events.map((event) => (
           <Badge key={event} variant="outline">
-            {eventBadgeLabel(event, reviewScores)}
+            {eventBadgeLabel(event, reviewScores)
+              .split(" · ")
+              .map((part) => interfaceCopy(locale, part))
+              .join(" · ")}
           </Badge>
         ))}
         <EditEventsDialog

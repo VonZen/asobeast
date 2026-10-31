@@ -1,3 +1,4 @@
+import { LocalizedText } from "@/components/layout/LocalizedText";
 import { Suspense } from "react";
 import { ChartSkeleton } from "@/components/charts/ChartStates";
 import { CHART_HEIGHT } from "@/components/charts/theme";
@@ -20,7 +21,7 @@ export function ActionRail({
         className="flex flex-col gap-3"
       >
         <h2 id="progress-heading" className="text-title">
-          Progress
+          <LocalizedText en="Progress" />
         </h2>
         <Suspense fallback={<ChartSkeleton height={CHART_HEIGHT.compact} />}>
           <ActionProgress appId={appId} />

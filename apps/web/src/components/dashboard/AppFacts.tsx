@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { Star } from "lucide-react";
 import type { PortfolioApp, PortfolioAppInsight } from "@asobeast/shared";
 import { GradedNumber } from "@/components/ui/graded";
@@ -26,10 +27,11 @@ function RatingFact({ rating }: { rating: PortfolioAppInsight["rating"] }) {
 }
 
 function AuditFact({ audit }: { audit: PortfolioAppInsight["audit"] }) {
+  const language = useInterfaceLanguage();
   if (audit?.current == null) return null;
   return (
     <span className="inline-flex items-center gap-1">
-      <span aria-hidden>Audit</span>
+      <span aria-hidden>{language === "zh-CN" ? "审核" : "Audit"}</span>
       <GradedNumber
         value={String(audit.current)}
         grade={grade("audit", audit.current)}
@@ -50,15 +52,18 @@ function ActionsFact({
   app: PortfolioApp;
   actions: PortfolioAppInsight["actions"];
 }) {
+  const language = useInterfaceLanguage();
   if (!actions || actions.open === 0) return null;
   return (
     <Link href={`/apps/${app.id}/actions`} className={FACT_LINK}>
-      {pluralize(actions.open, "open action")}
+      {language === "zh-CN"
+        ? `${actions.open} 项待处理`
+        : pluralize(actions.open, "open action")}
       <ForApp app={app} />
       {actions.critical > 0 ? (
         <span className="text-priority-critical">
           {" "}
-          · {actions.critical} critical
+          · {actions.critical} {language === "zh-CN" ? "项紧急" : "critical"}
         </span>
       ) : null}
     </Link>
@@ -66,10 +71,13 @@ function ActionsFact({
 }
 
 function ReviewsFact({ app, count }: { app: PortfolioApp; count: number }) {
+  const language = useInterfaceLanguage();
   if (count === 0) return null;
   return (
     <Link href={`/apps/${app.id}/reviews`} className={FACT_LINK}>
-      {pluralize(count, "new low rating")}
+      {language === "zh-CN"
+        ? `${count} 条新低评分`
+        : pluralize(count, "new low rating")}
       <ForApp app={app} />
     </Link>
   );

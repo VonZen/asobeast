@@ -9,7 +9,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { formatDate, storeLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { ACTION_CATEGORY_LABEL } from "./action-copy";
-import { actionHeadline } from "./action-headline";
+import { localizedActionHeadline } from "./action-headline";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 import { actionStatusTag, type ActionStatusTag } from "./action-status-tag";
 import { ActionDismissMenu } from "./ActionDismissMenu";
 import { ActionImpactMeter } from "./ActionImpactMeter";
@@ -43,13 +45,19 @@ function RowMeta({
   item: ActionItem;
   appScoped: boolean;
 }) {
+  const locale = useInterfaceLanguage();
   const tag = actionStatusTag(item);
   const parts = [
-    ACTION_CATEGORY_LABEL[item.category],
-    appScoped ? null : (item.scope.appName ?? "Unknown app"),
+    interfaceCopy(locale, ACTION_CATEGORY_LABEL[item.category]),
+    appScoped
+      ? null
+      : (item.scope.appName ??
+        (locale === "zh-CN" ? "未知 App" : "Unknown app")),
     storeLabel(item.scope.store),
     item.scope.country.toUpperCase(),
-    `since ${formatDate(item.firstSeenAt)}`,
+    locale === "zh-CN"
+      ? `始于 ${formatDate(item.firstSeenAt, locale)}`
+      : `since ${formatDate(item.firstSeenAt)}`,
   ].filter((part) => part !== null);
 
   return (
@@ -59,13 +67,15 @@ function RowMeta({
       </p>
       {tag ? (
         <Badge variant="outline" className={cn("h-auto", TAG_TONE[tag.tone])}>
-          {tag.label}
+          {interfaceCopy(locale, tag.label)}
         </Badge>
       ) : null}
       {item.note ? (
         <span className="inline-flex text-muted-foreground">
           <StickyNote aria-hidden className="size-3.5" />
-          <span className="sr-only">Has a note</span>
+          <span className="sr-only">
+            {locale === "zh-CN" ? "含备注" : "Has a note"}
+          </span>
         </span>
       ) : null}
     </div>
@@ -81,6 +91,7 @@ function RowControls({
   headline: string;
   href: string;
 }) {
+  const locale = useInterfaceLanguage();
   const { update, isPending: busy } = useActionUpdate(item, {
     moveFocus: true,
   });
@@ -95,7 +106,7 @@ function RowControls({
         onClick={() => update({ status: "OPEN" })}
       >
         <RotateCcw aria-hidden />
-        Reopen
+        {locale === "zh-CN" ? "重新打开" : "Reopen"}
       </Button>
     );
   }
@@ -106,13 +117,15 @@ function RowControls({
         variant="secondary"
         size="sm"
         disabled={busy}
-        aria-label="Done"
+        aria-label={locale === "zh-CN" ? "标记完成" : "Done"}
         data-command="done"
         className="size-11 @2xl/queue:h-7 @2xl/queue:w-auto"
         onClick={() => update({ status: "DONE" })}
       >
         <Check aria-hidden />
-        <span className="hidden @2xl/queue:inline">Done</span>
+        <span className="hidden @2xl/queue:inline">
+          {locale === "zh-CN" ? "完成" : "Done"}
+        </span>
       </Button>
       <div className="hidden items-center gap-2 @2xl/queue:flex">
         <ActionSnoozeMenu
@@ -149,12 +162,15 @@ function RowSelect({
   checked: boolean;
   onToggle: () => void;
 }) {
+  const locale = useInterfaceLanguage();
   return (
     <label className="relative z-20 flex size-11 items-center justify-center @2xl/queue:size-6">
       <Checkbox
         checked={checked}
         onCheckedChange={onToggle}
-        aria-label={`Select ${headline}`}
+        aria-label={
+          locale === "zh-CN" ? `选择 ${headline}` : `Select ${headline}`
+        }
       />
     </label>
   );
@@ -179,7 +195,7 @@ export function ActionRow({
   tabbable: boolean;
   onFocus: () => void;
 }) {
-  const headline = actionHeadline(item);
+  const headline = localizedActionHeadline(item, useInterfaceLanguage());
   const selectable = selection.selectable.includes(item.id);
 
   return (

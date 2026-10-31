@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
@@ -46,7 +48,7 @@ export function ScreenshotThumb({
           className,
         )}
       >
-        Unavailable
+        <LocalizedText en="Unavailable" />
       </span>
     );
   }

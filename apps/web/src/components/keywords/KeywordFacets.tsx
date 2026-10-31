@@ -1,6 +1,8 @@
 "use client";
 
 import type { SetValues } from "nuqs";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 import type { Row, Table } from "@tanstack/react-table";
 import {
   KEYWORD_BUCKETS,
@@ -109,18 +111,25 @@ export function KeywordFacets({
   filters: KeywordFilters;
   setFilters: SetValues<typeof keywordFilterParsers>;
 }) {
+  const language = useInterfaceLanguage();
   return (
     <>
       <FacetFilter
         title="Source"
-        options={SOURCE_OPTIONS}
+        options={SOURCE_OPTIONS.map((option) => ({
+          ...option,
+          label: interfaceCopy(language, option.label),
+        }))}
         selected={filters.source}
         counts={facetCounts(table, "source", (row) => row.original.source)}
         onChange={(source) => void setFilters({ source })}
       />
       <FacetFilter
         title="Bucket"
-        options={BUCKET_OPTIONS}
+        options={BUCKET_OPTIONS.map((option) => ({
+          ...option,
+          label: interfaceCopy(language, option.label),
+        }))}
         selected={filters.bucket}
         counts={facetCounts(table, "bucket", (row) => row.original.bucket)}
         onChange={(bucket) => void setFilters({ bucket })}
@@ -128,7 +137,10 @@ export function KeywordFacets({
       <SelectFilter
         title="Status"
         value={filters.status}
-        options={STATUS_OPTIONS}
+        options={STATUS_OPTIONS.map((option) => ({
+          ...option,
+          label: interfaceCopy(language, option.label),
+        }))}
         onChange={(status) => void setFilters({ status })}
       />
       <TagFacet table={table} selected={filters.tag} setFilters={setFilters} />
@@ -155,7 +167,10 @@ export function KeywordFacets({
       />
       <FacetFilter
         title="Position"
-        options={POSITION_OPTIONS}
+        options={POSITION_OPTIONS.map((option) => ({
+          ...option,
+          label: interfaceCopy(language, option.label),
+        }))}
         selected={filters.pos}
         counts={facetCounts(table, "position", (row) =>
           positionBandOf(row.original.latestPosition, row.original.latestDepth),

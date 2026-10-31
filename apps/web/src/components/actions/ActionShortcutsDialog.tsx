@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import {
   Dialog,
   DialogContent,
@@ -32,20 +34,25 @@ export function ActionShortcutsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Keyboard shortcuts</DialogTitle>
+          <DialogTitle>
+            <LocalizedText en="Keyboard shortcuts" />
+          </DialogTitle>
           <DialogDescription>
-            Work the queue without the mouse. Shortcuts pause while you type or
-            while a menu is open.
+            <LocalizedText en="Work the queue without the mouse. Shortcuts pause while you type or while a menu is open." />
           </DialogDescription>
         </DialogHeader>
         <table className="w-full text-body">
           <caption className="sr-only">
-            Action Center keyboard shortcuts
+            <LocalizedText en="Action Center keyboard shortcuts" />
           </caption>
           <thead className="sr-only">
             <tr>
-              <th scope="col">Keys</th>
-              <th scope="col">Action</th>
+              <th scope="col">
+                <LocalizedText en="Keys" />
+              </th>
+              <th scope="col">
+                <LocalizedText en="Action" />
+              </th>
             </tr>
           </thead>
           <tbody>

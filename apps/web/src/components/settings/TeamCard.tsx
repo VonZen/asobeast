@@ -4,7 +4,7 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Trash2, UserPlus } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import type { WorkspaceInviteCreated } from "@asobeast/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -45,12 +45,16 @@ import {
 } from "@/lib/queries";
 import { useSingleFlight } from "@/lib/single-flight";
 import { inviteOutcome } from "./invite-outcome";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 
 function messageOf(error: unknown, fallback: string): string {
   return error instanceof ApiError ? error.envelope.message : fallback;
 }
 
 function InviteDialog() {
+  const locale = useInterfaceLanguage();
+  const chinese = locale === "zh-CN";
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
@@ -65,7 +69,15 @@ function InviteDialog() {
       invalidateWorkspaceTeamMutation(queryClient);
     },
     onError: (err) =>
-      setError(messageOf(err, "Could not send the invitation.")),
+      setError(
+        interfaceCopy(
+          locale,
+          messageOf(
+            err,
+            chinese ? "无法发送邀请。" : "Could not send the invitation.",
+          ),
+        ),
+      ),
   });
   const inviteOnce = useSingleFlight(mutation);
 
@@ -90,19 +102,29 @@ function InviteDialog() {
       <DialogTrigger asChild>
         <Button size="sm" variant="outline">
           <UserPlus />
-          Invite member
+          {chinese ? "邀请成员" : "Invite member"}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Invite a member</DialogTitle>
+          <DialogTitle>{chinese ? "邀请成员" : "Invite a member"}</DialogTitle>
           <DialogDescription>
-            They join this workspace and see everything in it except billing.
+            {chinese
+              ? "受邀成员加入工作区后，可以查看除账单以外的所有内容。"
+              : "They join this workspace and see everything in it except billing."}
           </DialogDescription>
         </DialogHeader>
         {outcome ? (
           <DialogBody className="gap-2">
-            <p className="text-body">{outcome.message}</p>
+            <p className="text-body">
+              {chinese && created
+                ? created.delivered
+                  ? `邀请已发送至 ${created.email}。`
+                  : outcome.link
+                    ? `邀请邮件发送失败，请将此链接发送给 ${created.email}。`
+                    : `无法将邀请发送至 ${created.email}。请检查邮件设置后重新邀请。`
+                : outcome.message}
+            </p>
             {outcome.link ? (
               <code className="rounded-md bg-muted px-2 py-1.5 text-caption break-all">
                 {outcome.link}
@@ -113,7 +135,9 @@ function InviteDialog() {
           <form onSubmit={submit} className="flex min-h-0 flex-col gap-4">
             <DialogBody>
               <div className="flex flex-col gap-2">
-                <Label htmlFor="invite-email">Email</Label>
+                <Label htmlFor="invite-email">
+                  {chinese ? "邮箱" : "Email"}
+                </Label>
                 <Input
                   id="invite-email"
                   type="email"
@@ -135,7 +159,7 @@ function InviteDialog() {
                 {mutation.isPending ? (
                   <Loader2 className="animate-spin" />
                 ) : null}
-                Send invitation
+                {chinese ? "发送邀请" : "Send invitation"}
               </Button>
             </DialogFooter>
           </form>
@@ -146,6 +170,9 @@ function InviteDialog() {
 }
 
 export function TeamCard() {
+  const locale = useInterfaceLanguage();
+  const chinese = locale === "zh-CN";
+  const t = (value: string) => interfaceCopy(locale, value);
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { data: team } = useQuery(workspaceTeamOptions);
@@ -154,22 +181,32 @@ export function TeamCard() {
   const revoke = useMutation({
     mutationFn: revokeInvite,
     onSuccess: () => {
-      toast.success("Invitation revoked");
+      toast.success(t("Invitation revoked"));
       invalidateWorkspaceTeamMutation(queryClient);
     },
     onError: (err) =>
-      toast.error(messageOf(err, "Could not revoke the invitation.")),
+      toast.error(
+        interfaceCopy(
+          locale,
+          messageOf(err, t("Could not revoke the invitation.")),
+        ),
+      ),
   });
   const revokeOnce = useSingleFlight(revoke);
 
   const remove = useMutation({
     mutationFn: removeMember,
     onSuccess: () => {
-      toast.success("Member removed");
+      toast.success(t("Member removed"));
       invalidateWorkspaceTeamMutation(queryClient);
     },
     onError: (err) =>
-      toast.error(messageOf(err, "Could not remove the member.")),
+      toast.error(
+        interfaceCopy(
+          locale,
+          messageOf(err, t("Could not remove the member.")),
+        ),
+      ),
   });
   const removeOnce = useSingleFlight(remove);
 
@@ -179,24 +216,28 @@ export function TeamCard() {
     <Card>
       <CardHeader className="flex-row items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <CardTitle>Team</CardTitle>
+          <CardTitle>{t("Team")}</CardTitle>
           <CardDescription>
-            Everyone who can sign in to this workspace.
+            {t("Everyone who can sign in to this workspace.")}
           </CardDescription>
         </div>
         {isOwner ? <InviteDialog /> : null}
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <Table>
-          <TableCaption>Members of this workspace</TableCaption>
+          <TableCaption>{t("Members of this workspace")}</TableCaption>
           <TableHeader>
             <TableRow>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead className="hidden sm:table-cell">Joined</TableHead>
+              <TableHead>{t("Email")}</TableHead>
+              <TableHead>{t("Role")}</TableHead>
+              <TableHead className="hidden sm:table-cell">
+                {t("Joined")}
+              </TableHead>
               {isOwner ? (
                 <TableHead className="w-10">
-                  <span className="sr-only">Actions</span>
+                  <span className="sr-only">
+                    {chinese ? "操作" : "Actions"}
+                  </span>
                 </TableHead>
               ) : null}
             </TableRow>
@@ -207,9 +248,9 @@ export function TeamCard() {
                 <TableCell className="break-all whitespace-normal">
                   {member.email}
                 </TableCell>
-                <TableCell className="capitalize">{member.role}</TableCell>
+                <TableCell className="capitalize">{t(member.role)}</TableCell>
                 <TableCell className="hidden sm:table-cell">
-                  {formatDate(member.createdAt)}
+                  {formatDate(member.createdAt, locale)}
                 </TableCell>
                 {isOwner ? (
                   <TableCell>
@@ -217,7 +258,11 @@ export function TeamCard() {
                       <Button
                         size="icon"
                         variant="ghost"
-                        aria-label={`Remove ${member.email}`}
+                        aria-label={
+                          chinese
+                            ? `移除 ${member.email}`
+                            : `Remove ${member.email}`
+                        }
                         disabled={remove.isPending}
                         onClick={() => removeOnce(member.id)}
                       >
@@ -233,14 +278,18 @@ export function TeamCard() {
 
         {team.invites.length > 0 ? (
           <Table>
-            <TableCaption>Invitations waiting to be accepted</TableCaption>
+            <TableCaption>
+              {t("Invitations waiting to be accepted")}
+            </TableCaption>
             <TableHeader>
               <TableRow>
-                <TableHead>Email</TableHead>
-                <TableHead>Expires</TableHead>
+                <TableHead>{t("Email")}</TableHead>
+                <TableHead>{t("Expires")}</TableHead>
                 {isOwner ? (
                   <TableHead className="w-10">
-                    <span className="sr-only">Actions</span>
+                    <span className="sr-only">
+                      {chinese ? "操作" : "Actions"}
+                    </span>
                   </TableHead>
                 ) : null}
               </TableRow>
@@ -253,7 +302,7 @@ export function TeamCard() {
                   </TableCell>
                   <TableCell>
                     <Badge variant="secondary">
-                      {formatDate(invite.expiresAt)}
+                      {formatDate(invite.expiresAt, locale)}
                     </Badge>
                   </TableCell>
                   {isOwner ? (
@@ -261,7 +310,11 @@ export function TeamCard() {
                       <Button
                         size="icon"
                         variant="ghost"
-                        aria-label={`Revoke the invitation for ${invite.email}`}
+                        aria-label={
+                          chinese
+                            ? `撤销对 ${invite.email} 的邀请`
+                            : `Revoke the invitation for ${invite.email}`
+                        }
                         disabled={revoke.isPending}
                         onClick={() => revokeOnce(invite.id)}
                       >

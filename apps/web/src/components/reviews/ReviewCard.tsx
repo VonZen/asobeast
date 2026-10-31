@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 import type { ReviewItem, Store } from "@asobeast/shared";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/format";
@@ -22,6 +24,7 @@ const LINK_BUTTON =
   "rounded-sm text-caption font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline disabled:pointer-events-none";
 
 function Stars({ score }: { score: number }) {
+  const language = useInterfaceLanguage();
   const low = score <= LOW_SCORE;
   return (
     <span
@@ -30,7 +33,11 @@ function Stars({ score }: { score: number }) {
         low ? "text-destructive" : "text-foreground",
       )}
       role="img"
-      aria-label={`${score} out of 5 stars`}
+      aria-label={
+        language === "zh-CN"
+          ? `满分 5 星，${score} 星`
+          : `${score} out of 5 stars`
+      }
     >
       <span aria-hidden>
         {"★".repeat(score)}
@@ -58,6 +65,7 @@ function useOverflowing<T extends HTMLElement>() {
 }
 
 function ReviewText({ text, label }: { text: string; label: ActionLabel }) {
+  const language = useInterfaceLanguage();
   const [expanded, setExpanded] = useState(false);
   const [ref, overflowing] = useOverflowing<HTMLParagraphElement>();
 
@@ -81,7 +89,13 @@ function ReviewText({ text, label }: { text: string; label: ActionLabel }) {
           aria-label={label(expanded ? "Show less of" : "Show more of")}
           className={LINK_BUTTON}
         >
-          {expanded ? "Show less" : "Show more"}
+          {language === "zh-CN"
+            ? expanded
+              ? "收起"
+              : "展开"
+            : expanded
+              ? "Show less"
+              : "Show more"}
         </button>
       ) : null}
     </div>
@@ -89,12 +103,15 @@ function ReviewText({ text, label }: { text: string; label: ActionLabel }) {
 }
 
 function DeveloperReply({ review }: { review: ReviewItem }) {
+  const language = useInterfaceLanguage();
   if (!review.replyText) return null;
   return (
     <div className="flex flex-col gap-1 border-l-2 border-border pl-3">
       <p className="text-caption text-muted-foreground">
-        Developer reply
-        {review.repliedAt ? ` · ${formatDate(review.repliedAt)}` : null}
+        {language === "zh-CN" ? "开发者回复" : "Developer reply"}
+        {review.repliedAt
+          ? ` · ${formatDate(review.repliedAt, language)}`
+          : null}
       </p>
       <p dir="auto" className="text-body wrap-anywhere whitespace-pre-line">
         {review.replyText}
@@ -126,6 +143,7 @@ function TranslateButton({
   translation: ReviewTranslationState;
   label: ActionLabel;
 }) {
+  const language = useInterfaceLanguage();
   if (!translation.offered) return null;
   const { text, lead } = translateAction(translation);
   return (
@@ -136,7 +154,7 @@ function TranslateButton({
       aria-label={lead ? label(lead) : undefined}
       className={LINK_BUTTON}
     >
-      {text}
+      {interfaceCopy(language, text)}
     </button>
   );
 }
@@ -158,6 +176,7 @@ export function ReviewCard({
   actions?: ReactNode;
   children?: ReactNode;
 }) {
+  const language = useInterfaceLanguage();
   const low = review.score <= LOW_SCORE;
   const translation = useReviewTranslation(appId, review, fallbackLanguage);
   const shown = translation.translation;
@@ -195,7 +214,9 @@ export function ReviewCard({
           label={label}
         />
       ) : (
-        <p className="text-body text-muted-foreground">No written review</p>
+        <p className="text-body text-muted-foreground">
+          {language === "zh-CN" ? "没有文字评论" : "No written review"}
+        </p>
       )}
       {shown ? (
         <p className="text-caption text-muted-foreground">
@@ -205,8 +226,10 @@ export function ReviewCard({
       <DeveloperReply review={review} />
       <div className="flex flex-wrap items-center gap-2">
         <p className="text-xs text-muted-foreground wrap-anywhere">
-          <bdi>{review.userName ?? "Anonymous"}</bdi> ·{" "}
-          {formatDate(review.reviewedAt)}
+          <bdi>
+            {review.userName ?? (language === "zh-CN" ? "匿名" : "Anonymous")}
+          </bdi>{" "}
+          · {formatDate(review.reviewedAt, language)}
         </p>
         <TranslateButton translation={translation} label={label} />
         {actions}

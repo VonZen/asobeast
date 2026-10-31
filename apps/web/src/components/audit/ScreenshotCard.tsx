@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useState } from "react";
 import Image from "next/image";
 import type { AuditScreenshotObservation } from "@asobeast/shared";
@@ -29,7 +31,7 @@ export function ScreenshotCard({
             style={{ height: SCREENSHOT_HEIGHT }}
             className="grid place-items-center rounded-xl bg-muted text-caption text-muted-foreground"
           >
-            Image unavailable
+            <LocalizedText en="Image unavailable" />
           </span>
         ) : (
           <Image

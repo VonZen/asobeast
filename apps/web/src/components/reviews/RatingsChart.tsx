@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useDeferredValue } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useQueryState } from "nuqs";
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
@@ -46,6 +47,7 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 function RatingsChartBody({ id, range }: { id: string; range: RatingsRange }) {
+  const language = useInterfaceLanguage();
   const { data } = useSuspenseQuery(
     ratingsHistoryOptions(id, presetToRange(range)),
   );
@@ -55,8 +57,12 @@ function RatingsChartBody({ id, range }: { id: string; range: RatingsRange }) {
     return (
       <ChartNotice
         height={CHART_HEIGHT.compact}
-        title="No ratings history yet"
-        body="Snapshots accrue with the daily pipeline."
+        title={language === "zh-CN" ? "暂无评分历史" : "No ratings history yet"}
+        body={
+          language === "zh-CN"
+            ? "每日任务会持续采集快照。"
+            : "Snapshots accrue with the daily pipeline."
+        }
       />
     );
   }
@@ -65,19 +71,34 @@ function RatingsChartBody({ id, range }: { id: string; range: RatingsRange }) {
     return (
       <ChartStat
         height={CHART_HEIGHT.compact}
-        label="Latest average rating"
+        label={language === "zh-CN" ? "最新平均评分" : "Latest average rating"}
         value={latest.ratingAvg === null ? "—" : formatRating(latest.ratingAvg)}
-        note="A trend line needs a few more daily snapshots."
+        note={
+          language === "zh-CN"
+            ? "生成趋势线需要更多每日快照。"
+            : "A trend line needs a few more daily snapshots."
+        }
       />
     );
   }
 
   return (
     <ChartContainer
-      config={chartConfig}
+      config={
+        language === "zh-CN"
+          ? {
+              ratingAvg: { ...chartConfig.ratingAvg, label: "平均评分" },
+              ratingCount: { ...chartConfig.ratingCount, label: "评分数" },
+            }
+          : chartConfig
+      }
       className={`${CHART_HEIGHT.compact} w-full`}
       role="region"
-      aria-label="Average rating and review volume"
+      aria-label={
+        language === "zh-CN"
+          ? "平均评分和评分数量"
+          : "Average rating and review volume"
+      }
     >
       <LineChart accessibilityLayer data={data.points} margin={CHART_MARGIN}>
         <CartesianGrid {...GRID_PROPS} />
@@ -115,14 +136,21 @@ function RatingsChartBody({ id, range }: { id: string; range: RatingsRange }) {
 }
 
 export function RatingsChart({ id }: { id: string }) {
+  const language = useInterfaceLanguage();
   const [range, setRange] = useQueryState("range", ratingsRangeParser);
   const shownRange = useDeferredValue(range);
 
   return (
     <Card>
       <CardHeader>
-        <CardDescription>Ratings history</CardDescription>
-        <CardTitle>Average rating and volume over time</CardTitle>
+        <CardDescription>
+          {language === "zh-CN" ? "评分历史" : "Ratings history"}
+        </CardDescription>
+        <CardTitle>
+          {language === "zh-CN"
+            ? "平均评分和评分数量趋势"
+            : "Average rating and volume over time"}
+        </CardTitle>
         <CardAction>
           <RangePicker
             presets={RATINGS_RANGES}

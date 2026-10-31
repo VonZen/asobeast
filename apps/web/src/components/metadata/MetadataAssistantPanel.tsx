@@ -1,10 +1,14 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { componentCopy } from "@/lib/component-copy";
+
 import { Suspense, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Copy, Loader2, Sparkles } from "lucide-react";
 import { useQueryState } from "nuqs";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import {
   APP_STORE_LOCALIZATIONS,
   type MetadataDraft,
@@ -34,12 +38,19 @@ const STORE_FIELDS: Record<Store, MetadataField[]> = {
 };
 
 function DraftCard({ draft }: { draft: MetadataDraft }) {
+  const locale = useInterfaceLanguage();
   async function copy() {
     try {
       await navigator.clipboard.writeText(draft.value);
-      toast.success(`${METADATA_FIELD_LABELS[draft.field]} copied`);
+      toast.success(
+        locale === "zh-CN"
+          ? `已复制${componentCopy(locale, METADATA_FIELD_LABELS[draft.field])}`
+          : `${METADATA_FIELD_LABELS[draft.field]} copied`,
+      );
     } catch {
-      toast.error("Couldn't copy — select and copy it manually");
+      toast.error(
+        componentCopy(locale, "Couldn't copy — select and copy it manually"),
+      );
     }
   }
 
@@ -47,7 +58,7 @@ function DraftCard({ draft }: { draft: MetadataDraft }) {
     <div className="min-w-0 rounded-xl border border-border bg-card p-4">
       <div className="flex items-center justify-between">
         <span className="font-medium text-foreground">
-          {METADATA_FIELD_LABELS[draft.field]}
+          {componentCopy(locale, METADATA_FIELD_LABELS[draft.field])}
         </span>
         <span className="text-sm tabular-nums text-muted-foreground">
           {draft.chars}/{draft.limit}
@@ -58,7 +69,7 @@ function DraftCard({ draft }: { draft: MetadataDraft }) {
       </pre>
       <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
         {draft.issues.length === 0 ? (
-          <Badge variant="success">no issues</Badge>
+          <Badge variant="success">{componentCopy(locale, "no issues")}</Badge>
         ) : (
           <ul className="flex min-w-0 flex-col gap-1.5">
             {draft.issues.map((issue, index) => (
@@ -72,7 +83,7 @@ function DraftCard({ draft }: { draft: MetadataDraft }) {
           onClick={copy}
         >
           <Copy />
-          Copy
+          <LocalizedText en="Copy" />
         </Button>
       </div>
       {draft.rationale ? (
@@ -91,6 +102,7 @@ export function MetadataAssistantPanel({
   store: Store;
   canLocalize: boolean;
 }) {
+  const locale = useInterfaceLanguage();
   const available = STORE_FIELDS[store];
   const [selected, setSelected] = useState<MetadataField[]>(available);
   const [instructions, setInstructions] = useState("");
@@ -107,7 +119,8 @@ export function MetadataAssistantPanel({
         instructions: instructions.trim() || undefined,
         localization: canLocalize ? (draftLocale ?? undefined) : undefined,
       }),
-    onError: (error) => failAi(error, "Draft generation failed"),
+    onError: (error) =>
+      failAi(error, componentCopy(locale, "Draft generation failed")),
     onSettled: () => invalidateAiUsage(queryClient),
   });
   const draftOnce = useSingleFlight(mutation);
@@ -123,7 +136,9 @@ export function MetadataAssistantPanel({
 
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-lg font-medium">AI drafts</h2>
+      <h2 className="text-lg font-medium">
+        <LocalizedText en="AI drafts" />
+      </h2>
       <Card>
         <CardContent className="flex flex-col gap-4">
           {canLocalize ? (
@@ -136,7 +151,7 @@ export function MetadataAssistantPanel({
               htmlFor="assistant-instructions"
               className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
             >
-              Instructions (optional)
+              <LocalizedText en="Instructions (optional)" />
             </label>
             <textarea
               id="assistant-instructions"
@@ -144,7 +159,10 @@ export function MetadataAssistantPanel({
               onChange={(event) => setInstructions(event.target.value)}
               maxLength={500}
               rows={2}
-              placeholder="Steer tone or angle — e.g. emphasise sleep tracking."
+              placeholder={componentCopy(
+                locale,
+                "Steer tone or angle — e.g. emphasise sleep tracking.",
+              )}
               className="w-full resize-y rounded-lg border border-border bg-muted p-2 text-sm text-foreground"
             />
           </div>
@@ -160,7 +178,7 @@ export function MetadataAssistantPanel({
                   onChange={(event) => toggle(field, event.target.checked)}
                   className="h-4 w-4 rounded border-border"
                 />
-                {METADATA_FIELD_LABELS[field]}
+                {componentCopy(locale, METADATA_FIELD_LABELS[field])}
               </label>
             ))}
           </div>
@@ -174,7 +192,10 @@ export function MetadataAssistantPanel({
               ) : (
                 <Sparkles />
               )}
-              {drafts.length > 0 ? "Regenerate" : "Generate drafts"}
+              {componentCopy(
+                locale,
+                drafts.length > 0 ? "Regenerate" : "Generate drafts",
+              )}
             </Button>
             <AiCallsLeft />
           </div>
@@ -182,7 +203,9 @@ export function MetadataAssistantPanel({
       </Card>
       {drafted ? (
         <p className="text-sm text-muted-foreground">
-          Drafted in {APP_STORE_LOCALIZATIONS[drafted]}
+          {locale === "zh-CN"
+            ? `已按${APP_STORE_LOCALIZATIONS[drafted]}生成草稿`
+            : `Drafted in ${APP_STORE_LOCALIZATIONS[drafted]}`}
         </p>
       ) : null}
       {drafts.length > 0 ? (
@@ -193,7 +216,10 @@ export function MetadataAssistantPanel({
         </div>
       ) : null}
       <p className="text-xs text-muted-foreground">
-        Drafts are suggestions — AsoBeast never writes to the store.
+        {componentCopy(
+          locale,
+          "Drafts are suggestions — AsoBeast never writes to the store.",
+        )}
       </p>
     </section>
   );

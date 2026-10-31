@@ -199,6 +199,56 @@ describe('createOpenAiClient', () => {
     ]);
   });
 
+  it.each([
+    ['JSON fence', '```json\n{"ok":true}\n```'],
+    ['untyped fence', '```\n{"ok":true}\n```'],
+    ['case-insensitive CRLF fence', '```JSON\r\n{"ok":true}\r\n```'],
+    ['fence with surrounding whitespace', '  \n```json\n{"ok":true}\n```\n  '],
+    [
+      'prose before a single JSON fence',
+      'No images attached.\n\n```json\n{"ok":true}\n```',
+    ],
+    ['prose after a single JSON fence', '```json\n{"ok":true}\n```\nDone.'],
+  ])('reads a compatible provider response inside a %s', async (_, content) => {
+    mockCreate.mockResolvedValue(withUsage(stop(content)));
+    const client = createOpenAiClient(
+      config('sk-test', 'local-model', 'http://localhost:11434/v1'),
+    );
+    await expect(client?.structured(request)).resolves.toEqual({
+      output: { ok: true },
+      usage: {
+        inputTokens: 1_200,
+        cachedInputTokens: 1_024,
+        outputTokens: 300,
+      },
+    });
+  });
+
+  it.each([
+    'Explanation without JSON',
+    '```javascript\n{"ok":true}\n```',
+    '```json\n{"ok":true}\n``` and ```json\n{"ok":false}\n```',
+    '```json\n{"ok":true\n```',
+  ])(
+    'rejects invalid or non-isolated compatible-provider content: %p',
+    async (content) => {
+      mockCreate.mockResolvedValue(stop(content));
+      const client = createOpenAiClient(
+        config('sk-test', 'local-model', 'http://localhost:11434/v1'),
+      );
+      await expect(client?.structured(request)).rejects.toBeInstanceOf(
+        UnusableAnswerError,
+      );
+    },
+  );
+
+  it('keeps the stricter parser for native OpenAI responses', async () => {
+    mockCreate.mockResolvedValue(stop('```json\n{"ok":true}\n```'));
+    await expect(build().structured(request)).rejects.toBeInstanceOf(
+      UnusableAnswerError,
+    );
+  });
+
   it('rejects a refusal', async () => {
     mockCreate.mockResolvedValue(stop(null, 'not allowed'));
     await expect(build().structured(request)).rejects.toBeInstanceOf(

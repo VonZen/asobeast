@@ -1,6 +1,8 @@
 "use client";
 
 import { Suspense } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useQueryState } from "nuqs";
 import type { ChangeEventItem } from "@asobeast/shared";
@@ -75,6 +77,7 @@ function ChangeValue({
   event: ChangeEventItem;
   dense: boolean;
 }) {
+  const language = useInterfaceLanguage();
   const { field, before, after } = event;
 
   if (hasScreenshotDetail(event)) {
@@ -82,7 +85,11 @@ function ChangeValue({
   }
 
   if (field === "icon") {
-    return <span className="text-muted-foreground">Icon updated</span>;
+    return (
+      <span className="text-muted-foreground">
+        {language === "zh-CN" ? "图标已更新" : "Icon updated"}
+      </span>
+    );
   }
 
   if (field === "whatsNew") {
@@ -91,7 +98,9 @@ function ChangeValue({
         <TooltipTrigger asChild>
           <span className="break-words">
             <span className="text-muted-foreground">
-              {CHANGE_FIELD_LABELS.whatsNew} updated:{" "}
+              {language === "zh-CN"
+                ? "更新内容已更新："
+                : `${CHANGE_FIELD_LABELS.whatsNew} updated: `}
             </span>
             <span
               className={cn(
@@ -104,7 +113,8 @@ function ChangeValue({
           </span>
         </TooltipTrigger>
         <TooltipContent className="max-w-xs">
-          Previous: {inlineNotes(before)}
+          {language === "zh-CN" ? "之前：" : "Previous: "}
+          {inlineNotes(before)}
         </TooltipContent>
       </Tooltip>
     );
@@ -113,8 +123,14 @@ function ChangeValue({
   let from: string;
   let to: string;
   if (field === "summary" || field === "description") {
-    from = chars(before);
-    to = chars(after);
+    from =
+      language === "zh-CN" && before !== null
+        ? `${formatNumber(Number(before))} 个字符`
+        : chars(before);
+    to =
+      language === "zh-CN" && after !== null
+        ? `${formatNumber(Number(after))} 个字符`
+        : chars(after);
   } else if (field === "price") {
     from = price(before, event.currency);
     to = price(after, event.currency);
@@ -140,13 +156,13 @@ function ChangeValue({
     <span className="grid gap-1 sm:grid-cols-2">
       <span className="flex flex-col gap-0.5 rounded-md bg-muted/50 px-2 py-1">
         <span className="text-label text-muted-foreground uppercase">
-          Before
+          {language === "zh-CN" ? "更改前" : "Before"}
         </span>
         <span className="break-words text-muted-foreground">{from}</span>
       </span>
       <span className="flex flex-col gap-0.5 rounded-md bg-success-subtle px-2 py-1">
         <span className="text-label text-muted-foreground uppercase">
-          After
+          {language === "zh-CN" ? "更改后" : "After"}
         </span>
         <span className="break-words font-medium">{to}</span>
       </span>
@@ -163,6 +179,7 @@ export function ChangeRow({
   dense?: boolean;
   iconUrl?: string | null;
 }) {
+  const language = useInterfaceLanguage();
   return (
     <div
       data-change-field={event.field}
@@ -180,14 +197,21 @@ export function ChangeRow({
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-body font-medium">
-            {event.appName ?? "Unknown app"}
+            {event.appName ??
+              (language === "zh-CN" ? "未知 App" : "Unknown app")}
           </span>
           <Badge variant={event.isCompetitor ? "secondary" : "outline"}>
-            {event.isCompetitor ? "Competitor" : "Your app"}
+            {language === "zh-CN"
+              ? event.isCompetitor
+                ? "竞品"
+                : "你的 App"
+              : event.isCompetitor
+                ? "Competitor"
+                : "Your app"}
           </Badge>
           <Badge variant="outline">
             {localizedLabel(
-              CHANGE_FIELD_LABELS[event.field],
+              interfaceCopy(language, CHANGE_FIELD_LABELS[event.field]),
               event.localization,
             )}
           </Badge>
@@ -201,6 +225,7 @@ export function ChangeRow({
 }
 
 function ConversionChip({ value }: { value: number }) {
+  const language = useInterfaceLanguage();
   const tone =
     value > 0
       ? "text-signal-up"
@@ -209,7 +234,7 @@ function ConversionChip({ value }: { value: number }) {
         : "text-muted-foreground";
   return (
     <span className={cn("numeric font-mono normal-case", tone)}>
-      Conversion {value > 0 ? "+" : ""}
+      {language === "zh-CN" ? "转化率" : "Conversion"} {value > 0 ? "+" : ""}
       {value}%
     </span>
   );
@@ -245,13 +270,22 @@ function ChangeList({
   market?: string;
   homeCountry: string;
 }) {
+  const language = useInterfaceLanguage();
   const { data } = useSuspenseQuery(changesOptions(id, days, market));
 
   if (data.events.length === 0) {
     return (
       <EmptyState
-        title={`No changes in the last ${days} days`}
-        body="Metadata changes appear after a daily refresh finds one. Widen the window to look further back."
+        title={
+          language === "zh-CN"
+            ? `最近 ${days} 天没有变化`
+            : `No changes in the last ${days} days`
+        }
+        body={
+          language === "zh-CN"
+            ? "每日刷新发现元数据变化后，会显示在这里。可扩大时间范围查看更早的记录。"
+            : "Metadata changes appear after a daily refresh finds one. Widen the window to look further back."
+        }
       />
     );
   }
@@ -273,7 +307,7 @@ function ChangeList({
         <section key={day} className="flex flex-col gap-2">
           <h2 className="flex items-center gap-2 text-label text-muted-foreground uppercase">
             <span aria-hidden className="size-1.5 rounded-full bg-border" />
-            {formatDate(day)}
+            {formatDate(day, language)}
             {market === undefined ? (
               <Suspense fallback={null}>
                 <DayConversion
@@ -298,8 +332,10 @@ function ChangeList({
 }
 
 function MarketHeading({ id }: { id: string }) {
+  const language = useInterfaceLanguage();
   const { market, home } = useMarket(id);
-  return market === home ? "Changes" : `Changes · ${formatCountry(market)}`;
+  const title = language === "zh-CN" ? "变化" : "Changes";
+  return market === home ? title : `${title} · ${formatCountry(market)}`;
 }
 
 function MarketChangeList({ id, days }: { id: string; days: number }) {
@@ -315,6 +351,7 @@ function MarketChangeList({ id, days }: { id: string; days: number }) {
 }
 
 export function ChangeTimeline({ id }: { id: string }) {
+  const language = useInterfaceLanguage();
   const [days, setDays] = useQueryState("days", changeDaysParser);
 
   return (
@@ -326,7 +363,11 @@ export function ChangeTimeline({ id }: { id: string }) {
               <MarketHeading id={id} />
             </Suspense>
           </CardDescription>
-          <CardTitle>Metadata change timeline</CardTitle>
+          <CardTitle>
+            {language === "zh-CN"
+              ? "元数据变化时间线"
+              : "Metadata change timeline"}
+          </CardTitle>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-3">
           <Suspense fallback={null}>

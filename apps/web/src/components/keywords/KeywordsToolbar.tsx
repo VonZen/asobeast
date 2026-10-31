@@ -1,11 +1,12 @@
 "use client";
 
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { Plus, X } from "lucide-react";
 import { useQueryState } from "nuqs";
 import type { Store } from "@asobeast/shared";
 import { Button } from "@/components/ui/button";
-import { formatCountry } from "@/lib/format";
+import { localizedCountry } from "@/lib/format";
 import { keywordCountriesOptions, keywordsOptions } from "@/lib/queries";
 import { countryParser } from "@/lib/search-params";
 import { cn } from "@/lib/utils";
@@ -22,6 +23,7 @@ export function KeywordsToolbar({
   market: string;
   homeCountry: string;
 }) {
+  const language = useInterfaceLanguage();
   const [, setCountry] = useQueryState("country", countryParser);
   const { data: markets } = useSuspenseQuery(keywordCountriesOptions(id));
   const { data: keywords } = useSuspenseQuery(keywordsOptions(id, market));
@@ -34,7 +36,7 @@ export function KeywordsToolbar({
     <div className="flex flex-wrap items-center gap-2">
       <div
         role="group"
-        aria-label="Keyword markets"
+        aria-label={language === "zh-CN" ? "关键词市场" : "Keyword markets"}
         className="flex flex-wrap items-center gap-2"
       >
         {markets.map((entry) => {
@@ -44,7 +46,7 @@ export function KeywordsToolbar({
               key={entry.country}
               type="button"
               aria-pressed={selected}
-              title={formatCountry(entry.country)}
+              title={localizedCountry(entry.country, language)}
               onClick={() => void setCountry(entry.country)}
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-body transition-colors",
@@ -61,7 +63,11 @@ export function KeywordsToolbar({
           );
         })}
         <AddKeywordsDialog appId={id} store={store} country={market}>
-          <Button variant="outline" size="sm" aria-label="Add a market">
+          <Button
+            variant="outline"
+            size="sm"
+            aria-label={language === "zh-CN" ? "添加市场" : "Add a market"}
+          >
             <Plus />
           </Button>
         </AddKeywordsDialog>
@@ -73,30 +79,35 @@ export function KeywordsToolbar({
           onClick={() => void setCountry(null)}
           className="inline-flex items-center gap-1.5 rounded-full border border-dashed px-2.5 py-1 text-caption hover:bg-muted"
         >
-          Market: {market.toUpperCase()}
+          {language === "zh-CN" ? "市场" : "Market"}: {market.toUpperCase()}
           <X className="size-3 opacity-60" aria-hidden />
-          <span className="sr-only">Clear the market filter</span>
+          <span className="sr-only">
+            {language === "zh-CN" ? "清除市场筛选" : "Clear the market filter"}
+          </span>
         </button>
       ) : null}
 
       <p className="text-body text-muted-foreground" aria-live="polite">
-        Tracking{" "}
+        {language === "zh-CN" ? "正在追踪 " : "Tracking "}
         <span className="numeric font-mono font-medium text-foreground">
           {keywords.length}
         </span>
         {partial ? (
           <>
-            {" of "}
+            {language === "zh-CN" ? " / " : " of "}
             <span className="numeric font-mono font-medium text-foreground">
               {total}
             </span>
           </>
         ) : null}{" "}
-        keyword{keywords.length === 1 ? "" : "s"} ·{" "}
+        {language === "zh-CN"
+          ? "个关键词"
+          : `keyword${keywords.length === 1 ? "" : "s"}`}{" "}
+        ·{" "}
         <span className="numeric font-mono font-medium text-foreground">
           {active}
         </span>{" "}
-        active
+        {language === "zh-CN" ? "个启用中" : "active"}
       </p>
     </div>
   );

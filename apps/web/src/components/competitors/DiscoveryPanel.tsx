@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useMemo } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { flexRender, useTable } from "@tanstack/react-table";
 import { useQueryState, useQueryStates } from "nuqs";
@@ -56,6 +57,7 @@ function DiscoveryTable({
   days: number;
   storeName: string;
 }) {
+  const language = useInterfaceLanguage();
   const { data } = useSuspenseQuery(discoveryOptions(id, days));
   const [params, setParams] = useQueryStates(DISCOVERY_PARAMS, {
     urlKeys: DISCOVERY_URL_KEYS,
@@ -97,8 +99,16 @@ function DiscoveryTable({
   if (data.items.length === 0) {
     return (
       <EmptyState
-        title={`Nothing discovered in the last ${days} days`}
-        body="As daily checks accumulate, apps that keep appearing in your keyword results but you do not track surface here. Widen the window to look further back."
+        title={
+          language === "zh-CN"
+            ? `最近 ${days} 天没有发现结果`
+            : `Nothing discovered in the last ${days} days`
+        }
+        body={
+          language === "zh-CN"
+            ? "每日检查积累后，经常出现在关键词搜索结果中但尚未追踪的 App 会显示在这里。可扩大时间范围查看更早记录。"
+            : "As daily checks accumulate, apps that keep appearing in your keyword results but you do not track surface here. Widen the window to look further back."
+        }
       />
     );
   }
@@ -144,7 +154,11 @@ function DiscoveryTable({
             <TableRow>
               <TableCell colSpan={table.getVisibleLeafColumns().length}>
                 <FilteredEmpty
-                  title="No apps match this search"
+                  title={
+                    language === "zh-CN"
+                      ? "没有符合搜索条件的 App"
+                      : "No apps match this search"
+                  }
                   onClear={() => void setParams({ q: null })}
                 />
               </TableCell>
@@ -166,6 +180,7 @@ function DiscoveryTable({
 }
 
 export function DiscoveryPanel({ id }: { id: string }) {
+  const language = useInterfaceLanguage();
   const [days, setDays] = useQueryState("days", discoveryDaysParser);
   const { data: detail } = useSuspenseQuery(appDetailOptions(id));
   const storeName = storeLabel(detail.store);
@@ -173,8 +188,10 @@ export function DiscoveryPanel({ id }: { id: string }) {
   return (
     <CollapsibleCard
       section={COMPETITOR_SECTION.discovery}
-      eyebrow="Discovery"
-      title="Apps you don’t track yet"
+      eyebrow={language === "zh-CN" ? "发现" : "Discovery"}
+      title={
+        language === "zh-CN" ? "尚未追踪的 App" : "Apps you don’t track yet"
+      }
       actions={
         <>
           <Badge variant="secondary">{storeName}</Badge>
@@ -185,7 +202,7 @@ export function DiscoveryPanel({ id }: { id: string }) {
             <TabsList>
               {DISCOVERY_WINDOWS.map((window) => (
                 <TabsOption key={window} value={String(window)}>
-                  {window}d
+                  {language === "zh-CN" ? `${window} 天` : `${window}d`}
                 </TabsOption>
               ))}
             </TabsList>

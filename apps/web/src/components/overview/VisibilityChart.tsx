@@ -40,6 +40,7 @@ import {
   trendState,
 } from "@/components/charts/ChartStates";
 import { useKeywordScope } from "@/components/app-detail/use-market";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import {
   CHART_HEIGHT,
   CHART_MARGIN,
@@ -73,6 +74,7 @@ function VisibilityTooltip({
   points: VisibilityPoint[];
   annotations: AppAnnotationItem[];
 }) {
+  const zh = useInterfaceLanguage() === "zh-CN";
   if (!active || label === undefined) return null;
 
   const point = points.find((candidate) => candidate.date === label);
@@ -86,7 +88,7 @@ function VisibilityTooltip({
           key: "visibility",
           index: 0,
           color: "var(--color-visibility)",
-          label: "Visibility",
+          label: zh ? "可见度" : "Visibility",
           value: formatNumber(point.visibility),
           sortBy: point.visibility,
         },
@@ -107,6 +109,7 @@ function VisibilityChartBody({
   id: string;
   range: VisibilityRange;
 }) {
+  const zh = useInterfaceLanguage() === "zh-CN";
   const { country } = useKeywordScope(id);
   const { data } = useSuspenseQuery(
     visibilityOptions(id, presetToRange(range), country),
@@ -124,8 +127,12 @@ function VisibilityChartBody({
     return (
       <ChartNotice
         height={CHART_HEIGHT.compact}
-        title="No visibility recorded yet"
-        body="The daily pipeline captures your first point within 24 hours."
+        title={zh ? "尚无可见度记录" : "No visibility recorded yet"}
+        body={
+          zh
+            ? "每日采集流程通常在 24 小时内记录首个数据点。"
+            : "The daily pipeline captures your first point within 24 hours."
+        }
       />
     );
   }
@@ -134,19 +141,27 @@ function VisibilityChartBody({
     return (
       <ChartStat
         height={CHART_HEIGHT.compact}
-        label="Latest visibility"
+        label={zh ? "最近可见度" : "Latest visibility"}
         value={String(latest.visibility)}
-        note="A trend line needs a few more daily checks."
+        note={
+          zh
+            ? "需要更多每日检查记录才能绘制趋势线。"
+            : "A trend line needs a few more daily checks."
+        }
       />
     );
   }
 
   return (
     <ChartContainer
-      config={chartConfig}
+      config={
+        zh
+          ? { visibility: { ...chartConfig.visibility, label: "可见度" } }
+          : chartConfig
+      }
       className={`${CHART_HEIGHT.compact} w-full`}
       role="region"
-      aria-label="Search visibility over time"
+      aria-label={zh ? "搜索可见度趋势" : "Search visibility over time"}
     >
       <AreaChart accessibilityLayer data={data.points} margin={CHART_MARGIN}>
         <CartesianGrid {...GRID_PROPS} />
@@ -178,14 +193,19 @@ function VisibilityChartBody({
 }
 
 export function VisibilityChart({ id }: { id: string }) {
+  const zh = useInterfaceLanguage() === "zh-CN";
   const [range, setRange] = useQueryState("range", visibilityRangeParser);
   const shownRange = useDeferredValue(range);
 
   return (
     <Card>
       <CardHeader>
-        <CardDescription>Visibility history</CardDescription>
-        <CardTitle>Search visibility over time</CardTitle>
+        <CardDescription>
+          {zh ? "可见度历史" : "Visibility history"}
+        </CardDescription>
+        <CardTitle>
+          {zh ? "搜索可见度趋势" : "Search visibility over time"}
+        </CardTitle>
         <CardAction>
           <RangePicker
             presets={VISIBILITY_RANGES}

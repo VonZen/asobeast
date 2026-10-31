@@ -1,3 +1,4 @@
+import { LocalizedText } from "@/components/layout/LocalizedText";
 import Link from "next/link";
 import type { AppAuditResult } from "@asobeast/shared";
 import { AppIconImage } from "@/components/AppIconImage";
@@ -26,7 +27,7 @@ export function CreativeInsights({ audit }: { audit: AppAuditResult }) {
               href="#ai-analysis"
               className="font-medium underline-offset-4 hover:underline"
             >
-              Analyze creative
+              <LocalizedText en="Analyze creative" />
             </Link>
           </p>
         </CardContent>
@@ -44,11 +45,11 @@ export function CreativeInsights({ audit }: { audit: AppAuditResult }) {
           className="flex flex-col gap-4"
         >
           <h2 id="creative-heading" className="text-lg font-medium">
-            Creative
+            <LocalizedText en="Creative" />
           </h2>
           {creative.stale ? (
             <p className="rounded-xl border border-warning/40 bg-warning/10 px-3 py-2 text-sm">
-              These observations describe your previous screenshots.
+              <LocalizedText en="These observations describe your previous screenshots." />
             </p>
           ) : null}
 

@@ -1,3 +1,4 @@
+import { LocalizedText } from "@/components/layout/LocalizedText";
 import { Globe, Link2 } from "lucide-react";
 import type {
   PortfolioApp,
@@ -32,7 +33,7 @@ function GroupVisibility({ group }: { group: PortfolioGroup | undefined }) {
       </div>
       <TrendChip label="7d" value={group.visibility.delta7d} />
       <p className="text-caption text-muted-foreground">
-        Blended across stores, whose scores are not directly comparable.
+        <LocalizedText en="Blended across stores, whose scores are not directly comparable." />
       </p>
       <Sparkline points={group.sparkline} />
     </div>
@@ -69,8 +70,7 @@ export function PortfolioGroupCard({
         </div>
         {storefront ? (
           <p className="text-caption text-muted-foreground">
-            One listing across storefronts. Ranks are per market, so each row
-            keeps its own score.
+            <LocalizedText en="One listing across storefronts. Ranks are per market, so each row keeps its own score." />
           </p>
         ) : (
           <GroupVisibility group={group} />

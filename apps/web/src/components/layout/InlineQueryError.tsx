@@ -1,6 +1,10 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { RefreshCw } from "lucide-react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { componentCopy } from "@/lib/component-copy";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -23,10 +27,11 @@ export function InlineQueryError({
   message: string;
   read: RetryableRead;
 }) {
+  const locale = useInterfaceLanguage();
   const retrying = read.isFetching;
   return (
     <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-      <span role="alert">{message}</span>
+      <span role="alert">{componentCopy(locale, message)}</span>
       <Button
         size="sm"
         variant="outline"
@@ -36,7 +41,7 @@ export function InlineQueryError({
         }}
       >
         <RefreshCw className={cn(retrying && "animate-spin")} />
-        Retry
+        <LocalizedText en="Retry" />
       </Button>
     </div>
   );

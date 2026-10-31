@@ -43,6 +43,8 @@ import {
 } from "@/lib/app-sections";
 import { adminSectionFrom } from "@/lib/admin-sections";
 import { actionSummaryOptions } from "@/lib/queries";
+import { interfaceCopy } from "@/lib/interface-copy";
+import { useInterfaceLanguage } from "./InterfaceLanguageProvider";
 
 const SECTION_ICONS: Record<AppSectionSegment, LucideIcon> = {
   "": Gauge,
@@ -120,6 +122,8 @@ function NavLink({
 }
 
 export function SidebarNav() {
+  const locale = useInterfaceLanguage();
+  const t = (value: string) => interfaceCopy(locale, value);
   const pathname = usePathname();
   const { setOpenMobile, isMobile } = useSidebar();
   const { isOperator } = useAuth();
@@ -132,14 +136,14 @@ export function SidebarNav() {
   return (
     <>
       <SidebarGroup>
-        <SidebarGroupLabel>Workspace</SidebarGroupLabel>
+        <SidebarGroupLabel>{t("Workspace")}</SidebarGroupLabel>
         <SidebarGroupContent>
           <SidebarMenu>
             {WORKSPACE.map(({ href, label, icon }) => (
               <NavLink
                 key={href}
                 href={href}
-                label={label}
+                label={t(label)}
                 icon={icon}
                 active={pathname === href}
                 onNavigate={close}
@@ -150,6 +154,7 @@ export function SidebarNav() {
             {isOperator ? (
               <NavLink
                 {...ADMIN_ENTRY}
+                label={t(ADMIN_ENTRY.label)}
                 active={adminSectionFrom(pathname) !== null}
                 onNavigate={close}
               />
@@ -159,9 +164,9 @@ export function SidebarNav() {
       </SidebarGroup>
 
       {app ? (
-        <nav aria-label="App sections">
+        <nav aria-label={t("App sections")}>
           <SidebarGroup>
-            <SidebarGroupLabel>App</SidebarGroupLabel>
+            <SidebarGroupLabel>{t("App")}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {APP_SECTIONS.map(({ segment, label }) => {
@@ -171,7 +176,7 @@ export function SidebarNav() {
                     <SidebarMenuItem key={segment || "overview"}>
                       <SidebarMenuButton
                         asChild
-                        tooltip={label}
+                        tooltip={t(label)}
                         isActive={active}
                       >
                         <Link
@@ -180,7 +185,7 @@ export function SidebarNav() {
                           aria-current={active ? "page" : undefined}
                         >
                           <Icon />
-                          <span>{label}</span>
+                          <span>{t(label)}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>

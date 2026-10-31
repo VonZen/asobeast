@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useId, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Plus } from "lucide-react";
@@ -39,7 +41,7 @@ function OutcomeLine({ outcome }: { outcome: AddOutcome | undefined }) {
   if (!outcome) return null;
   return outcome.kind === "added" ? (
     <span role="status" className="text-caption text-muted-foreground">
-      Added
+      <LocalizedText en="Added" />
     </span>
   ) : (
     <span role="status" className="text-caption text-destructive">
@@ -178,7 +180,7 @@ export function DiscoveredApps({
   return (
     <section aria-labelledby={headingId} className="flex flex-col gap-2">
       <h4 id={headingId} className="text-sm font-medium">
-        Suggested competitors
+        <LocalizedText en="Suggested competitors" />
       </h4>
       <SuggestionsBody
         appId={appId}

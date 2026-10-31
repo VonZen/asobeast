@@ -2,6 +2,8 @@
 
 import { useId, type ReactNode } from "react";
 import { InfoIcon, type LucideIcon } from "lucide-react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { componentCopy } from "@/lib/component-copy";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -25,6 +27,7 @@ function InfoTip({
   icon?: LucideIcon;
   children?: ReactNode;
 }) {
+  const language = useInterfaceLanguage();
   const titleId = useId();
   const summaryId = useId();
   return (
@@ -33,7 +36,7 @@ function InfoTip({
         <Button
           variant="ghost"
           size="icon-xs"
-          aria-label={label}
+          aria-label={componentCopy(language, label)}
           className="-my-1 text-muted-foreground hover:text-foreground print:hidden"
         >
           <Icon aria-hidden />
@@ -46,8 +49,12 @@ function InfoTip({
         className="w-80 max-w-(--radix-popover-content-available-width) text-body"
       >
         <PopoverHeader>
-          <PopoverTitle id={titleId}>{title}</PopoverTitle>
-          <PopoverDescription id={summaryId}>{summary}</PopoverDescription>
+          <PopoverTitle id={titleId}>
+            {componentCopy(language, title)}
+          </PopoverTitle>
+          <PopoverDescription id={summaryId}>
+            {componentCopy(language, summary)}
+          </PopoverDescription>
         </PopoverHeader>
         {children}
       </PopoverContent>

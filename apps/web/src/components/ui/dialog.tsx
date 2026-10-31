@@ -4,6 +4,7 @@ import * as React from "react";
 import { Dialog as DialogPrimitive } from "radix-ui";
 
 import { cn } from "@/lib/utils";
+import { LocalizedText } from "@/components/layout/LocalizedText";
 import { Button } from "@/components/ui/button";
 import { XIcon } from "lucide-react";
 
@@ -149,6 +150,7 @@ function DialogFooter({
 
 function DialogTitle({
   className,
+  children,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Title>) {
   return (
@@ -159,12 +161,19 @@ function DialogTitle({
         className,
       )}
       {...props}
-    />
+    >
+      {typeof children === "string" ? (
+        <LocalizedText en={children} />
+      ) : (
+        children
+      )}
+    </DialogPrimitive.Title>
   );
 }
 
 function DialogDescription({
   className,
+  children,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Description>) {
   return (
@@ -175,7 +184,13 @@ function DialogDescription({
         className,
       )}
       {...props}
-    />
+    >
+      {typeof children === "string" ? (
+        <LocalizedText en={children} />
+      ) : (
+        children
+      )}
+    </DialogPrimitive.Description>
   );
 }
 

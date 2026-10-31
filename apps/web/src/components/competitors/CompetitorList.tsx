@@ -1,9 +1,10 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import type { CompetitorItem } from "@asobeast/shared";
 import { AppIcon } from "@/components/AppIcon";
 import { DelistedBadge } from "@/components/apps/DelistedBadge";
@@ -35,7 +36,7 @@ import {
 import { useSingleFlight } from "@/lib/single-flight";
 import { exportCompetitors } from "./competitor-csv";
 
-const REMOVE_CONTROL = 'button[aria-label^="Remove "]';
+const REMOVE_CONTROL = 'button[data-competitor-remove="true"]';
 const COMPETITOR_FIELD = "competitor-search";
 
 const removalSuccessor = (card: HTMLElement | null): HTMLElement | null =>
@@ -49,11 +50,13 @@ function CompetitorCard({
   id: string;
   competitor: CompetitorItem;
 }) {
+  const language = useInterfaceLanguage();
   const queryClient = useQueryClient();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const card = useRef<HTMLDivElement>(null);
   const { handOff, onCloseAutoFocus } = useCloseFocusHandoff();
-  const name = competitor.name ?? "Untitled app";
+  const name =
+    competitor.name ?? (language === "zh-CN" ? "未命名 App" : "Untitled app");
   const snapshot = competitor.latestSnapshot;
 
   const mutation = useMutation({
@@ -62,10 +65,14 @@ function CompetitorCard({
       invalidateCompetitorMutation(queryClient, id);
       handOff(removalSuccessor(card.current));
       setConfirmOpen(false);
-      toast.success(`Removed ${name}`);
+      toast.success(
+        language === "zh-CN" ? `已移除 ${name}` : `Removed ${name}`,
+      );
     },
     onError: () => {
-      toast.error(`Could not remove ${name}`);
+      toast.error(
+        language === "zh-CN" ? `无法移除 ${name}` : `Could not remove ${name}`,
+      );
     },
   });
   const removeOnce = useSingleFlight(mutation);
@@ -109,23 +116,29 @@ function CompetitorCard({
             <Button
               variant="ghost"
               size="icon-sm"
-              aria-label={`Remove ${name}`}
+              data-competitor-remove="true"
+              aria-label={
+                language === "zh-CN" ? `移除 ${name}` : `Remove ${name}`
+              }
             >
               <Trash2 />
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent onCloseAutoFocus={onCloseAutoFocus}>
             <AlertDialogHeader>
-              <AlertDialogTitle>Remove {name}?</AlertDialogTitle>
+              <AlertDialogTitle>
+                {language === "zh-CN" ? `移除 ${name}？` : `Remove ${name}?`}
+              </AlertDialogTitle>
               <AlertDialogDescription>
-                This removes {name} from the comparison. Its keyword positions
-                are recaptured only if you add it back.
+                {language === "zh-CN"
+                  ? `这会将 ${name} 从对比中移除。只有重新添加后，才会再次采集它的关键词排名。`
+                  : `This removes ${name} from the comparison. Its keyword positions are recaptured only if you add it back.`}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <ConfirmActionFooter
               pending={mutation.isPending}
-              label="Remove"
-              pendingLabel="Removing…"
+              label={language === "zh-CN" ? "移除" : "Remove"}
+              pendingLabel={language === "zh-CN" ? "正在移除…" : "Removing…"}
               onConfirm={removeOnce}
             />
           </AlertDialogContent>
@@ -142,12 +155,15 @@ export function CompetitorList({
   id: string;
   competitors: CompetitorItem[];
 }) {
+  const language = useInterfaceLanguage();
   const count = competitors.length;
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-2">
         <p className="text-body text-muted-foreground">
-          {`${count} tracked ${count === 1 ? "competitor" : "competitors"}`}
+          {language === "zh-CN"
+            ? `已追踪 ${count} 个竞品`
+            : `${count} tracked ${count === 1 ? "competitor" : "competitors"}`}
         </p>
         <ExportCsvButton
           subject="competitors"

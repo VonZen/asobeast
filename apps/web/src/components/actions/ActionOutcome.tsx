@@ -1,4 +1,6 @@
 import type { ActionOutcome as Outcome } from "@asobeast/shared";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 import { Badge } from "@/components/ui/badge";
 import { DeltaChip, PositionDeltaChip } from "@/components/ui/delta-chip";
 import {
@@ -34,18 +36,19 @@ export function ActionOutcome({
   outcome: Outcome;
   depth: number | null;
 }) {
+  const language = useInterfaceLanguage();
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-body">{outcomeSentence(outcome, depth)}</p>
+      <p className="text-body">{outcomeSentence(outcome, depth, language)}</p>
       <div className="flex items-center gap-2">
         {outcome.verdict === "pending" ? null : (
           <ChangeChip outcome={outcome} />
         )}
         <Badge variant="outline">
-          {OUTCOME_VERDICT_LABEL[outcome.verdict]}
+          {interfaceCopy(language, OUTCOME_VERDICT_LABEL[outcome.verdict])}
         </Badge>
       </div>
-      <p className="text-caption text-muted-foreground">{OUTCOME_CAVEAT}</p>
+      <p className="text-caption text-muted-foreground">{language === "zh-CN" ? "同期的其他变更也可能影响此数值。" : OUTCOME_CAVEAT}</p>
     </div>
   );
 }

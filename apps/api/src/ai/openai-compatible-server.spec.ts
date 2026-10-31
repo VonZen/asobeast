@@ -207,6 +207,29 @@ describe('an OpenAI compatible provider over http', () => {
     expect(other.seen).toHaveLength(0);
   });
 
+  it('accepts JSON wrapped in a Markdown fence from a compatible gateway', async () => {
+    provider.answer = json(200, {
+      ...COMPLETION,
+      choices: [
+        {
+          ...COMPLETION.choices[0],
+          message: {
+            ...COMPLETION.choices[0].message,
+            content:
+              'I found the following observations.\n\n```json\n{"explanation":"Fine."}\n```',
+          },
+        },
+      ],
+    });
+
+    await expect(
+      clientAt(`${provider.origin}/v1`).structured(REQUEST),
+    ).resolves.toEqual({
+      output: { explanation: 'Fine.' },
+      usage: { inputTokens: 12, cachedInputTokens: 0, outputTokens: 4 },
+    });
+  });
+
   it('reads an answer that reports no usage', async () => {
     provider.answer = json(200, { ...COMPLETION, usage: undefined });
 

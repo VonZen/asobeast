@@ -36,9 +36,10 @@ import {
 import { storeLabel } from "@/lib/format";
 import { appsOptions } from "@/lib/queries";
 import { switcherSubtitle } from "./app-switcher-label";
+import { useInterfaceLanguage } from "./InterfaceLanguageProvider";
 
-function appLabel(app: AppListItem): string {
-  return app.name ?? "Untitled app";
+function appLabel(app: AppListItem, chinese = false): string {
+  return app.name ?? (chinese ? "未命名 App" : "Untitled app");
 }
 
 function appMarket(app: AppListItem): string {
@@ -52,6 +53,7 @@ function TriggerLabel({
   current: AppListItem | undefined;
   subtitle: string;
 }) {
+  const chinese = useInterfaceLanguage() === "zh-CN";
   return (
     <>
       {current ? (
@@ -66,7 +68,11 @@ function TriggerLabel({
       )}
       <span className="grid min-w-0 flex-1 text-left leading-tight">
         <span className="truncate font-medium">
-          {current ? appLabel(current) : "All apps"}
+          {current
+            ? appLabel(current, chinese)
+            : chinese
+              ? "所有 App"
+              : "All apps"}
         </span>
         <span className="truncate text-caption text-muted-foreground">
           {current ? appMarket(current) : subtitle}
@@ -78,13 +84,19 @@ function TriggerLabel({
 }
 
 function ImportEntry() {
+  const chinese = useInterfaceLanguage() === "zh-CN";
   return (
     <SidebarMenu>
       <SidebarMenuItem>
         <ImportAppDialog>
-          <SidebarMenuButton size="lg" tooltip="Import app">
+          <SidebarMenuButton
+            size="lg"
+            tooltip={chinese ? "导入 App" : "Import app"}
+          >
             <Plus />
-            <span className="font-medium">Import app</span>
+            <span className="font-medium">
+              {chinese ? "导入 App" : "Import app"}
+            </span>
           </SidebarMenuButton>
         </ImportAppDialog>
       </SidebarMenuItem>
@@ -93,6 +105,7 @@ function ImportEntry() {
 }
 
 export function AppSwitcher() {
+  const chinese = useInterfaceLanguage() === "zh-CN";
   const [open, setOpen] = useState(false);
   const [importing, setImporting] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -122,29 +135,51 @@ export function AppSwitcher() {
               size="lg"
               aria-label={
                 current
-                  ? `Switch app, currently ${appLabel(current)}`
-                  : "Choose an app"
+                  ? chinese
+                    ? `切换 App，当前为 ${appLabel(current, true)}`
+                    : `Switch app, currently ${appLabel(current)}`
+                  : chinese
+                    ? "选择 App"
+                    : "Choose an app"
               }
-              tooltip={current ? appLabel(current) : "All apps"}
+              tooltip={
+                current
+                  ? appLabel(current, chinese)
+                  : chinese
+                    ? "所有 App"
+                    : "All apps"
+              }
               className="data-[state=open]:bg-sidebar-accent"
             >
               <TriggerLabel
                 current={current}
-                subtitle={switcherSubtitle(apps, isError)}
+                subtitle={
+                  chinese
+                    ? apps
+                      ? `已跟踪 ${apps.length} 个`
+                      : isError
+                        ? "无法加载 App"
+                        : "正在加载 App…"
+                    : switcherSubtitle(apps, isError)
+                }
               />
             </SidebarMenuButton>
           </PopoverTrigger>
           <PopoverContent
             align="start"
-            aria-label="Switch app"
+            aria-label={chinese ? "切换 App" : "Switch app"}
             side={isMobile ? "bottom" : "right"}
             className="w-72 p-0"
           >
             <Command>
-              <CommandInput placeholder="Search apps…" />
+              <CommandInput
+                placeholder={chinese ? "搜索 App…" : "Search apps…"}
+              />
               <CommandList>
-                <CommandEmpty>No apps match.</CommandEmpty>
-                <CommandGroup heading="Apps">
+                <CommandEmpty>
+                  {chinese ? "没有匹配的 App。" : "No apps match."}
+                </CommandEmpty>
+                <CommandGroup heading={chinese ? "App" : "Apps"}>
                   {(apps ?? []).map((app) => (
                     <CommandItem
                       key={app.id}
@@ -152,7 +187,7 @@ export function AppSwitcher() {
                       onSelect={() => select(app.id)}
                     >
                       <AppIcon src={app.iconUrl} name={app.name} size={20} />
-                      <span className="truncate">{appLabel(app)}</span>
+                      <span className="truncate">{appLabel(app, chinese)}</span>
                       <Badge variant="secondary" className="ml-auto">
                         {storeLabel(app.store)}
                       </Badge>
@@ -165,14 +200,14 @@ export function AppSwitcher() {
                 <CommandSeparator />
                 <CommandGroup>
                   <CommandItem
-                    value="import app"
+                    value={chinese ? "import app 导入" : "import app"}
                     onSelect={() => {
                       setOpen(false);
                       setImporting(true);
                     }}
                   >
                     <Plus />
-                    Import app
+                    {chinese ? "导入 App" : "Import app"}
                   </CommandItem>
                 </CommandGroup>
               </CommandList>

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { TriangleAlert } from "lucide-react";
 import type { ChangeImpactWindow, Store } from "@asobeast/shared";
 import { DeltaChip } from "@/components/ui/delta-chip";
@@ -25,13 +26,14 @@ function Fact({ label, children }: { label: string; children: ReactNode }) {
 }
 
 function MeasuredFacts({ impact }: { impact: ChangeImpactWindow }) {
+  const language = useInterfaceLanguage();
   const range = visibilityRange(impact);
   if (impact.movement === null || range === null) return null;
-  const shift = rankingShiftLine(impact.movement);
+  const shift = rankingShiftLine(impact.movement, language);
 
   return (
     <dl className="flex flex-col gap-2 text-body">
-      <Fact label="Visibility">
+      <Fact label={language === "zh-CN" ? "可见度" : "Visibility"}>
         <dd className="flex items-center gap-2">
           <span className="numeric font-mono">{range}</span>
           <DeltaChip
@@ -41,18 +43,20 @@ function MeasuredFacts({ impact }: { impact: ChangeImpactWindow }) {
           />
         </dd>
       </Fact>
-      <Fact label="Keywords">
-        <dd>{movementLine(impact.movement)}</dd>
+      <Fact label={language === "zh-CN" ? "关键词" : "Keywords"}>
+        <dd>{movementLine(impact.movement, language)}</dd>
         {shift ? <dd>{shift}</dd> : null}
         <dd className="text-caption text-muted-foreground">
-          {measuredLine(impact.movement)}
+          {measuredLine(impact.movement, language)}
         </dd>
       </Fact>
-      <Fact label="Median position">
+      <Fact label={language === "zh-CN" ? "排名中位数" : "Median position"}>
         <dd>
           {impact.medianPositionChange === null ? (
             <span className="text-muted-foreground">
-              No keyword ranked on both days
+              {language === "zh-CN"
+                ? "没有关键词在两天均获得排名"
+                : "No keyword ranked on both days"}
             </span>
           ) : (
             <DeltaChip value={impact.medianPositionChange} period="positions" />
@@ -69,15 +73,16 @@ interface WindowProps {
 }
 
 export function FunnelFacts({ impact, store }: WindowProps) {
+  const language = useInterfaceLanguage();
   const ranges = funnelRanges(impact.funnel);
-  const note = funnelNote(impact.funnel, impact.days);
+  const note = funnelNote(impact.funnel, impact.days, language);
   if (!ranges && !note) return null;
   const gets = impact.funnel?.change?.gets ?? null;
   const getsLabel = FUNNEL_GETS_LABEL[store];
 
   return (
     <dl className="flex flex-col gap-2 text-body">
-      <Fact label="Store funnel">
+      <Fact label={language === "zh-CN" ? "商店转化漏斗" : "Store funnel"}>
         {ranges ? (
           <>
             <dd className="flex flex-wrap items-center gap-2">
@@ -91,7 +96,7 @@ export function FunnelFacts({ impact, store }: WindowProps) {
               />
             </dd>
             <dd className="flex flex-wrap items-center gap-2">
-              <span>Conversion</span>
+              <span>{language === "zh-CN" ? "转化率" : "Conversion"}</span>
               <span className="numeric font-mono">{ranges.conversion}</span>
             </dd>
           </>
@@ -104,13 +109,16 @@ export function FunnelFacts({ impact, store }: WindowProps) {
 }
 
 export function ChangeImpactWindowTile({ impact, store }: WindowProps) {
-  const notice = overlapNotice(impact.overlappingChanges);
+  const language = useInterfaceLanguage();
+  const notice = overlapNotice(impact.overlappingChanges, language);
 
   return (
     <li className="flex flex-col gap-2 rounded-lg border p-3">
-      <h4 className="text-body font-medium">{windowTitle(impact.days)}</h4>
+      <h4 className="text-body font-medium">
+        {windowTitle(impact.days, language)}
+      </h4>
       <p className="text-caption text-muted-foreground">
-        {windowStatusLine(impact)}
+        {windowStatusLine(impact, language)}
       </p>
       <MeasuredFacts impact={impact} />
       <FunnelFacts impact={impact} store={store} />

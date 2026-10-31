@@ -7,6 +7,8 @@ import { Tabs, TabsList, TabsOption } from "@/components/ui/tabs";
 import { formatNumber, pluralize } from "@/lib/format";
 import { actionSummaryFor } from "@/lib/queries";
 import { presetCount, presetOf, STATUS_PRESETS } from "./status-presets";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 
 interface StatusTabsProps {
   status: readonly ActionStatus[];
@@ -18,6 +20,8 @@ function Tabbed({
   onChange,
   byStatus,
 }: StatusTabsProps & { byStatus: Record<ActionStatus, number> | null }) {
+  const locale = useInterfaceLanguage();
+  const chinese = locale === "zh-CN";
   return (
     <Tabs
       value={presetOf(status)?.key ?? ""}
@@ -28,7 +32,7 @@ function Tabbed({
       }}
       className="min-w-0 max-w-full"
     >
-      <TabsList aria-label="Action status" scrollable>
+      <TabsList aria-label={chinese ? "行动状态" : "Action status"} scrollable>
         {STATUS_PRESETS.map((preset) => {
           const count = byStatus ? presetCount(preset, byStatus) : null;
           return (
@@ -39,11 +43,13 @@ function Tabbed({
               aria-label={
                 count === null
                   ? undefined
-                  : `${preset.label}, ${pluralize(count, "action")}`
+                  : chinese
+                    ? `${interfaceCopy(locale, preset.label)}，${count} 项行动`
+                    : `${preset.label}, ${pluralize(count, "action")}`
               }
               className="flex-none"
             >
-              {preset.label}
+              {interfaceCopy(locale, preset.label)}
               {count === null ? null : (
                 <span className="numeric font-mono text-muted-foreground">
                   {formatNumber(count)}

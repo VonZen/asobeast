@@ -6,7 +6,7 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query";
 import { Loader2, Send } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +19,8 @@ import {
 import { flushAlerts } from "@/lib/api";
 import { formatDateTime } from "@/lib/format";
 import { alertDeliveryKey, alertDeliveryOptions } from "@/lib/queries";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 
 function Field({
   label,
@@ -51,7 +53,19 @@ function flushMessage(result: {
   return `Sent ${countLabel(result.notifications, "notification")} to ${countLabel(result.channels, "channel")} from ${countLabel(result.flushed, "event")}`;
 }
 
+function localizedFlushMessage(
+  result: Parameters<typeof flushMessage>[0],
+  locale: "en" | "zh-CN",
+): string {
+  if (locale === "en") return flushMessage(result);
+  return result.flushed === 0
+    ? "没有待发送的提醒"
+    : `已将 ${result.flushed} 个事件的 ${result.notifications} 条通知发送至 ${result.channels} 个渠道`;
+}
+
 export function DeliveryCard() {
+  const locale = useInterfaceLanguage();
+  const t = (text: string) => interfaceCopy(locale, text);
   const queryClient = useQueryClient();
   const { data } = useSuspenseQuery(alertDeliveryOptions);
 
@@ -59,17 +73,17 @@ export function DeliveryCard() {
     mutationFn: flushAlerts,
     onSuccess: (result) => {
       void queryClient.invalidateQueries({ queryKey: alertDeliveryKey });
-      toast.success(flushMessage(result));
+      toast.success(localizedFlushMessage(result, locale));
     },
-    onError: () => toast.error("Could not flush alerts"),
+    onError: () => toast.error(t("Could not flush alerts")),
   });
 
   return (
     <Card>
       <CardHeader className="flex-row items-start justify-between gap-4">
         <div className="flex flex-col gap-1.5">
-          <CardDescription>Alerts</CardDescription>
-          <CardTitle>Delivery</CardTitle>
+          <CardDescription>{t("Alerts")}</CardDescription>
+          <CardTitle>{t("Delivery")}</CardTitle>
         </div>
         <Button
           variant="outline"
@@ -79,32 +93,36 @@ export function DeliveryCard() {
           onClick={() => flush.mutate()}
         >
           {flush.isPending ? <Loader2 className="animate-spin" /> : <Send />}
-          Flush now
+          {t("Flush now")}
         </Button>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <p className="text-sm text-muted-foreground">
-          {data.mode === "batched"
-            ? "Daily events are sent after processing as an app update, followed by a competitor watch when each has activity."
-            : "Each event is delivered instantly, one notification per event."}
+          {t(
+            data.mode === "batched"
+              ? "Daily events are sent after processing as an app update, followed by a competitor watch when each has activity."
+              : "Each event is delivered instantly, one notification per event.",
+          )}
         </p>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6">
-          <Field label="Mode">
+          <Field label={t("Mode")}>
             <Badge variant={data.mode === "batched" ? "default" : "outline"}>
-              {data.mode === "batched" ? "Batched" : "Instant"}
+              {t(data.mode === "batched" ? "Batched" : "Instant")}
             </Badge>
           </Field>
-          <Field label="Trigger">
-            <Badge variant="outline">After completion</Badge>
+          <Field label={t("Trigger")}>
+            <Badge variant="outline">{t("After completion")}</Badge>
           </Field>
-          <Field label="Pipeline starts">
+          <Field label={t("Pipeline starts")}>
             <code className="font-mono text-xs">{data.pipelineCron}</code>
           </Field>
-          <Field label="Last flush">
-            {data.lastFlushAt ? formatDateTime(data.lastFlushAt) : "Never"}
+          <Field label={t("Last flush")}>
+            {data.lastFlushAt
+              ? formatDateTime(data.lastFlushAt, locale)
+              : t("Never")}
           </Field>
-          <Field label="Pending">{data.pending}</Field>
-          <Field label="Claimed">{data.claimed}</Field>
+          <Field label={t("Pending")}>{data.pending}</Field>
+          <Field label={t("Claimed")}>{data.claimed}</Field>
         </div>
       </CardContent>
     </Card>

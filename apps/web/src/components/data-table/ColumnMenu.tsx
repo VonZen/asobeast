@@ -11,6 +11,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { TableColumnMeta } from "@/lib/table/column-visibility";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { componentCopy } from "@/lib/component-copy";
 
 interface HideableColumn {
   id: string;
@@ -25,6 +27,7 @@ export function ColumnMenu({
 }: {
   columns: readonly HideableColumn[];
 }) {
+  const locale = useInterfaceLanguage();
   const hideable = columns.filter((column) => column.getCanHide());
 
   return (
@@ -32,11 +35,13 @@ export function ColumnMenu({
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm">
           <Columns3 aria-hidden />
-          Columns
+          {componentCopy(locale, "Columns")}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuLabel>Show columns</DropdownMenuLabel>
+        <DropdownMenuLabel>
+          {componentCopy(locale, "Show columns")}
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
         {hideable.map((column) => (
           <DropdownMenuCheckboxItem
@@ -45,7 +50,7 @@ export function ColumnMenu({
             onCheckedChange={(value) => column.toggleVisibility(value)}
             onSelect={(event) => event.preventDefault()}
           >
-            {column.columnDef.meta?.label ?? column.id}
+            {componentCopy(locale, column.columnDef.meta?.label ?? column.id)}
           </DropdownMenuCheckboxItem>
         ))}
       </DropdownMenuContent>

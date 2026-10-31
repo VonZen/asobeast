@@ -72,16 +72,24 @@ describe("systemNotice", () => {
     expect(notice?.title).toBe("App Store parsing looks broken");
   });
 
-  it("collapses both stores into one notice naming both", () => {
+  it("shows only the App Store breakage when both stores are broken", () => {
     const notice = systemNotice({
       stores: healthOf({ APP_STORE: "broken", GOOGLE_PLAY: "broken" }),
       run: ON_TIME,
     });
 
-    expect(notice?.title).toBe(
-      "App Store and Google Play parsing looks broken",
-    );
-    expect(notice?.detail).toContain("paused for App Store and Google Play");
+    expect(notice?.title).toBe("App Store parsing looks broken");
+    expect(notice?.detail).toContain("paused for App Store");
+    expect(notice?.detail).not.toContain("Google Play");
+  });
+
+  it("does not show the Google Play parsing alert", () => {
+    expect(
+      systemNotice({
+        stores: healthOf({ APP_STORE: "ok", GOOGLE_PLAY: "broken" }),
+        run: ON_TIME,
+      }),
+    ).toBeNull();
   });
 
   it("passes a delayed run through unchanged when every store parses", () => {

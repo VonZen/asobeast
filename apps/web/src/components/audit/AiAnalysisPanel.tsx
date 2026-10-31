@@ -1,9 +1,11 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { type RefObject, useEffect, useRef, useSyncExternalStore } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Sparkles } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import type { AppAuditResult } from "@asobeast/shared";
 import {
   AiCallsLeft,
@@ -164,9 +166,15 @@ function AnalysisIntro({
       >
         AI creative analysis
         {state === "current" ? (
-          <Badge variant="success">Up to date</Badge>
+          <Badge variant="success">
+            <LocalizedText en="Up to date" />
+          </Badge>
         ) : null}
-        {state === "stale" ? <Badge variant="warning">Outdated</Badge> : null}
+        {state === "stale" ? (
+          <Badge variant="warning">
+            <LocalizedText en="Outdated" />
+          </Badge>
+        ) : null}
       </h2>
       <p className="text-sm text-muted-foreground">
         {state === "current" && audit.creative
@@ -178,7 +186,7 @@ function AnalysisIntro({
           href={AI_FEATURES_GUIDE}
           className="w-fit text-sm font-medium underline-offset-4 hover:underline"
         >
-          Read the AI features guide
+          <LocalizedText en="Read the AI features guide" />
         </a>
       ) : null}
       {sendsImageLinks(state) ? (

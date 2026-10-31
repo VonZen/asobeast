@@ -88,6 +88,13 @@ describe("isFilteredView", () => {
 });
 
 describe("filterQueue", () => {
+  it("finds actions by their Chinese headline without altering stored keywords", () => {
+    expect(ids(filterQueue(ITEMS, view({ q: "守住" })))).toEqual(["b", "d"]);
+    expect(ids(filterQueue(ITEMS, view({ q: "streak counter" })))).toEqual([
+      "b",
+    ]);
+  });
+
   it("ors the values of one facet", () => {
     expect(
       ids(filterQueue(ITEMS, view({ priority: ["critical", "low"] }))),

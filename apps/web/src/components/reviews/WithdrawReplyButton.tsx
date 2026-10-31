@@ -1,6 +1,7 @@
 "use client";
 
 import type { RefObject } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { Button } from "@/components/ui/button";
 import { ReplyConfirmDialog } from "./ReplyConfirmDialog";
 
@@ -13,6 +14,7 @@ export function WithdrawReplyButton({
   textRef: RefObject<HTMLTextAreaElement | null>;
   onWithdraw: () => void;
 }) {
+  const language = useInterfaceLanguage();
   return (
     <ReplyConfirmDialog
       trigger={
@@ -24,13 +26,13 @@ export function WithdrawReplyButton({
             if (busy) event.preventDefault();
           }}
         >
-          Withdraw from App Store
+          {language === "zh-CN" ? "从 App Store 撤回" : "Withdraw from App Store"}
         </Button>
       }
-      title="Withdraw this response?"
-      description="Apple removes it within a day. The text stays here."
-      cancelLabel="Keep it"
-      actionLabel="Withdraw"
+      title={language === "zh-CN" ? "撤回此回复？" : "Withdraw this response?"}
+      description={language === "zh-CN" ? "Apple 会在一天内移除该回复，文本仍会保存在这里。" : "Apple removes it within a day. The text stays here."}
+      cancelLabel={language === "zh-CN" ? "保留" : "Keep it"}
+      actionLabel={language === "zh-CN" ? "撤回" : "Withdraw"}
       destructive
       textRef={textRef}
       onConfirm={onWithdraw}

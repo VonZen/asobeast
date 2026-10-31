@@ -50,6 +50,7 @@ export class QuotaService {
   ) {
     this.selfHosted = selfHostedLimits(
       config.get('AI_CALLS_PER_MONTH', { infer: true }),
+      config.get('SELF_HOSTED_COMPETITORS_PER_APP', { infer: true }),
     );
   }
 

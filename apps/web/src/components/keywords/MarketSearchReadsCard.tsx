@@ -30,6 +30,7 @@ import { formatNumber, pluralize } from "@/lib/format";
 import { localizationName } from "@/lib/localizations";
 import { marketKeywordFieldsOptions } from "@/lib/queries";
 import { MarketWastedWords } from "./MarketWastedWords";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { MarketSearchReadsSkeleton } from "./skeletons";
 
 function ReadsCard({
@@ -42,11 +43,14 @@ function ReadsCard({
   children: ReactNode;
 }) {
   const titleId = useId();
+  const zh = useInterfaceLanguage() === "zh-CN";
   return (
     <Card role="region" aria-labelledby={titleId} className="min-w-0">
       <CardHeader>
         <CardTitle id={titleId}>
-          {`What ${market.toUpperCase()} search reads`}
+          {zh
+            ? `${market.toUpperCase()} 市场搜索读取的关键词字段`
+            : `What ${market.toUpperCase()} search reads`}
         </CardTitle>
         {aside ? <CardAction>{aside}</CardAction> : null}
       </CardHeader>
@@ -57,6 +61,7 @@ function ReadsCard({
 
 function ReadRow({ id, read }: { id: string; read: MarketLocalizationRead }) {
   const name = localizationName(read.localization);
+  const zh = useInterfaceLanguage() === "zh-CN";
   return (
     <li className="flex flex-wrap items-center gap-x-3 gap-y-1">
       <span className="flex min-w-44 items-center gap-2">
@@ -71,16 +76,20 @@ function ReadRow({ id, read }: { id: string; read: MarketLocalizationRead }) {
         />
         <span className="numeric shrink-0 font-mono text-caption text-muted-foreground">
           {read.phrases.length === 0
-            ? "Empty"
+            ? zh
+              ? "空"
+              : "Empty"
             : `${read.charactersUsed}/${read.charactersLimit}`}
         </span>
       </span>
       <Button asChild variant="link" size="sm" className="h-auto p-0">
         <Link
           href={editLocalizationHref(id, read.localization)}
-          aria-label={`Edit the ${name} keyword field`}
+          aria-label={
+            zh ? `编辑${name}关键词字段` : `Edit the ${name} keyword field`
+          }
         >
-          Edit
+          {zh ? "编辑" : "Edit"}
         </Link>
       </Button>
     </li>
@@ -98,13 +107,14 @@ function UnshippedReads({
   reads: readonly MarketLocalizationRead[];
   open: boolean;
 }) {
+  const zh = useInterfaceLanguage() === "zh-CN";
   if (reads.length === 0) return null;
   return (
     <details open={open} className="rounded-lg border border-border px-3 py-2">
       <summary className="cursor-pointer text-body">
-        {market.toUpperCase()} also reads{" "}
-        {pluralize(reads.length, "localization")} you don&apos;t ship · up to{" "}
-        {formatNumber(reads.length * KEYWORD_FIELD_CHAR_LIMIT)} more characters
+        {zh
+          ? `${market.toUpperCase()} 市场还会读取 ${reads.length} 个未提供的本地化版本，最多可增加 ${formatNumber(reads.length * KEYWORD_FIELD_CHAR_LIMIT)} 个字符`
+          : `${market.toUpperCase()} also reads ${pluralize(reads.length, "localization")} you don’t ship · up to ${formatNumber(reads.length * KEYWORD_FIELD_CHAR_LIMIT)} more characters`}
       </summary>
       <ul className="mt-3 flex flex-wrap gap-2">
         {reads.map((read) => (
@@ -117,7 +127,7 @@ function UnshippedReads({
       </ul>
       <Button asChild variant="link" size="sm" className="mt-2 h-auto p-0">
         <Link href={localizationsSectionHref(id)}>
-          Add one on the metadata page
+          {zh ? "前往元数据页面添加" : "Add one on the metadata page"}
         </Link>
       </Button>
     </details>
@@ -125,6 +135,7 @@ function UnshippedReads({
 }
 
 function MarketReads({ id, market }: { id: string; market: string }) {
+  const zh = useInterfaceLanguage() === "zh-CN";
   const { data } = useSuspenseQuery(marketKeywordFieldsOptions(id, market));
   const shipped = data.localizations.filter((read) => read.shipped);
 
@@ -133,19 +144,26 @@ function MarketReads({ id, market }: { id: string; market: string }) {
       market={market}
       aside={
         <span className="flex items-center gap-2 text-caption text-muted-foreground">
-          {pluralize(uniqueWordCount(data.localizations), "unique word")} ·{" "}
-          {pluralize(shipped.length, "localization")}
+          {zh
+            ? `${formatNumber(uniqueWordCount(data.localizations))} 个不同的词 · ${shipped.length} 个本地化版本`
+            : `${pluralize(uniqueWordCount(data.localizations), "unique word")} · ${pluralize(shipped.length, "localization")}`}
           <InfoTip
-            label="About market keyword fields"
-            title="What a market reads"
-            summary="Search in a storefront reads the keyword field of every localization on its list. Words combine only within one localization."
+            label={zh ? "了解市场关键词字段" : "About market keyword fields"}
+            title={zh ? "市场会读取哪些字段" : "What a market reads"}
+            summary={
+              zh
+                ? "商店市场搜索会读取其支持的所有本地化版本的关键词字段，但关键词组合仅在同一个本地化版本内进行。"
+                : "Search in a storefront reads the keyword field of every localization on its list. Words combine only within one localization."
+            }
           />
         </span>
       }
     >
       {shipped.length === 0 ? (
         <p className="text-body text-muted-foreground">
-          {market.toUpperCase()} reads none of the localizations this app ships.
+          {zh
+            ? `${market.toUpperCase()} 市场不会读取此 App 当前提供的任何本地化版本。`
+            : `${market.toUpperCase()} reads none of the localizations this app ships.`}
         </p>
       ) : (
         <ul className="flex flex-col gap-3">
@@ -178,12 +196,14 @@ export function MarketSearchReadsCard({
   homeCountry: string;
   market: string;
 }) {
+  const zh = useInterfaceLanguage() === "zh-CN";
   if (!hasMarketReads(homeCountry, market)) {
     return (
       <ReadsCard market={market}>
         <p className="text-body text-muted-foreground">
-          {market.toUpperCase()} is not an App Store storefront, so it has no
-          keyword field.
+          {zh
+            ? `${market.toUpperCase()} 不是 App Store 商店市场，因此不存在关键词字段。`
+            : `${market.toUpperCase()} is not an App Store storefront, so it has no keyword field.`}
         </p>
       </ReadsCard>
     );

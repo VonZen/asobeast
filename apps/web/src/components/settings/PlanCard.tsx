@@ -1,10 +1,12 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { Suspense } from "react";
 import Link from "next/link";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import type { AccountPlan, QuotaUsage } from "@asobeast/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -116,11 +118,15 @@ export function PlanCard() {
   return (
     <Card>
       <CardHeader>
-        <CardDescription>Plan</CardDescription>
+        <CardDescription>
+          <LocalizedText en="Plan" />
+        </CardDescription>
         <CardTitle className="flex items-center gap-2">
           {plan.displayName}
           {plan.entitled ? null : (
-            <Badge variant="destructive">Access paused</Badge>
+            <Badge variant="destructive">
+              <LocalizedText en="Access paused" />
+            </Badge>
           )}
         </CardTitle>
         <p className="text-body text-muted-foreground">

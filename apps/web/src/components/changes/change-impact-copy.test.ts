@@ -38,6 +38,13 @@ describe("windowStatusLine", () => {
 });
 
 describe("movement lines", () => {
+  it("reports the same movement counts in Chinese", () => {
+    expect(movementLine(movement(), "zh-CN")).toBe("2 个上升，1 个下降");
+    expect(measuredLine(movement(), "zh-CN")).toBe("4 个关键词在两天均有检查");
+    expect(rankingShiftLine(movement({ entered: 1, exited: 2 }), "zh-CN")).toBe(
+      "1 个开始获得排名，2 个不再有排名",
+    );
+  });
   it("counts the keywords that improved and declined", () => {
     expect(movementLine(movement())).toBe("2 improved, 1 declined");
   });

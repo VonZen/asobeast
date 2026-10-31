@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import * as React from "react";
 import { Dialog as SheetPrimitive } from "radix-ui";
 import { XIcon } from "lucide-react";
@@ -88,7 +90,9 @@ function SheetContent({
             size="icon-sm"
           >
             <XIcon />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">
+              <LocalizedText en="Close" />
+            </span>
           </Button>
         </SheetPrimitive.Close>
       </SheetPrimitive.Content>
@@ -108,6 +112,7 @@ function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
 
 function SheetTitle({
   className,
+  children,
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Title>) {
   return (
@@ -118,12 +123,19 @@ function SheetTitle({
         className,
       )}
       {...props}
-    />
+    >
+      {typeof children === "string" ? (
+        <LocalizedText en={children} />
+      ) : (
+        children
+      )}
+    </SheetPrimitive.Title>
   );
 }
 
 function SheetDescription({
   className,
+  children,
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Description>) {
   return (
@@ -131,7 +143,13 @@ function SheetDescription({
       data-slot="sheet-description"
       className={cn("text-sm text-muted-foreground", className)}
       {...props}
-    />
+    >
+      {typeof children === "string" ? (
+        <LocalizedText en={children} />
+      ) : (
+        children
+      )}
+    </SheetPrimitive.Description>
   );
 }
 

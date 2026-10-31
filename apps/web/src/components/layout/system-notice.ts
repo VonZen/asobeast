@@ -30,8 +30,10 @@ export function systemNotice(input: {
     return deletionNotice(input.deletion.dueAt);
   }
 
+  // Do not surface the Google Play parser alert in the UI. Keep health
+  // reporting and collection behavior unchanged, including App Store alerts.
   const broken = (input.stores?.stores ?? []).filter(
-    (store) => store.state === "broken",
+    (store) => store.store === "APP_STORE" && store.state === "broken",
   );
   if (broken.length > 0) {
     return breakageNotice(broken.map((store) => storeLabel(store.store)));

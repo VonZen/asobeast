@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useId, useState } from "react";
 import { Tag } from "lucide-react";
 import {
@@ -75,7 +77,9 @@ export function BulkTagPopover({
         className="flex w-72 flex-col gap-3"
       >
         <div className="flex flex-col gap-2">
-          <Label htmlFor={inputId}>Tag to add or remove</Label>
+          <Label htmlFor={inputId}>
+            <LocalizedText en="Tag to add or remove" />
+          </Label>
           <Input
             id={inputId}
             value={input}

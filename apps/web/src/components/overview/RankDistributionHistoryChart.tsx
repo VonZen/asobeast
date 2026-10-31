@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { Suspense, useDeferredValue } from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useQueryState } from "nuqs";
@@ -123,8 +125,12 @@ export function RankDistributionHistoryChart({ id }: { id: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardDescription>Rank distribution history</CardDescription>
-        <CardTitle>Tracked keywords by rank band</CardTitle>
+        <CardDescription>
+          <LocalizedText en="Rank distribution history" />
+        </CardDescription>
+        <CardTitle>
+          <LocalizedText en="Tracked keywords by rank band" />
+        </CardTitle>
         <CardAction>
           <RangePicker
             presets={VISIBILITY_RANGES}

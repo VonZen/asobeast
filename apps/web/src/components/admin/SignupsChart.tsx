@@ -4,6 +4,7 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import type { AdminSignupDay } from "@asobeast/shared";
 import { ChartNotice, MIN_TREND_POINTS } from "@/components/charts/ChartStates";
 import { SeriesLegend } from "@/components/charts/SeriesLegend";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import {
   CHART_HEIGHT,
   CHART_MARGIN,
@@ -44,21 +45,24 @@ const activeDays = (days: AdminSignupDay[]) =>
   days.filter((day) => day.users + day.workspaces > 0).length;
 
 export function SignupsChart({ signups }: { signups: AdminSignupDay[] }) {
+  const zh = useInterfaceLanguage() === "zh-CN";
+  const labels = zh ? { users: "账号", workspaces: "工作区" } : LABELS;
+  const config = zh ? { users: { ...chartConfig.users, label: "账号" }, workspaces: { ...chartConfig.workspaces, label: "工作区" } } : chartConfig;
   if (activeDays(signups) < MIN_TREND_POINTS) {
     return (
       <ChartNotice
         height={CHART_HEIGHT.compact}
-        title="Too few sign ups in the last 30 days to chart."
+        title={zh ? "最近 30 天的注册数据不足，无法绘制图表。" : "Too few sign ups in the last 30 days to chart."}
       />
     );
   }
 
   return (
     <ChartContainer
-      config={chartConfig}
+      config={config}
       className={`${CHART_HEIGHT.compact} w-full`}
       role="region"
-      aria-label="Accounts and workspaces created per day"
+      aria-label={zh ? "每日新增账号和工作区" : "Accounts and workspaces created per day"}
     >
       <BarChart accessibilityLayer data={signups} margin={CHART_MARGIN}>
         <CartesianGrid {...GRID_PROPS} />
@@ -67,7 +71,7 @@ export function SignupsChart({ signups }: { signups: AdminSignupDay[] }) {
         <ChartTooltip
           content={<ChartTooltipContent {...TIME_TOOLTIP_PROPS} />}
         />
-        <ChartLegend content={<SeriesLegend labels={LABELS} order={ORDER} />} />
+        <ChartLegend content={<SeriesLegend labels={labels} order={ORDER} />} />
         {SIGNUP_SERIES.map((series, index) => (
           <Bar
             key={series.key}

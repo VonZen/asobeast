@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
@@ -101,26 +103,27 @@ function SwatchGrid({
 function ContrastTable({ values }: { values: Resolved }) {
   return (
     <section aria-label="Measured contrast" className="flex flex-col gap-3">
-      <h2 className="text-sm font-semibold">Measured contrast</h2>
+      <h2 className="text-sm font-semibold">
+        <LocalizedText en="Measured contrast" />
+      </h2>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <caption className="sr-only">
-            Every reserved token pair with its measured contrast ratio against
-            the required floor.
+            <LocalizedText en="Every reserved token pair with its measured contrast ratio against the required floor." />
           </caption>
           <thead>
             <tr className="border-b text-left text-xs text-muted-foreground">
               <th scope="col" className="py-2 font-medium">
-                Pair
+                <LocalizedText en="Pair" />
               </th>
               <th scope="col" className="py-2 text-right font-medium">
-                Ratio
+                <LocalizedText en="Ratio" />
               </th>
               <th scope="col" className="py-2 text-right font-medium">
-                Floor
+                <LocalizedText en="Floor" />
               </th>
               <th scope="col" className="py-2 text-right font-medium">
-                Result
+                <LocalizedText en="Result" />
               </th>
             </tr>
           </thead>
@@ -157,7 +160,9 @@ function ContrastTable({ values }: { values: Resolved }) {
 function Elevations() {
   return (
     <section aria-label="Elevation" className="flex flex-col gap-3">
-      <h2 className="text-sm font-semibold">Elevation</h2>
+      <h2 className="text-sm font-semibold">
+        <LocalizedText en="Elevation" />
+      </h2>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {ELEVATIONS.map((level) => (
           <div
@@ -176,7 +181,9 @@ function Elevations() {
 function Radii() {
   return (
     <section aria-label="Radius" className="flex flex-col gap-3">
-      <h2 className="text-sm font-semibold">Radius</h2>
+      <h2 className="text-sm font-semibold">
+        <LocalizedText en="Radius" />
+      </h2>
       <div className="flex flex-wrap gap-4">
         {RADII.map((step) => (
           <div key={step} className="flex flex-col items-center gap-1">
@@ -201,18 +208,17 @@ export function TokenReference() {
       <header className="flex items-center justify-between gap-4">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-semibold tracking-tight">
-            Design tokens
+            <LocalizedText en="Design tokens" />
           </h1>
           <p className="text-sm text-muted-foreground">
-            Development only. Every value is read from the live cascade, so this
-            page cannot drift from the stylesheet.
+            <LocalizedText en="Development only. Every value is read from the live cascade, so this page cannot drift from the stylesheet." />
           </p>
         </div>
         <Button
           variant="outline"
           onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
         >
-          Switch theme
+          <LocalizedText en="Switch theme" />
         </Button>
       </header>
 

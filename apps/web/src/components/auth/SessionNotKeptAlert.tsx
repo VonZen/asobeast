@@ -1,3 +1,4 @@
+import { LocalizedText } from "@/components/layout/LocalizedText";
 import Link from "next/link";
 import { TriangleAlert } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -17,7 +18,9 @@ export function SessionNotKeptAlert({
   return (
     <Alert variant="destructive">
       <TriangleAlert />
-      <AlertTitle>Your browser did not keep the session cookie</AlertTitle>
+      <AlertTitle>
+        <LocalizedText en="Your browser did not keep the session cookie" />
+      </AlertTitle>
       <AlertDescription>
         <p>
           {outcome} A secure cookie is dropped on plain http, even on localhost
@@ -31,7 +34,9 @@ export function SessionNotKeptAlert({
         </p>
         {offerSignIn ? (
           <p>
-            <Link href="/login">Go to sign in</Link>
+            <Link href="/login">
+              <LocalizedText en="Go to sign in" />
+            </Link>
           </p>
         ) : null}
       </AlertDescription>

@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import { ACTION_NOTE_MAX_LENGTH, type ActionItem } from "@asobeast/shared";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { noteRequest } from "./note-request";
 
 export function ActionNote({ item }: { item: ActionItem }) {
+  const language = useInterfaceLanguage();
   const queryClient = useQueryClient();
   const saved = item.note ?? "";
   const [draft, setDraft] = useState(saved);
@@ -24,10 +26,15 @@ export function ActionNote({ item }: { item: ActionItem }) {
       if (!request) throw new Error("This action cannot take a note");
       return updateAction(item.id, request);
     },
-    onSuccess: () => toast.success("Note saved"),
+    onSuccess: () =>
+      toast.success(language === "zh-CN" ? "备注已保存" : "Note saved"),
     onError: (error) =>
       toast.error(
-        error instanceof ApiError ? error.message : "Could not save the note",
+        error instanceof ApiError
+          ? error.message
+          : language === "zh-CN"
+            ? "无法保存备注"
+            : "Could not save the note",
       ),
     onSettled: () => invalidateActionMutation(queryClient, item.scope.appId),
   });
@@ -39,7 +46,9 @@ export function ActionNote({ item }: { item: ActionItem }) {
           <p className="text-body whitespace-pre-line">{saved}</p>
         ) : null}
         <p className="text-caption text-muted-foreground">
-          Reopen this action to edit its note.
+          {language === "zh-CN"
+            ? "重新打开此事项后即可编辑备注。"
+            : "Reopen this action to edit its note."}
         </p>
       </div>
     );
@@ -54,7 +63,9 @@ export function ActionNote({ item }: { item: ActionItem }) {
       }}
     >
       <Textarea
-        aria-label="Note for this action"
+        aria-label={
+          language === "zh-CN" ? "此事项的备注" : "Note for this action"
+        }
         aria-invalid={noteLimit.over > 0}
         value={draft}
         onChange={(event) => setDraft(event.target.value)}
@@ -79,7 +90,7 @@ export function ActionNote({ item }: { item: ActionItem }) {
             draft.trim() === saved || save.isPending || noteLimit.over > 0
           }
         >
-          Save note
+          {language === "zh-CN" ? "保存备注" : "Save note"}
         </Button>
       </div>
     </form>

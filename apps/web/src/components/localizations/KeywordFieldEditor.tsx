@@ -2,6 +2,7 @@
 
 import { useId, useRef, useState, type ReactNode } from "react";
 import { Loader2 } from "lucide-react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import {
   KEYWORD_FIELD_CHAR_LIMIT,
   type AppLocalizationItem,
@@ -28,6 +29,7 @@ function KeywordFieldUsage({
   countId: string;
 }) {
   const over = field.over > 0;
+  const zh = useInterfaceLanguage() === "zh-CN";
   return (
     <>
       <Meter
@@ -38,7 +40,7 @@ function KeywordFieldUsage({
       />
       <div className="flex items-center justify-between gap-3 text-caption">
         <span className="text-muted-foreground">
-          Separate keywords with commas.
+          {zh ? "用英文逗号分隔关键词。" : "Separate keywords with commas."}
         </span>
         <span
           id={countId}
@@ -49,12 +51,16 @@ function KeywordFieldUsage({
           )}
         >
           {field.used}/{KEYWORD_FIELD_CHAR_LIMIT}
-          {over ? ` · ${field.over} over the limit` : ""}
+          {over
+            ? zh
+              ? ` · 超出 ${field.over} 个字符`
+              : ` · ${field.over} over the limit`
+            : ""}
         </span>
       </div>
       {field.storedAs === null ? null : (
         <p className="text-caption text-muted-foreground">
-          Stored as{" "}
+          {zh ? "实际保存为" : "Stored as"}{" "}
           <span className="font-mono break-all">{field.storedAs}</span>
         </p>
       )}
@@ -71,6 +77,7 @@ export function KeywordFieldEditor({
   item: AppLocalizationItem;
   leading?: ReactNode;
 }) {
+  const zh = useInterfaceLanguage() === "zh-CN";
   const countId = useId();
   const editor = useRef<HTMLTextAreaElement>(null);
   const saveButton = useRef<HTMLButtonElement>(null);
@@ -103,7 +110,7 @@ export function KeywordFieldEditor({
         readOnly={busy}
         rows={3}
         spellCheck={false}
-        aria-label={`${name} keyword field`}
+        aria-label={zh ? `${name}关键词字段` : `${name} keyword field`}
         aria-describedby={countId}
         aria-invalid={over}
         placeholder="fitness,workout,running,cardio"
@@ -111,9 +118,9 @@ export function KeywordFieldEditor({
       <KeywordFieldUsage field={field} countId={countId} />
       {item.readBy.length === 0 ? (
         <p className="text-caption text-muted-foreground">
-          None of your markets reads {name}. Storefronts that read it:{" "}
-          {formatList(readingStorefrontNames(item.localization))}. Add one of
-          them as a keyword market to track these phrases there.
+          {zh
+            ? `当前市场均不读取${name}。读取该语言的市场包括：${formatList(readingStorefrontNames(item.localization))}。可以添加其中一个作为关键词市场，以跟踪这些词组。`
+            : `None of your markets reads ${name}. Storefronts that read it: ${formatList(readingStorefrontNames(item.localization))}. Add one of them as a keyword market to track these phrases there.`}
         </p>
       ) : null}
       {error && review === null ? (
@@ -131,7 +138,13 @@ export function KeywordFieldEditor({
           onClick={() => request(text)}
         >
           {busy ? <Loader2 className="animate-spin" /> : null}
-          {busy ? "Saving…" : "Save keyword field"}
+          {busy
+            ? zh
+              ? "正在保存…"
+              : "Saving…"
+            : zh
+              ? "保存关键词字段"
+              : "Save keyword field"}
         </Button>
       </div>
       {review ? (

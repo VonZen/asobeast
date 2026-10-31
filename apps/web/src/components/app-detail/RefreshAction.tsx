@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useId, useRef, useState } from "react";
 import {
   useIsMutating,
@@ -7,7 +9,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { Loader2, RefreshCw } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import type { SnapshotDiffResult } from "@asobeast/shared";
 import { Button } from "@/components/ui/button";
 import { ApiError, refreshApp } from "@/lib/api";
@@ -70,7 +72,9 @@ export function RefreshAction({ appId }: { appId: string }) {
         ) : (
           <RefreshCw />
         )}
-        <span className="hidden lg:inline">Refresh</span>
+        <span className="hidden lg:inline">
+          <LocalizedText en="Refresh" />
+        </span>
       </Button>
       {refreshable ? null : (
         <span id={reasonId} className="sr-only">

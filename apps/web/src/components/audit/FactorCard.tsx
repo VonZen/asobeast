@@ -1,6 +1,8 @@
 "use client";
 
 import { useId, useState } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 import Link from "next/link";
 import type { AuditFactorResult, Store } from "@asobeast/shared";
 import { Card, CardContent } from "@/components/ui/card";
@@ -26,6 +28,7 @@ export function FactorCard({
   store: Store;
   totalWeight: number;
 }) {
+  const language = useInterfaceLanguage();
   const [open, setOpen] = useState(false);
   const panelId = useId();
   const status = scoreStatus(factor.score);
@@ -38,11 +41,13 @@ export function FactorCard({
   const unlock = factor.checks.find((check) => check.unlock)?.unlock ?? null;
 
   return (
-    <article aria-label={factor.label}>
+    <article aria-label={interfaceCopy(language, factor.label)}>
       <Card>
         <CardContent className="flex flex-col gap-2">
           <div className="flex items-start justify-between gap-3">
-            <h3 className="text-body font-medium">{factor.label}</h3>
+            <h3 className="text-body font-medium">
+              {interfaceCopy(language, factor.label)}
+            </h3>
             <span className="numeric font-mono text-body font-semibold">
               {factor.score === null ? "—" : factor.score}
             </span>
@@ -55,7 +60,7 @@ export function FactorCard({
           />
           <span className="flex items-center gap-2 text-sm">
             <Icon aria-hidden className="size-4" />
-            {STATUS_LABEL[status]}
+            {interfaceCopy(language, STATUS_LABEL[status])}
           </span>
           {waiting && unlock ? (
             <Link
@@ -67,9 +72,13 @@ export function FactorCard({
           ) : (
             <>
               <span className="text-sm text-muted-foreground">
-                {scored} of {factor.checks.length} checks scored
+                {language === "zh-CN"
+                  ? `${factor.checks.length} 项检查中已有 ${scored} 项评分`
+                  : `${scored} of ${factor.checks.length} checks scored`}
                 {factor.confidence !== undefined && factor.confidence < 1
-                  ? ` · ${percent(factor.confidence)}% measured`
+                  ? language === "zh-CN"
+                    ? ` · 已衡量 ${percent(factor.confidence)}%`
+                    : ` · ${percent(factor.confidence)}% measured`
                   : ""}
               </span>
               {availabilityLabel(factor.availability, store) ? (
@@ -79,7 +88,9 @@ export function FactorCard({
               ) : null}
               {firstIssue ? (
                 <span className="text-sm text-muted-foreground">
-                  First issue: {firstIssue.label}, {firstIssue.detail}
+                  {language === "zh-CN" ? "首个问题：" : "First issue: "}
+                  {interfaceCopy(language, firstIssue.label)},{" "}
+                  {firstIssue.detail}
                 </span>
               ) : null}
               <button
@@ -89,12 +100,20 @@ export function FactorCard({
                 onClick={() => setOpen(!open)}
                 className="w-fit text-sm font-medium underline-offset-4 hover:underline"
               >
-                {open ? "Hide checks" : "Show checks"}
+                {language === "zh-CN"
+                  ? open
+                    ? "隐藏检查项"
+                    : "显示检查项"
+                  : open
+                    ? "Hide checks"
+                    : "Show checks"}
               </button>
               {open ? (
                 <div id={panelId} className="flex flex-col gap-3">
                   <span className="text-caption text-muted-foreground">
-                    Worth {factor.weight} points of {totalWeight}
+                    {language === "zh-CN"
+                      ? `占 ${totalWeight} 分中的 ${factor.weight} 分`
+                      : `Worth ${factor.weight} points of ${totalWeight}`}
                   </span>
                   <FactorChecks appId={appId} checks={factor.checks} />
                 </div>

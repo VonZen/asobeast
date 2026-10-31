@@ -19,6 +19,7 @@ import { StatTile, StatTileGroup } from "@/components/ui/stat-tile";
 import { formatNumber, pluralize, storeLabel } from "@/lib/format";
 import { adminOverviewOptions } from "@/lib/queries";
 import { SignupsChart } from "./SignupsChart";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 
 const joinParts = (parts: (string | null)[]) =>
   parts.filter(Boolean).join(" · ") || undefined;
@@ -30,16 +31,17 @@ const ACTIVATION_GUIDE =
   "https://docs.asobeast.com/security/admin-surfaces#activation";
 
 function ActivationTile({ activation }: { activation: AdminActivation }) {
+  const zh = useInterfaceLanguage() === "zh-CN";
   return (
     <StatTile
-      label="Activation"
-      value={`${formatNumber(activation.rankedWithinADay)} of ${formatNumber(activation.importedLast30Days)}`}
-      note={`ranked within a day of import · ${formatNumber(activation.completedSetup)} completed setup`}
+      label={zh ? "激活情况" : "Activation"}
+      value={zh ? `${formatNumber(activation.rankedWithinADay)} / ${formatNumber(activation.importedLast30Days)}` : `${formatNumber(activation.rankedWithinADay)} of ${formatNumber(activation.importedLast30Days)}`}
+      note={zh ? `导入后一天内获得排名 · ${formatNumber(activation.completedSetup)} 个已完成设置` : `ranked within a day of import · ${formatNumber(activation.completedSetup)} completed setup`}
       info={
         <InfoTip
-          label="What activation means"
-          title="Activation"
-          summary={`Of the apps imported in the last ${ACTIVATION_WINDOW_DAYS} days, how many had a position for one of their keywords within 24 hours of the import, which is the time to value the guided setup is built for.`}
+          label={zh ? "激活情况说明" : "What activation means"}
+          title={zh ? "激活情况" : "Activation"}
+          summary={zh ? `最近 ${ACTIVATION_WINDOW_DAYS} 天导入的 App 中，有多少在导入后 24 小时内至少有一个关键词获得排名。这是引导设置所关注的首次产生价值时间。` : `Of the apps imported in the last ${ACTIVATION_WINDOW_DAYS} days, how many had a position for one of their keywords within 24 hours of the import, which is the time to value the guided setup is built for.`}
         >
           <a
             href={ACTIVATION_GUIDE}
@@ -47,7 +49,7 @@ function ActivationTile({ activation }: { activation: AdminActivation }) {
             rel="noreferrer"
             className="font-medium text-foreground underline decoration-primary underline-offset-4 hover:decoration-2"
           >
-            Read how activation is counted
+            {zh ? "查看激活统计方式" : "Read how activation is counted"}
           </a>
         </InfoTip>
       }
@@ -57,41 +59,42 @@ function ActivationTile({ activation }: { activation: AdminActivation }) {
 
 function OverviewTiles({ overview }: { overview: Overview }) {
   const { workspaces, users, apps, keywords } = overview;
+  const zh = useInterfaceLanguage() === "zh-CN";
   return (
     <StatTileGroup>
       <StatTile
-        label="Workspaces"
+        label={zh ? "工作区" : "Workspaces"}
         value={formatNumber(workspaces.total)}
         note={joinParts([
-          countedPart(workspaces.suspended, "suspended"),
-          countedPart(workspaces.pendingDeletion, "pending deletion"),
+          countedPart(workspaces.suspended, zh ? "已停用" : "suspended"),
+          countedPart(workspaces.pendingDeletion, zh ? "待删除" : "pending deletion"),
         ])}
       />
       <StatTile
-        label="Users"
+        label={zh ? "用户" : "Users"}
         value={formatNumber(users.total)}
         note={joinParts([
-          `${formatNumber(users.emailVerified)} confirmed`,
-          `${formatNumber(users.joinedLast7Days)} joined this week`,
+          `${formatNumber(users.emailVerified)} ${zh ? "已验证" : "confirmed"}`,
+          `${formatNumber(users.joinedLast7Days)} ${zh ? "本周加入" : "joined this week"}`,
         ])}
       />
       <StatTile
-        label="Tracked apps"
+        label={zh ? "跟踪的 App" : "Tracked apps"}
         value={formatNumber(apps.tracked)}
-        note={pluralize(apps.competitors, "competitor")}
+        note={zh ? `${formatNumber(apps.competitors)} 个竞品` : pluralize(apps.competitors, "competitor")}
       />
       <StatTile
-        label="Keyword markets"
+        label={zh ? "关键词市场" : "Keyword markets"}
         value={formatNumber(keywords.trackedMarkets)}
-        note={`tracked across ${pluralize(keywords.storefronts, "storefront")}`}
+        note={zh ? `覆盖 ${formatNumber(keywords.storefronts)} 个商店市场` : `tracked across ${pluralize(keywords.storefronts, "storefront")}`}
       />
       <StatTile
-        label="Searched keywords"
+        label={zh ? "已搜索关键词" : "Searched keywords"}
         value={formatNumber(keywords.searched)}
-        note="one store search each per day"
+        note={zh ? "每个关键词每天搜索一次" : "one store search each per day"}
       />
       <StatTile
-        label="AI calls this month"
+        label={zh ? "本月 AI 调用次数" : "AI calls this month"}
         value={formatNumber(overview.aiCallsThisMonth)}
       />
       {overview.activation ? (
@@ -122,6 +125,7 @@ function CountList({
 
 export function AdminOverview() {
   const { data: overview } = useSuspenseQuery(adminOverviewOptions);
+  const zh = useInterfaceLanguage() === "zh-CN";
 
   return (
     <div className="flex flex-col gap-6">
@@ -130,11 +134,10 @@ export function AdminOverview() {
         <Card>
           <CardHeader>
             <CardTitle asChild>
-              <h2>Sign ups, last 30 days</h2>
+              <h2>{zh ? "最近 30 天注册情况" : "Sign ups, last 30 days"}</h2>
             </CardTitle>
             <CardDescription>
-              {pluralize(overview.users.joinedLast30Days, "account")} joined in
-              the last 30 days.
+              {zh ? `最近 30 天新增 ${formatNumber(overview.users.joinedLast30Days)} 个账号。` : `${pluralize(overview.users.joinedLast30Days, "account")} joined in the last 30 days.`}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -146,10 +149,10 @@ export function AdminOverview() {
             <Card>
               <CardHeader>
                 <CardTitle asChild>
-                  <h2>Plans</h2>
+                  <h2>{zh ? "套餐分布" : "Plans"}</h2>
                 </CardTitle>
                 <CardDescription>
-                  The plan each workspace is on right now.
+                  {zh ? "各工作区当前使用的套餐。" : "The plan each workspace is on right now."}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -166,10 +169,10 @@ export function AdminOverview() {
           <Card>
             <CardHeader>
               <CardTitle asChild>
-                <h2>Apps by store</h2>
+                <h2>{zh ? "按商店统计 App" : "Apps by store"}</h2>
               </CardTitle>
               <CardDescription>
-                Tracked apps, competitors aside.
+                {zh ? "仅统计跟踪的 App，不含竞品。" : "Tracked apps, competitors aside."}
               </CardDescription>
             </CardHeader>
             <CardContent>

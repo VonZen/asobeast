@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useQuery } from "@tanstack/react-query";
 import { usePathname } from "next/navigation";
 import { queueFilters } from "@/lib/action-filters";
@@ -28,10 +30,12 @@ export function ActionWorkByScope({
   return (
     <section aria-labelledby="where-heading" className="flex flex-col gap-3">
       <h2 id="where-heading" className="text-title">
-        Where the work is
+        <LocalizedText en="Where the work is" />
       </h2>
       {rows.length === 0 ? (
-        <p className="text-body text-muted-foreground">Nothing open.</p>
+        <p className="text-body text-muted-foreground">
+          <LocalizedText en="Nothing open." />
+        </p>
       ) : (
         <ul className="flex list-none flex-col gap-1 p-0">
           {rows.slice(0, SHOWN_SCOPES).map((row) => (

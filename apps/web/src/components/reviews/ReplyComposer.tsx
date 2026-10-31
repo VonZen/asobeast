@@ -1,8 +1,10 @@
 "use client";
 
 import { useId, useRef, useState, type RefObject } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 import { Copy, ExternalLink } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import type {
   ReviewItem,
   ReviewReplyPatchRequest,
@@ -57,6 +59,7 @@ function ReplyCounter({
   measure: ReplyMeasure;
   store: Store;
 }) {
+  const language = useInterfaceLanguage();
   const { length, limit, over } = measure;
   return (
     <p
@@ -69,7 +72,9 @@ function ReplyCounter({
       {length} / {limit}
       <span aria-live="polite">
         {over
-          ? ` · ${storeLabel(store)} allows at most ${limit} characters`
+          ? language === "zh-CN"
+            ? ` · ${storeLabel(store)} 最多允许 ${limit} 个字符`
+            : ` · ${storeLabel(store)} allows at most ${limit} characters`
           : null}
       </span>
     </p>
@@ -85,6 +90,7 @@ function ClearedReplyHint({
   saved: string;
   drafting: boolean;
 }) {
+  const language = useInterfaceLanguage();
   const kept = text === "" && saved !== "" && !drafting;
   return (
     <p
@@ -92,7 +98,9 @@ function ClearedReplyHint({
       className="text-caption text-muted-foreground empty:hidden"
     >
       {kept
-        ? "Emptying the field keeps the saved reply. Press Discard to remove it."
+        ? language === "zh-CN"
+          ? "清空输入框会保留已保存的回复。点击“丢弃”可将其移除。"
+          : "Emptying the field keeps the saved reply. Press Discard to remove it."
         : null}
     </p>
   );
@@ -109,17 +117,22 @@ function DiscardReplyButton({
   textRef: RefObject<HTMLTextAreaElement | null>;
   onDiscard: () => void;
 }) {
+  const language = useInterfaceLanguage();
   return (
     <ReplyConfirmDialog
       trigger={
         <Button variant="outline" size="sm" disabled={disabled}>
-          Discard
+          {language === "zh-CN" ? "丢弃" : "Discard"}
         </Button>
       }
-      title="Discard this reply?"
-      description={`The text and the replied mark kept for this review are removed. ${notice}`}
-      cancelLabel="Keep it"
-      actionLabel="Discard"
+      title={language === "zh-CN" ? "丢弃这条回复？" : "Discard this reply?"}
+      description={
+        language === "zh-CN"
+          ? `此评论保存的回复文本和已回复标记将被移除。${interfaceCopy(language, notice)}`
+          : `The text and the replied mark kept for this review are removed. ${notice}`
+      }
+      cancelLabel={language === "zh-CN" ? "保留" : "Keep it"}
+      actionLabel={language === "zh-CN" ? "丢弃" : "Discard"}
       destructive
       textRef={textRef}
       onConfirm={onDiscard}
@@ -146,13 +159,14 @@ function ReplyTextField({
   onChange: (text: string) => void;
   onBlur: () => void;
 }) {
+  const language = useInterfaceLanguage();
   const counterId = useId();
   return (
     <div className="flex flex-col gap-1">
       <Textarea
         ref={textRef}
         autoFocus
-        aria-label="Reply text"
+        aria-label={language === "zh-CN" ? "回复内容" : "Reply text"}
         dir="auto"
         aria-describedby={counterId}
         aria-invalid={measure.over || undefined}
@@ -162,9 +176,13 @@ function ReplyTextField({
         onChange={(event) => onChange(event.target.value)}
         onBlur={onBlur}
         placeholder={
-          drafting
-            ? "Drafting a reply…"
-            : "Write the reply the store will show under this review"
+          language === "zh-CN"
+            ? drafting
+              ? "正在起草回复…"
+              : "填写将在商店评论下显示的回复"
+            : drafting
+              ? "Drafting a reply…"
+              : "Write the reply the store will show under this review"
         }
         className="min-h-24 bg-card"
       />
@@ -194,6 +212,7 @@ export function ReplyComposer({
   storeAppId,
   onClose,
 }: ReplyComposerProps) {
+  const language = useInterfaceLanguage();
   const saved = review.reply?.text ?? "";
   const [text, setText] = useReplyText(saved);
   const { save, mark, discard, post, withdraw, pending } = useReviewReply(
@@ -225,9 +244,17 @@ export function ReplyComposer({
     void saveIfChanged().catch(() => null);
     try {
       await copied;
-      toast.success(`Reply copied. Paste it in ${consoleName}.`);
+      toast.success(
+        language === "zh-CN"
+          ? `回复已复制，请粘贴到 ${consoleName}。`
+          : `Reply copied. Paste it in ${consoleName}.`,
+      );
     } catch {
-      toast.error("Couldn't copy — select and copy it manually");
+      toast.error(
+        language === "zh-CN"
+          ? "无法复制，请选中文本后手动复制。"
+          : "Couldn't copy — select and copy it manually",
+      );
     }
   };
 
@@ -240,7 +267,7 @@ export function ReplyComposer({
 
   return (
     <section
-      aria-label="Reply to review"
+      aria-label={language === "zh-CN" ? "回复评论" : "Reply to review"}
       className="flex flex-col gap-3 rounded-lg border bg-muted/40 p-3"
     >
       <StoreReplyNotice review={review} store={store} />
@@ -280,7 +307,7 @@ export function ReplyComposer({
           onClick={() => void copy()}
         >
           <Copy />
-          Copy
+          {language === "zh-CN" ? "复制" : "Copy"}
         </Button>
         <Button variant="outline" size="sm" asChild>
           <a
@@ -289,7 +316,9 @@ export function ReplyComposer({
             rel="noreferrer"
           >
             <ExternalLink />
-            Open {consoleName}
+            {language === "zh-CN"
+              ? `打开 ${consoleName}`
+              : `Open ${consoleName}`}
           </a>
         </Button>
         {actions.mark ? (
@@ -305,7 +334,7 @@ export function ReplyComposer({
               );
             }}
           >
-            {markLabel(marked, ready)}
+            {interfaceCopy(language, markLabel(marked, ready))}
           </Button>
         ) : null}
         {actions.withdraw ? (
@@ -328,7 +357,7 @@ export function ReplyComposer({
           />
         ) : null}
         <Button variant="ghost" size="sm" className="ml-auto" onClick={onClose}>
-          Close
+          {language === "zh-CN" ? "关闭" : "Close"}
         </Button>
       </div>
       <ReplyFooter access={access} store={store} posted={posted} />

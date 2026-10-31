@@ -1,9 +1,13 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { componentCopy } from "@/lib/component-copy";
+
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import { STORE_FUNNEL_GUIDE } from "@/components/overview/FunnelHelp";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,6 +44,7 @@ export function ConnectAppStoreDialog({
   label: string;
   variant?: "default" | "outline";
 }) {
+  const locale = useInterfaceLanguage();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [issuerId, setIssuerId] = useState("");
@@ -95,7 +100,10 @@ export function ConnectAppStoreDialog({
       open={open}
       onOpenChange={reset}
       label={label}
-      description="Create a team key with the Admin role in Users and Access, Integrations, so AsoBeast can ask Apple for the reports. AsoBeast checks it with Apple, stores it encrypted and never shows it again."
+      description={componentCopy(
+        locale,
+        "Create a team key with the Admin role in Users and Access, Integrations, so AsoBeast can ask Apple for the reports. AsoBeast checks it with Apple, stores it encrypted and never shows it again.",
+      )}
       error={error}
       pending={mutation.isPending}
       onSubmit={submit}
@@ -106,7 +114,9 @@ export function ConnectAppStoreDialog({
       }
     >
       <div className="flex flex-col gap-2">
-        <Label htmlFor="asc-issuer-id">Issuer ID</Label>
+        <Label htmlFor="asc-issuer-id">
+          <LocalizedText en="Issuer ID" />
+        </Label>
         <Input
           id="asc-issuer-id"
           value={issuerId}
@@ -118,7 +128,9 @@ export function ConnectAppStoreDialog({
         />
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="asc-key-id">Key ID</Label>
+        <Label htmlFor="asc-key-id">
+          <LocalizedText en="Key ID" />
+        </Label>
         <Input
           id="asc-key-id"
           value={keyId}
@@ -130,7 +142,9 @@ export function ConnectAppStoreDialog({
         />
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="asc-private-key">Private key</Label>
+        <Label htmlFor="asc-private-key">
+          <LocalizedText en="Private key" />
+        </Label>
         <Input
           id="asc-private-key"
           type="password"
@@ -144,7 +158,7 @@ export function ConnectAppStoreDialog({
           data-bwignore="true"
         />
         <Label htmlFor="asc-private-key-file" className="sr-only">
-          Private key file
+          <LocalizedText en="Private key file" />
         </Label>
         <Input
           id="asc-private-key-file"
@@ -154,16 +168,16 @@ export function ConnectAppStoreDialog({
           onChange={(event) => void choose(event.target.files?.[0])}
         />
         <p className="text-xs text-muted-foreground">
-          Paste the key or choose the .p8 file you downloaded. A team key with
-          the Admin role covers reports and replies; Sales and Reports reads
-          reports only, Customer Support replies only.{" "}
+          {locale === "zh-CN"
+            ? "粘贴密钥，或选择已下载的 .p8 文件。管理员角色的团队密钥支持报告读取与评论回复；「销售和报告」角色只能读取报告，「客户支持」角色只能回复评论。"
+            : "Paste the key or choose the .p8 file you downloaded. A team key with the Admin role covers reports and replies; Sales and Reports reads reports only, Customer Support replies only."}{" "}
           <a
             href={`${STORE_FUNNEL_GUIDE}#create-the-key`}
             target="_blank"
             rel="noreferrer"
             className="font-medium text-foreground underline decoration-primary underline-offset-4 hover:decoration-2"
           >
-            Why an Admin key
+            <LocalizedText en="Why an Admin key" />
           </a>
         </p>
       </div>

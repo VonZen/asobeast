@@ -3,8 +3,12 @@
 import { useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ExternalLink } from "lucide-react";
-import type { AppLocalizationsResult } from "@asobeast/shared";
+import {
+  STORE_FIELD_LIMITS,
+  type AppLocalizationsResult,
+} from "@asobeast/shared";
 import { ErrorState } from "@/components/layout/ErrorState";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -47,6 +51,7 @@ function LocalizationsPanel({
   result: AppLocalizationsResult;
   canDraft: boolean;
 }) {
+  const zh = useInterfaceLanguage() === "zh-CN";
   const suggestions = useQuery({
     ...marketSuggestionsOptions(id),
     retry: false,
@@ -58,19 +63,24 @@ function LocalizationsPanel({
       <CardContent className="flex flex-col gap-4">
         <div className="flex flex-col gap-1">
           <p className="text-body text-muted-foreground">
-            A keyword field belongs to a language. Search in every storefront on
-            its list reads it, and words combine only within one localization.{" "}
+            {zh
+              ? "关键词字段属于某一个本地化语言。支持该语言的商店市场搜索会读取此字段；关键词只能在同一个本地化版本内组合。"
+              : "A keyword field belongs to a language. Search in every storefront on its list reads it, and words combine only within one localization."}{" "}
             <a
               href={APPLE_LOCALIZATIONS_URL}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-1 font-medium text-foreground underline underline-offset-4"
             >
-              Apple&rsquo;s localization table
+              {zh ? "Apple 本地化支持表" : "Apple’s localization table"}
               <ExternalLink className="size-3.5" aria-hidden />
             </a>
           </p>
-          <p className="text-body text-foreground">{LOCALIZED_FIELDS_NOTE}</p>
+          <p className="text-body text-foreground">
+            {zh
+              ? `每个本地化版本分别拥有最多 ${STORE_FIELD_LIMITS.APP_STORE.title?.limit} 个字符的标题、${STORE_FIELD_LIMITS.APP_STORE.subtitle?.limit} 个字符的副标题，以及 ${STORE_FIELD_LIMITS.APP_STORE.keywordField?.limit} 个字符的关键词字段。`
+              : LOCALIZED_FIELDS_NOTE}
+          </p>
         </div>
         {grid ? (
           <LocalizationMatrix
@@ -92,6 +102,7 @@ export function AppLocalizationsSection({
   id: string;
   canDraft: boolean;
 }) {
+  const zh = useInterfaceLanguage() === "zh-CN";
   const { data, error, isError, refetch } = useQuery({
     ...appLocalizationsOptions(id),
     retry: false,
@@ -107,7 +118,7 @@ export function AppLocalizationsSection({
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 id={HEADING_ID} className="text-lg font-medium">
-          App Store localizations
+          {zh ? "App Store 本地化版本" : "App Store localizations"}
         </h2>
         {data ? (
           <div className="flex flex-wrap items-center gap-2">
@@ -122,7 +133,9 @@ export function AppLocalizationsSection({
         <ErrorState
           error={error}
           retry={() => void refetch()}
-          title="Localizations could not be loaded."
+          title={
+            zh ? "无法加载本地化版本。" : "Localizations could not be loaded."
+          }
         />
       ) : (
         <Skeleton className="h-64 w-full rounded-xl" />

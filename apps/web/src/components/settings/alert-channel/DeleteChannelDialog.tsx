@@ -15,13 +15,14 @@ import {
   ConfirmActionFooter,
 } from "@/components/ConfirmActionFooter";
 import { Button } from "@/components/ui/button";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import {
   cardAction,
   siblingControl,
   useCloseFocusHandoff,
 } from "@/lib/focus-handoff";
 
-const DELETE_CONTROL = 'button[aria-label^="Delete "]';
+const DELETE_CONTROL = 'button[data-alert-delete="true"]';
 
 function deleteSuccessor(trigger: HTMLElement | null): HTMLElement | null {
   const row = trigger?.closest("li") ?? null;
@@ -41,6 +42,7 @@ export function DeleteChannelDialog({
   pending: boolean;
   onDelete: () => Promise<unknown>;
 }) {
+  const chinese = useInterfaceLanguage() === "zh-CN";
   const [open, setOpen] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
   const { handOff, onCloseAutoFocus } = useCloseFocusHandoff();
@@ -55,7 +57,8 @@ export function DeleteChannelDialog({
           ref={trigger}
           variant="ghost"
           size="icon-sm"
-          aria-label={`Delete ${label}`}
+          data-alert-delete="true"
+          aria-label={chinese ? `删除 ${label}` : `Delete ${label}`}
         >
           <Trash2 />
         </Button>
@@ -67,8 +70,8 @@ export function DeleteChannelDialog({
         </AlertDialogHeader>
         <ConfirmActionFooter
           pending={pending}
-          label="Delete"
-          pendingLabel="Removing…"
+          label={chinese ? "删除" : "Delete"}
+          pendingLabel={chinese ? "正在删除…" : "Removing…"}
           onConfirm={() => {
             const successor = deleteSuccessor(trigger.current);
             void onDelete().then(

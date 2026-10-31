@@ -1,0 +1,1733 @@
+# 使用AppMate 把这些都跑一遍 aso-optimize Deep ASO rewrite (title / su…
+
+> 其他有下载量的地区的关键词,标题,副标题之类的,有需要改动吗?
+
+<details><summary>4 previous messages</summary>
+
+> 我会按实际下载地区核对对应语言的标题、副标题和关键词，优先看有持续下载或旧核心词被删掉的市场，再区分哪些值得改、哪些适合先保持。
+>
+> <details><summary>Ran 3 commands, searched the web</summary>
+>
+> - Ran `rtk proxy cat /Users/vonzen/.agents/skills/localization/SKILL.md`
+>
+> - Ran `rtk proxy python3 - <<'PY'
+> import json,collections
+> from pathlib import Path
+> p=Path('.asc/appmate/data');s=json.load(open(p/'sales_cache.json'));a=next(x for x in json.load(open(p/'apps_full.json'))['apps'] if x['id']=='6451428572');tot=collections.Counter();recent=collections.Counter();prev=collections.Counter();days=collections.defaultdict(set)
+> for date,rows in s.items():
+>  for r in rows:
+>   if str(r.get('Apple Identifier'))!='6451428572' or r.get('Product Type Identifier') not in ('1','1F','1T','F1'):continue
+>   n=int(r.get('Units') or 0);c=r.get('Country Code')
+>   if '2026-09-29'<=date<='2026-10-28':tot[c]+=n;days[c].add(date)
+>   if '2026-10-22'<=date<='2026-10-28':recent[c]+=n
+>   if '2026-08-30'<=date<='2026-09-28':prev[c]+=n
+> print(json.dumps({'window':'2026-09-29..2026-10-28','countries':[{'country':c,'downloads30':n,'downloads7':recent[c],'previous30':prev[c],'days':len(days[c])} for c,n in tot.most_common()]},ensure_ascii=False));print('locales',[l['locale'] for l in a['appInfo']['localizations']])
+> PY`
+>
+> - Ran `rtk proxy python3 scripts/appmate.py check`
+>
+> Searched the web for `site:developer.apple.com app store localization primary language country region English United Kingdom ...`
+>
+> </details>
+>
+> 我会结合 localization Skill 判断地区优先级。目前美区以外近 30 天只有 13 次首次下载：英国 3、土耳其 2，其余八个地区各 1 次。这个样本还不足以支持全面重写，更适合先处理英语回退，以及土耳其等市场明确缺失的核心电台词。
+>
+> <details><summary>Created a file, ran a command, searched the web</summary>
+>
+> - Ran `rtk proxy python3 - <<'PY'
+> import json
+> r=json.load(open('doc/appmate/2026-10-30/version-metadata-diff.json'))
+> for l in ['tr','de-DE','pt-BR','es-MX','es-ES','vi','th']:
+>  x=next(x for x in r if x['locale']==l);print(l,json.dumps(x,ensure_ascii=False))
+> PY`
+>
+> Searched the web for `https://developer.apple.com/help/app-store-connect/reference/app-information/app-store-localizations/`
+>
+> - Wrote `./doc/appmate/2026-10-30/regional-metadata-audit.md` (+97 -0)
+>
+> Tool call
+>
+> Tool: open_in_codex
+> Status: completed
+>
+> </details>
+</details>
+
+**有需要调整的，但建议分批处理，不要把 23 个语言再全部重写。**
+
+按 **9 月 29 日～10 月 28 日首次下载**，美区之外只有 13 次，样本不足以证明各地当前文案失败。
+
+| 地区 | 下载 | 建议 |
+|---|---:|---|
+| 英国、加拿大、澳大利亚 | 3＋1＋1 | **优先核验英语展示与回退**，结合刚出的英文方案处理，暂不急着新增独立语言槽位 |
+| 土耳其 | 2 | **非英语第一优先级**：保留 `Radyo Dinle`，研究补回 FM/AM、直播及功能词 |
+| 墨西哥、阿根廷 | 1＋1 | 一起审查 **es-MX**，重点研究 `radio en vivo`、`radio FM`、`emisoras` |
+| 德国 | 1 | 保留 `internetradio`、`webradio`，研究是否恢复 FM/AM、闹钟、定时入口 |
+| 巴西 | 1 | 先保留本地曲风副标题，优先审查隐藏关键词 |
+| 越南、泰国 | 各 1 | 暂时保持标题、副标题，先研究被删除的新闻、闹钟、定时词 |
+
+目前能确认的共同问题是：**这些语言也大量删除了旧功能词，转向曲风和心情词。** 但这只能说明存在覆盖损失风险，不能直接认定当地曲风词没有价值。
+
+具体取舍上：
+
+- **标题**：优先检查是否还清楚表达“在线听电台”，以及 FM/AM 是否值得恢复。
+- **副标题**：保留本地化特色。例如巴西的 `Sertanejo, Pagode e Gospel`、德国的 `Jazz, Oldies & Schlager`，不直接换成英文方案的翻译。
+- **关键词**：最值得先研究和局部修复。按当地搜索表达补词，不能把美区热度或词表直接搬过去。
+
+另外，**国家不等于唯一语言槽位**。例如阿根廷默认对应西语（墨西哥）；英加澳的实际展示还受设备语言、已有本地化和主语言影响，需要核验回退。[Apple 地区与语言说明](https://developer.apple.com/help/app-store-connect/reference/app-information/app-store-localizations/)
+
+我的优先顺序是：**英文展示 → 土耳其 → 德语与 es-MX → 巴西、越南、泰国。**
+
+[完整地区审查与逐语言问题](./doc/appmate/2026-10-30/regional-metadata-audit.md)已保存，未修改商店。
+
+> | 使用AppMate 把这些都跑一遍     | `aso-optimize`                                                        | Deep ASO rewrite (title / subtitle / keywords) for one app. |
+> | --------------------- | --------------------------------------------------------------------- | ----------------------------------------------------------- |
+> | `aso-daily-report`    | Keyword-rank daily monitor for top-3 apps.                            |                                                             |
+> | `competitor-research` | Top 5-10 rivals outranking one app on its own keywords.               |                                                             |
+> | `feature-ideation`    | Prioritized feature ideas from reviews + competitor evidence.         |                                                             |
+> | `growth-strategy`     | Stage-diagnosed growth plan (cold start / early / plateau / decline). |                                                             |
+
+<details><summary>10 previous messages</summary>
+
+> 我会用 AppMate 依次运行这五项分析，先检查现有配置，再确认 TuneRadar 的应用信息和数据范围，最后整理成可查看的报告。涉及 ASO 改写时，我也会遵循项目内的关键词与元数据规范。
+>
+> <details><summary>Explored a file, ran 11 commands</summary>
+>
+> <details><summary>Explored a file</summary>
+>
+> - Read `~/.codex/RTK.md`
+>
+> </details>
+>
+> - Ran `cat /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/skills/{aso-optimize,aso-daily-report,competitor-research,feature-ideation,growth-strategy}/SKILL.md`
+>
+> - Ran `cat .cursor/skills/keyword-research/SKILL.md .cursor/skills/metadata-optimization/SKILL.md`
+>
+> - Ran `rtk proxy python3 scripts/appmate.py check`
+>
+> - Ran `rtk proxy cat /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/skills/aso-daily-report/SKILL.md`
+>
+> - Ran `rtk proxy cat /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/skills/competitor-research/SKILL.md`
+>
+> - Ran `rtk proxy cat /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/skills/feature-ideation/SKILL.md`
+>
+> - Ran `rtk proxy cat /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/skills/growth-strategy/SKILL.md`
+>
+> - Ran `rtk proxy cat scripts/appmate.py`
+>
+> - Ran `rtk proxy python3 scripts/appmate.py aso_optimize_v2.py analyze TuneRadar`
+>
+> - Ran `rtk proxy rg --files -g '*marketing*' -g '*aso*' -g '*appmate*' -g 'AGENTS.md'`
+>
+> - Ran `rtk proxy sed -n '1,155p' /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/skills/growth-strategy/SKILL.md`
+>
+> </details>
+>
+> 配置检查已通过。AppMate 已识别到「TuneRadar: Music Radio」，但目前销售缓存里没有它的数据，ASO 分析因此停在主市场选择这一步。我会先检查并刷新数据，再继续其余分析。
+>
+> <details><summary>Ran 19 commands</summary>
+>
+> - Ran `rtk proxy python3 scripts/appmate.py sales_report.py --help`
+> - Ran `rtk proxy ls .asc/appmate/data`
+> - Ran `rtk proxy rg -n 'argparse|sys.argv|refresh|fetch|print|DATA_TODAY' /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/scripts/sales_report.py`
+> - Ran `rtk proxy python3 -c "import json;from pathlib import Path;p=Path('.asc/appmate/data');a=json.loads((p/'apps_full.json').read_text());s=json.loads((p/'sales_cache.json').read_text());print('apps shape',type(a).__name__,list(a)[:10] if isinstance(a,dict) else len(a));print('sales shape',list(s)[:20]);print(str(s)[:2500])"`
+> - Ran `rtk proxy python3 scripts/appmate.py fetch_full.py --help`
+> - Ran `rtk proxy python3 scripts/appmate.py competitor_research.py analyze TuneRadar`
+> - Ran `rtk proxy rg -n 'def |argparse|tokens|snapshot' /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/scripts/aso_daily.py`
+> - Ran `rtk proxy cat .asc/appmate/data/phase_a_competitors_tuneradar_us.json`
+> - Ran `rtk proxy sed -n '90,195p' /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/scripts/aso_daily.py`
+> - Ran `rtk proxy python3 -c "import json; a=json.load(open('.asc/appmate/data/apps_full.json'));t=next(x for x in a['apps'] if x['core']['bundleId']=='com.dz.simpleFm');print(json.dumps(t,ensure_ascii=False)[:22000])"`
+> - Ran `rtk proxy rg -n 'def pick_locales|def latest_version|def find_top_market|def build_phase|raw|locale' /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/scripts/{aso_optimize_v2,competitor_research}.py`
+> - Ran `rtk proxy rg -n 'localizations|limit|paginate' /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/scripts/fetch_full.py`
+> - Ran `rtk proxy sed -n '1,110p' /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/scripts/asc_client.py`
+> - Ran `rtk proxy sed -n '145,190p' /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/scripts/competitor_research.py`
+> - Ran `rtk proxy /opt/homebrew/bin/asc localizations --help`
+> - Ran `rtk proxy sed -n '80,128p' /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/scripts/fetch_full.py`
+> - Ran `rtk proxy /opt/homebrew/bin/asc localizations list --help`
+> - Ran `rtk proxy /opt/homebrew/bin/asc app-infos --help`
+> - Ran `rtk proxy sed -n '125,145p' /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/scripts/competitor_research.py`
+>
+> </details>
+>
+> 刷新后发现两处会影响结论的数据问题：AppMate 只抓到了前 10 个本地化，导致英文市场读到了其他语言；竞品脚本的下载口径也比销售日报更宽。我会补齐本地化，并在报告中标清下载口径，避免把脚本差异误当成增长信号。
+>
+> <details><summary>Ran 30 commands</summary>
+>
+> - Ran `rtk proxy /opt/homebrew/bin/asc localizations list --app 6451428572 --type app-info --app-info 503c1483-99eb-4c5f-9d51-4cad0513d2b2 --paginate --output json > .asc/appmate/data/tuneradar_appinfo_complete.json`
+> - Ran `rtk proxy rg -n 'def pick_primary_market|Product Type|def find_top_market' /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/scripts/{feature_ideate,aso_rank,sales_report}.py`
+> - Ran `rtk proxy /opt/homebrew/bin/asc localizations list --version 85ac59dc-b538-43e8-b89a-881a4e1fb29b --paginate --output json > .asc/appmate/data/tuneradar_version_complete.json`
+> - Ran `rtk proxy head -n 40 /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/scripts/aso_optimize_v2.py`
+> - Ran `rtk proxy sed -n '175,202p' /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/scripts/sales_report.py`
+> - Ran `rtk proxy python3 - <<'PY'
+> import json
+> from pathlib import Path
+> p=Path('.asc/appmate/data'); f=p/'apps_full.json';a=json.loads(f.read_text());t=next(x for x in a['apps'] if x['id']=='6451428572')
+> for file,obj in [('tuneradar_appinfo_complete.json',t['appInfo']),('tuneradar_version_complete.json',t['versions'][0])]:
+>  j=json.loads((p/file).read_text());obj['localizations']=[{'id':x['id'],**x['attributes']} for x in j['data']];print(file,len(obj['localizations']));print([{k:l.get(k) for k in ('locale','name','subtitle','keywords')} for l in obj['localizations'] if l.get('locale')=='en-GB'])
+> f.write_text(json.dumps(a,ensure_ascii=False,indent=2))
+> PY`
+> - Ran `rtk proxy python3 scripts/appmate.py competitor_research.py analyze TuneRadar`
+> - Ran `rtk proxy rg -n 'def find_top_market|return |Product Type' /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/scripts/aso_optimize.py`
+> - Ran `rtk proxy cat .asc/appmate/data/phase_a_competitors_tuneradar_us.json`
+> - Ran `rtk proxy sed -n '148,170p' /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/scripts/aso_optimize.py`
+> - Ran `rtk proxy python3 scripts/appmate.py aso_optimize_v2.py analyze TuneRadar`
+> - Ran `rtk proxy python3 - <<'PY'
+> import json,collections
+> p='.asc/appmate/data/';s=json.load(open(p+'sales_cache.json'));c=collections.Counter();types=collections.Counter();names=collections.Counter()
+> for d,rs in s.items():
+>  if '2026-09-29'<=d<='2026-10-28':
+>   for r in rs:
+>    if r.get('Apple Identifier')=='6451428572':
+>     ty=r.get('Product Type Identifier');types[ty]+=int(r.get('Units',0));names[(r.get('Title'),ty)]+=int(r.get('Units',0))
+>     if ty in ('1','1F','1T','F1'):c[r.get('Country Code')]+=int(r.get('Units',0))
+> print('types',types,'names',names,'install markets',c)
+> PY`
+> - Ran `rtk proxy sed -n '280,350p' /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/scripts/aso_optimize_v2.py`
+> - Ran `rtk proxy rg -n 'timeout|retries|def rank_keyword' /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/scripts/aso_report.py`
+> - Ran `rtk proxy python3 -c "import json; a=json.load(open('.asc/appmate/data/apps_full.json'));print([(x['core']['name'],[(l.get('locale'),l.get('name'),l.get('subtitle')) for l in x.get('appInfo',{}).get('localizations',[])]) for x in a['apps'] if 'Glow' in x['core']['name']])"`
+> - Ran `rtk proxy curl -I --max-time 10 'https://itunes.apple.com/search?term=radio&country=us&entity=software&limit=200'`
+> - Ran `rtk proxy sed -n '174,215p' /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/scripts/aso_report.py`
+> - Ran `rtk proxy python3 - <<'PY'
+> import os
+> print({k:v for k,v in os.environ.items() if 'proxy' in k.lower()})
+> PY`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python -c "import requests; r=requests.get('https://itunes.apple.com/search',params={'term':'radio','country':'us','entity':'software','limit':200},timeout=5);print(r.status_code,len(r.content))"`
+> - Ran `rtk proxy sed -n '512,580p' /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/scripts/competitor_research.py`
+> - Ran `rtk proxy curl -sS --max-time 12 'https://itunes.apple.com/search?term=radio&country=us&entity=software&limit=200' -o .asc/appmate/data/transport_probe.json -w '%{http_code} %{size_download}\n'`
+> - Ran `rtk proxy ls .asc/appmate/data`
+> - Ran `rtk proxy curl -sS --max-time 10 'https://itunes.apple.com/search?term=TuneRadar&country=us&entity=software&limit=200' -o .asc/appmate/data/brand_probe.json -w '%{http_code} %{size_download}\n'`
+> - Ran `rtk proxy python3 - <<'PY'
+> import json
+> for f in ['serp_details_cache.json','aso_rank_cache.json','phase_a_tuneradar_gb.json']:
+>  j=json.load(open('.asc/appmate/data/'+f));print(f, len(j),str(j)[:1700])
+> PY`
+> - Ran `rtk proxy sed -n '330,410p' /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/scripts/competitor_research.py`
+> - Ran `rtk proxy sed -n '270,340p' /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/scripts/aso_daily.py`
+> - Ran `rtk proxy sed -n '190,230p' /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/scripts/aso_optimize_v2.py`
+> - Ran `rtk proxy python3 -c "import json;d=json.load(open('.asc/appmate/data/serp_details_cache.json'));print(len(d));print([(k,len(v.get('entries',[])),v.get('_error')) for k,v in d.items()])"`
+> - Ran `rtk proxy python3 scripts/appmate.py aso_optimize_v2.py validate TuneRadar --candidates 'TuneRadar,music,radio,lofi,jazz,world stations,live,internet,online,streaming,chill,relaxing,study,focus,80s,90s,oldies,pop,rock,hip hop,mood,globe'`
+> - Ran `rtk proxy python3 scripts/appmate.py aso_optimize_v2.py analyze TuneRadar`
+>
+> </details>
+>
+> 已确认改名前后的记录需要按同一个 App ID 合并：9 月 29 日至 10 月 28 日，TuneRadar 有 36 次首次下载，其中美国 23 次。竞品检索正在进行；账号目前只有两款已上架应用，所以“Top 3 日报”将覆盖这两款。TuneRadar 目前仅有 1 条评论，功能建议会明确区分已有证据和待验证想法。
+>
+> <details><summary>Ran 21 commands, searched the web</summary>
+>
+> - Ran `rtk proxy python3 - <<'PY'
+> import json,collections
+> p='.asc/appmate/data/';a=json.load(open(p+'apps_full.json'));s=json.load(open(p+'sales_cache.json'));names={x['id']:x['core']['name'] for x in a['apps']};n={d:[dict(r,Title=names.get(r.get('Apple Identifier'),r.get('Title'))) for r in rows if r.get('Product Type Identifier') in ['1','1F','1T','F1']] for d,rows in s.items()};open(p+'sales_first_downloads_normalized.json','w').write(json.dumps(n,ensure_ascii=False));print('Derived sales cache saved; raw retained')
+> print('reviews',next(x for x in a['apps'] if x['id']=='6451428572').get('reviews'))
+> ref=json.load(open(p+'keyword_reference_us.json'));print('reference shape',type(ref).__name__);print(str(ref)[:250])
+> PY`
+>
+> - Ran `rtk proxy python3 scripts/appmate.py competitor_research.py rank TuneRadar --tokens 'TuneRadar,music,radio,lofi,jazz,world stations,live,internet,online,streaming,chill,relaxing,study,focus,80s,90s,oldies,pop,rock,hip hop,mood,globe'`
+>
+> - Ran `rtk proxy sed -n '1,150p' /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/scripts/keyword_local.py`
+>
+> - Ran `rtk proxy git status --short`
+>
+> - Ran `rtk proxy python3 - <<'PY'
+> import json
+> r=json.load(open('.asc/appmate/data/keyword_reference_us.json'))['rows'];print([{k:x[k] for k in ('keyword','popularity','difficulty','popularity_is_floor')} for x in r if any(y in x['keyword'].lower() for y in ['radio','jazz','lofi','oldies','sleep','music'])][:60])
+> PY`
+>
+> - Ran `rtk proxy python3 - <<'PY'
+> import json
+> j=json.load(open('.asc/appmate/data/phase_b_competitors_tuneradar_us.json'));print('self',j['self_ranks']);print('candidates',len(j['candidates']));print(json.dumps(j['candidates'],ensure_ascii=False)[:25000])
+> PY`
+>
+> - Ran `rtk proxy python3 - <<'PY'
+> import json,collections
+> s=json.load(open('.asc/appmate/data/sales_first_downloads_normalized.json'));c=collections.defaultdict(collections.Counter)
+> for d,rs in s.items():
+>  if '2026-09-29'<=d<='2026-10-28':
+>   for r in rs:c[r['Title']][r['Country Code']]+=int(r['Units'])
+> print(dict(c))
+> PY`
+>
+> - Ran `rtk proxy sed -n '125,138p' /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/scripts/aso_optimize_v2.py`
+>
+> - Ran `rtk proxy rg -n '^def build_phase_a|SALES_CACHE|OUTPUT_DIR' /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/scripts/{feature_ideate,growth_strategy}.py`
+>
+> - Ran `rtk proxy python3 - <<'PY'
+> from pathlib import Path
+> p=Path('.asc/appmate/run_corrected.py');p.write_text('''import os,sys,json,datetime as dt,concurrent.futures
+> from pathlib import Path
+> home=Path(__file__).parent
+> os.environ['APPMATE_HOME']=str(home.resolve());os.environ['CLAUDE_PLUGIN_DATA']=str((home/'data').resolve());os.environ.pop('APPMATE_ALLOW_WRITES',None)
+> plugin=max((Path.home()/'.codex/plugins/cache/appmate-marketplace/appmate').glob('*/scripts'),key=lambda p:p.stat().st_mtime);sys.path.insert(0,str(plugin))
+> import appmate_config as cfg
+> cfg.require_credentials_or_exit()
+> import key_safety;key_safety.require_safe_key_or_exit()
+> import aso_optimize_v2 as opt,competitor_research as comp,feature_ideate as feat,growth_strategy as growth,aso_daily as daily,keyword_local as kw,sales_report as sr,requests
+> D=home/'data'; data=json.loads((D/'apps_full.json').read_text());sales=json.loads((D/'sales_first_downloads_normalized.json').read_text());today=dt.date(2026,10,28)
+> tokens='TuneRadar,music,radio,lofi,jazz,world stations,live,internet,online,streaming,chill,relaxing,study,focus,80s,90s,oldies,pop,rock,hip hop,mood,globe'.split(',')
+> extra='fm radio,am radio,radio tuner,song recognition,music identification,sleep timer,car radio,world radio,radio stations,internet radio,live radio,ambient'.split(',')
+> glowtokens='Glowboard,LED,banner,scroller,big text,concerts,pickup,scrolling text,marquee,sign,display,airport,birthday,party,cheering,neon,message,board'.split(',')
+> cache=json.loads((D/'serp_details_cache.json').read_text());jobs=[]
+> for country,words in [('US',tokens+extra),('PH',glowtokens)]:
+>  for word in words:
+>   key=f'software|{country.lower()}|{word}'
+>   if key not in cache or '_error' in cache[key]:jobs.append((country,word,key))
+> def fetch(job):
+>  country,word,key=job
+>  try:
+>   r=requests.get('https://itunes.apple.com/search',params={'term':word,'country':country,'entity':'software','limit':200},timeout=90);r.raise_for_status(); raw=r.json()['results'];entries=[{'itunes_id':str(x['trackId']),'bundle_id':x.get('bundleId',''),'name':x.get('trackName',''),'primary_genre_id':int(x.get('primaryGenreId') or 0),'rating':x.get('averageUserRating',0),'review_count':x.get('userRatingCount',0),'description':x.get('description',''),'rank_in_serp':i} for i,x in enumerate(raw,1) if 'trackId' in x];return key,{'entries':entries,'fetched_at':dt.datetime.now(dt.timezone.utc).isoformat()}
+>  except Exception as e:return key,{'_error':type(e).__name__,'entries':[]}
+> with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:
+>  for key,value in pool.map(fetch,jobs):cache[key]=value;print('fetched',key,len(value['entries']),value.get('_error',''),flush=True)
+> (D/'corrected_serp_cache.json').write_text(json.dumps(cache,ensure_ascii=False))
+> def rank(word,country,entity,bid,*args):
+>  item=cache.get(f'{entity}|{country.lower()}|{word}',{})
+>  return next((x['rank_in_serp'] for x in item.get('entries',[]) if x['bundle_id']==bid),None)
+> app=opt.find_app('TuneRadar');a=opt.build_phase_a(app,'US','en-US','en-US',23,rank,kw.lookup_popularity_batch);opt.write_json(D/'phase_a_tuneradar_us.json',a)
+> b=opt.build_phase_b(app,'US',tokens+extra,rank,kw.lookup_popularity_batch);opt.write_json(D/'phase_b_tuneradar_us.json',b)
+> # Keep full lookup provenance; low-signal defaults are not measured demand.
+> opt.write_json(D/'keyword_signal_provenance.json',kw.lookup_popularity_batch(tokens+extra,'us'))
+> comp.rank_keyword_with_details=lambda word,country,entity='software':cache.get(f'{entity}|{country.lower()}|{word}',{}).get('entries',[])
+> a=comp.build_phase_a(app,sales,today);opt.write_json(D/'phase_a_competitors_tuneradar_us.json',a);b=comp.build_phase_b(a,tokens);opt.write_json(D/'phase_b_competitors_tuneradar_us.json',b)
+> reasons={'com.pandora':'同样服务音乐电台听众，但个性化音乐服务属于相邻竞争。','com.clearchannel.iheartradio':'同样提供音乐与直播电台，直接争夺电台收听用户。','com.puckey.radiogarden':'全球地球浏览与电台探索和 TuneRadar 的 Roam 场景高度重叠。','com.slacker.radio':'音乐电台与流媒体收听场景重叠，属于相邻竞争。','com.appmind.colombiaradios':'按地区收听家乡电台，与 TuneRadar 的国家浏览场景重叠。','com.simpleradio.SimpleRadioFree':'同样提供 FM、AM 和网络电台及手表收听，直接竞争。','mobi.digitalminds.itunerfree':'全球多国家直播电台聚合，直接竞争。','com.jango.jango':'个性化音乐电台满足相同的持续听歌需求，属于相邻竞争。','com.tunein.TuneInRadio':'全球 AM、FM 与网络电台收听，直接竞争。','fm.sky.appleapp':'按音乐风格组织电台，与类型浏览和持续听歌场景重叠。','com.radiofm.radiofm':'同样聚合直播电台，直接竞争。','com.live365.live365app':'全球电台发现与收听，直接竞争。','com.MadCalfApps.70sRadio':'年代音乐电台与老歌收听场景重叠。','com.peterapps.radios.br':'巴西地方电台与按国家收听场景重叠。','com.finallevel.OnlineRadioBox':'全球网络电台聚合，与核心收听场景重叠。','com.MadCalfApps.80sRadio':'年代音乐电台与老歌收听场景重叠。'}
+> kept=[dict(c,relevance_keep=True,relevance_reason=reasons[c['bundle_id']]) for c in b['candidates'] if c['bundle_id'] in reasons][:10]
+> final={k:v for k,v in b.items() if k!='candidates'};final['filtered']=kept;final['dropped_by_relevance']=[dict(c,drop_reason='演唱会视频、商用点歌或音乐制作与个人电台收听的主要场景不一致。') for c in b['candidates'] if c['bundle_id'] not in reasons];opt.write_json(D/'competitors_tuneradar_us.json',final)
+> feat.SALES_CACHE_PATH=D/'sales_first_downloads_normalized.json';growth.SALES_CACHE_PATH=feat.SALES_CACHE_PATH
+> feat.main_args=None
+> # The public entry points retain all prerequisite checks.
+> sys.argv=['feature_ideate.py','TuneRadar'];feat.main()
+> sys.argv=['growth_strategy.py','TuneRadar'];growth.main()
+> results=[];snapshots=daily.load_snapshots();daily.itunes_rank=rank
+> for name,words in [('Glowboard',glowtokens),('TuneRadar',tokens)]:
+>  app=opt.find_app(name);daily.tokenize_text=lambda *args,words=words:{w:set() for w in words};r=daily.analyze_app(app,sales,today,'2026-10-30',{},snapshots)
+>  if r:results.append(r)
+> daily.save_snapshots(snapshots);opt.write_json(D/'daily_corrected_results.json',{'data_date':str(today),'results':results});(D/'aso_daily.md').write_text(daily.render(results,today))
+> print('DONE',flush=True)
+> ''')
+> print(p)
+> PY`
+>
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python .asc/appmate/run_corrected.py`
+>
+> - Ran `rtk proxy python3 - <<'PY'
+> from pathlib import Path
+> p=Path('.asc/appmate/run_corrected.py');p.write_text('''import os,sys,json,datetime as dt,concurrent.futures
+> from pathlib import Path
+> home=Path(__file__).resolve().parent
+> os.environ['APPMATE_HOME']=str(home);os.environ['CLAUDE_PLUGIN_DATA']=str(home/'data');os.environ.pop('APPMATE_ALLOW_WRITES',None)
+> plugin=max((Path.home()/'.codex/plugins/cache/appmate-marketplace/appmate').glob('*/scripts'),key=lambda p:p.stat().st_mtime);sys.path.insert(0,str(plugin))
+> import appmate_config as cfg
+> cfg.require_credentials_or_exit()
+> import key_safety;key_safety.require_safe_key_or_exit()
+> import aso_optimize_v2 as opt,competitor_research as comp,feature_ideate as feat,growth_strategy as growth,aso_daily as daily,keyword_local as kw,requests
+> D=home/'data';sales=json.loads((D/'sales_first_downloads_normalized.json').read_text());today=dt.date(2026,10,28)
+> tokens='TuneRadar,music,radio,lofi,jazz,world stations,live,internet,online,streaming,chill,relaxing,study,focus,80s,90s,oldies,pop,rock,hip hop,mood,globe'.split(',')
+> extra='fm radio,am radio,radio tuner,song recognition,music identification,sleep timer,car radio,world radio,radio stations,internet radio,live radio,ambient'.split(',')
+> glowtokens='Glowboard,LED,banner,scroller,big text,concerts,pickup,scrolling text,marquee,sign,display,airport,birthday,party,cheering,neon,message,board'.split(',')
+> cache=json.loads((D/'serp_details_cache.json').read_text());jobs=[]
+> for country,words in [('US',tokens+extra),('PH',glowtokens)]:
+>  for word in words:
+>   key=f'software|{country.lower()}|{word}'
+>   if key not in cache or '_error' in cache[key]:jobs.append((country,word,key))
+> def fetch(job):
+>  country,word,key=job
+>  try:
+>   r=requests.get('https://itunes.apple.com/search',params={'term':word,'country':country,'entity':'software','limit':200},timeout=90);r.raise_for_status();raw=r.json()['results'];entries=[{'itunes_id':str(x['trackId']),'bundle_id':x.get('bundleId',''),'name':x.get('trackName',''),'primary_genre_id':int(x.get('primaryGenreId') or 0),'rating':x.get('averageUserRating',0),'review_count':x.get('userRatingCount',0),'description':x.get('description',''),'rank_in_serp':i} for i,x in enumerate(raw,1) if 'trackId' in x];return key,{'entries':entries,'fetched_at':dt.datetime.now(dt.timezone.utc).isoformat()}
+>  except Exception as e:return key,{'_error':type(e).__name__,'entries':[]}
+> with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:
+>  for key,value in pool.map(fetch,jobs):cache[key]=value;print('fetched',key,len(value['entries']),value.get('_error',''),flush=True)
+> (D/'corrected_serp_cache.json').write_text(json.dumps(cache,ensure_ascii=False))
+> def rank(word,country,entity,bid,*args):
+>  return next((x['rank_in_serp'] for x in cache.get(f'{entity}|{country.lower()}|{word}',{}).get('entries',[]) if x['bundle_id']==bid),None)
+> app=opt.find_app('TuneRadar');a=opt.build_phase_a(app,'US','en-US','en-US',23,rank,kw.lookup_popularity_batch);opt.write_json(D/'phase_a_tuneradar_us.json',a)
+> b=opt.build_phase_b(app,'US',tokens+extra,rank,kw.lookup_popularity_batch);opt.write_json(D/'phase_b_tuneradar_us.json',b)
+> opt.write_json(D/'keyword_signal_provenance.json',kw.lookup_popularity_batch(tokens+extra,'us'))
+> comp.rank_keyword_with_details=lambda word,country,entity='software':cache.get(f'{entity}|{country.lower()}|{word}',{}).get('entries',[])
+> a=comp.build_phase_a(app,sales,today);opt.write_json(D/'phase_a_competitors_tuneradar_us.json',a);b=comp.build_phase_b(a,tokens);opt.write_json(D/'phase_b_competitors_tuneradar_us.json',b)
+> keepids=['284035177','290638154','1339670993','298307011','1037773731','891132290','520502858','416867919','418987775','387816411','951362406','1228431134','512061401','1042302690','1101437391','512060499']
+> final={k:v for k,v in b.items() if k!='candidates'};final['filtered']=[dict(c,relevance_keep=True,relevance_reason='Overlapping radio listening audience; verified from description.') for c in b['candidates'] if c['itunes_id'] in keepids][:10];final['dropped_by_relevance']=[dict(c,drop_reason='Concert video, venue jukebox or music creation is a different primary use case.') for c in b['candidates'] if c['itunes_id'] not in keepids];opt.write_json(D/'competitors_tuneradar_us.json',final)
+> feat.SALES_CACHE_PATH=D/'sales_first_downloads_normalized.json';growth.SALES_CACHE_PATH=feat.SALES_CACHE_PATH
+> sys.argv=['feature_ideate.py','TuneRadar'];feat.main()
+> sys.argv=['growth_strategy.py','TuneRadar'];growth.main()
+> results=[];snapshots=daily.load_snapshots();daily.itunes_rank=rank
+> for name,words in [('Glowboard',glowtokens),('TuneRadar',tokens)]:
+>  app=opt.find_app(name);daily.tokenize_text=lambda *args,words=words:{w:set() for w in words};r=daily.analyze_app(app,sales,today,'2026-10-30',{},snapshots)
+>  if r:results.append(r)
+> daily.save_snapshots(snapshots);opt.write_json(D/'daily_corrected_results.json',{'data_date':str(today),'results':results});(D/'aso_daily.md').write_text(daily.render(results,today));print('DONE',flush=True)
+> ''');print(p)
+> PY`
+>
+> Searched the web for `site.developer.apple.com app store keywords 100 bytes metadata app name 30 subtitle`
+>
+> - Ran `rtk proxy sed -n '216,252p' /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/scripts/feature_ideate.py`
+>
+> - Ran `rtk proxy sed -n '413,464p' /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/scripts/growth_strategy.py`
+>
+> - Ran `rtk proxy python3 -c "a=['TuneRadar: Music Radio','Live FM, AM & Song Recognition','TuneRadar: Live FM & AM Radio','Discover Music Across the Globe','live,internet,online,streaming,lofi,jazz,chill,relaxing,study,focus,80s,90s,oldies,pop,rock,mood,globe'];print([(x,len(x),len(x.encode())) for x in a])"`
+>
+> - Ran `rtk proxy rg -n 'iCloud|equalizer|retry|reconnect|bitrate|Favorite|Sleep' iOS --glob '*.swift' -l`
+>
+> - Ran `rtk proxy rg --files | head -n 65`
+>
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python .asc/appmate/run_corrected.py`
+>
+> - Ran `rtk proxy cat .asc/appmate/data/daily_corrected_results.json .asc/appmate/data/phase_b_tuneradar_us.json .asc/appmate/data/phase_a_growth_tuneradar_us.json`
+>
+> - Ran `rtk proxy rg -n 'share|report.*station|broken|bitrate|reconnect|retry' Shared --glob '*.swift' -l`
+>
+> - Ran `rtk proxy python3 scripts/appmate.py aso_daily.py`
+>
+> </details>
+>
+> 检索结果已返回：美国市场中，TuneRadar 品牌词排第 1，`internet radio` 排第 29，`oldies` 排第 124；`radio`、`music` 未进入本次前 200 个结果。已筛出 10 个相关竞品。
+>
+> 另外，AppMate 部分“热度”来自字符串匹配推算，不能视为真实搜索量。我会在报告中标明这一点，ASO 文案也会作为待验证草案交付。
+>
+> <details><summary>Created a file, edited a file, ran 7 commands</summary>
+>
+> - Ran `rtk proxy python3 -c "a=['internet,online,streaming,lofi,jazz,chill,relaxing,study,focus,80s,90s,oldies,pop,rock,hip hop,mood,globe','Live FM, AM & Song Recognition','TuneRadar: FM & AM Radio','World Stations, Identify Songs'];print([(x,len(x)) for x in a])"`
+>
+> - Ran `rtk proxy rg -n 'share|ShareLink|collection|playlist' Shared/Views/PlayerView.swift Shared/Views/StationViews.swift Shared/Core/StationLibrary.swift Shared/Views/LibraryView.swift`
+>
+> - Wrote `./.asc/appmate/render_reports.py` (+224 -0)
+>
+> - Ran `rtk proxy python3 .asc/appmate/render_reports.py`
+>
+> - Ran `rtk proxy python3 - <<'PY'
+> import json
+> from pathlib import Path
+> p=Path('.asc/appmate/data');s=json.load(open(p/'daily_corrected_results.json'));c=json.load(open(p/'corrected_serp_cache.json'));print('errors',[(k,v.get('_error')) for k,v in c.items() if v.get('_error')]);print('alternatives',[(x,len(x)) for x in ['TuneRadar: World Radio','Lofi, Jazz & World Stations']]);print('global previous',sum(int(r['Units']) for d,rs in json.load(open(p/'sales_first_downloads_normalized.json')).items() if '2026-08-30'<=d<='2026-09-28' for r in rs if r.get('Apple Identifier')=='6451428572'))
+> PY`
+>
+> - Ran `rtk proxy git status --short`
+>
+> Tool call
+>
+> Tool: open_in_codex
+> Status: completed
+>
+> - Ran `rtk proxy python3 - <<'PY'
+> import json
+> r=json.load(open('.asc/appmate/data/keyword_reference_us.json'))['rows'];print([{k:x[k] for k in ('keyword','popularity','difficulty')} for x in r if x['keyword'].lower() in ['music','radio','streaming','tuneradar','focus','study','rock']])
+> PY`
+>
+> - Wrote `./.asc/appmate/render_reports.py` (+2 -2)
+>
+> - Ran `rtk proxy python3 .asc/appmate/render_reports.py`
+>
+> </details>
+</details>
+
+五项已跑完，完整报告已保存并打开：
+
+[查看五项完整报告](./doc/appmate/2026-10-30/README.md)
+
+| 分析 | 主要结果 |
+|---|---|
+| [ASO 改写](./doc/appmate/2026-10-30/01-aso-optimize.md) | 完成 34 个词验证，产出英文元数据草案 |
+| [ASO 日报](./doc/appmate/2026-10-30/02-aso-daily-report.md) | 账号只有两款已上架应用，均已覆盖 |
+| [竞品研究](./doc/appmate/2026-10-30/03-competitor-research.md) | 筛出 10 个竞品，优先研究 Radio Garden、Simple Radio、myTuner |
+| [功能建议](./doc/appmate/2026-10-30/04-feature-ideation.md) | 保留 3 个待验证方向；近 90 天没有评论，不凑建议数量 |
+| [增长策略](./doc/appmate/2026-10-30/05-growth-strategy.md) | 判断为冷启动，建议先做 10 位用户的复听验证 |
+
+关键发现：合并改名前后的记录后，TuneRadar 最近有效 30 天有 **36 次首次下载，美国占 23 次**。美国检索中，品牌词 **#1**，`internet radio` **#29**，`oldies` **#124**；`radio`、`music` 未进入本次前 200 个结果。
+
+ASO 建议草案：
+
+```text
+主标题（22/30）
+TuneRadar: Music Radio
+
+副标题（30/30）
+Live FM, AM & Song Recognition
+
+关键词（99/100）
+internet,online,streaming,lofi,jazz,chill,relaxing,study,focus,80s,90s,oldies,pop,rock,hip hop,mood
+```
+
+本次还补齐了 AppMate 漏抓的本地化，并修正改名造成的数据分裂。报告已区分静态热度、推算值和未知数据；文案符合 [Apple 产品页指南](https://developer.apple.com/app-store/product-page/)的字段限制，但仍需验证转化效果。**未修改商店元数据，也未提交审核。**
+
+> 相比2.0.0 关键词覆盖暴跌;
+> 同时之前出现过的 radio Jazz 排名也丢失了;对比两次的app名称标题,副标题,以及关键词的改动;
+> 说说原因,以及如何更正优化
+>
+> User context
+>
+> Images:
+> - `/var/folders/_t/p2044ppx58d0wkmt8vhb3rhr0000gn/T/codex-clipboard-6393ea64-174f-4acc-8fd0-3b7661a892a2.png`
+
+<details><summary>9 previous messages</summary>
+
+> 我会先核对 2.0.0 与 3.0.0 各语言的名称、副标题和关键词，再把改动与截图中的覆盖变化对照。重点查清原有 `radio`、`jazz` 的组合是否被拆掉，以及之前建议的改写是否会进一步损失覆盖。
+>
+> <details><summary>Ran 2 commands</summary>
+>
+> - Ran `rtk proxy cat /Users/vonzen/.codex/RTK.md .cursor/skills/keyword-research/SKILL.md .cursor/skills/metadata-optimization/SKILL.md`
+> - Ran `rtk proxy python3 scripts/appmate.py check`
+>
+> </details>
+>
+> Viewed an image
+>
+> <details><summary>Ran 13 commands, searched the web</summary>
+>
+> - Ran `rtk proxy python3 - <<'PY'
+> import json
+> x=json.load(open('.asc/appmate/data/apps_full.json'));a=next(a for a in x['apps'] if a['id']=='6451428572');print('fetched',x['fetched_at']);print([(v['id'],v['attributes'].get('versionString'),v['attributes'].get('appStoreState'),v['attributes'].get('createdDate'),len(v.get('localizations',[]))) for v in a['versions']])
+> PY`
+>
+> - Ran `rtk proxy rg -n --hidden -g '!*.json' -g '!.git/**' -g '!.asc/appmate/**' 'Ting Radio|2.0.0|Jazz|爵士' .asc doc scripts/release | head -n 150`
+>
+> - Ran `rtk proxy /opt/homebrew/bin/asc versions --help`
+>
+> - Ran `rtk proxy /opt/homebrew/bin/asc apps info list --help`
+>
+> - Ran `rtk proxy /opt/homebrew/bin/asc localizations list --version bbb1df9c-aa4b-4295-a225-4b074e90da53 --paginate --output json > .asc/appmate/data/tuneradar_v2_complete.json`
+>
+> Searched the web for `site:developer.apple.com app store search app name subtitle keywords ranking relevance user behavior ...`
+>
+> - Ran `rtk proxy cat doc/aso-20261026/metadata-update.md`
+>
+> - Ran `rtk proxy rg --files --hidden releases/ios/2.0.0/metadata releases/ios/3.0.0/metadata .asc | head -n 120`
+>
+> - Ran `rtk proxy rg --files --hidden .asc releases | rg '(snapshot|app-info|app_info|metadata|release.json|manifest)' | head -n 100`
+>
+> - Ran `rtk proxy /opt/homebrew/bin/asc apps info list --app 6451428572 --output json > .asc/appmate/data/tuneradar_appinfos_all.json`
+>
+> - Ran `rtk proxy rg -n '2026-10-2[6789]|release|发布|上线' doc/*3.0* doc/*发布* doc/aso-20261026/*.md`
+>
+> - Ran `rtk proxy ls .asc/metadata-20261026`
+>
+> - Ran `rtk proxy /opt/homebrew/bin/asc versions view --help`
+>
+> - Ran `rtk proxy python3 - <<'PY'
+> import json
+> from pathlib import Path
+> r=Path('releases/ios/2.0.0/metadata')
+> for l in ['en-US','zh-Hans','zh-Hant','ja','de-DE']:
+>  print(l)
+>  for f in [r/'app-info'/f'{l}.json',r/'version/2.0.0'/f'{l}.json']:
+>   x=json.loads(f.read_text());print({k:v for k,v in x.items() if k in ['name','subtitle','keywords','attributes']})
+> PY`
+>
+> </details>
+>
+> 截图是哪一个国家/地区、哪个 ASO 平台的数据？你说丢失的词是 `radio` 和 `jazz` 两个词，还是 `radio jazz` / `jazz radio` 组合词？
+>
+> <details><summary>Ran 5 commands, searched the web</summary>
+>
+> - Ran `rtk proxy rg --files --hidden --no-ignore .asc releases doc | rg '(2026102[6789]|3.0.0|2.1.0|snapshot|app-info-localizations)' | head -n 100`
+>
+> - Ran `rtk proxy python3 - <<'PY'
+> import json
+> from pathlib import Path
+> p=Path('.asc/appmate/data');j=json.load(open(p/'tuneradar_appinfos_all.json'));print([(x['id'],x['attributes']) for x in j['data']]);v=json.load(open(p/'tuneradar_v2_complete.json'));print('v2 locales',len(v['data']));print([(x['attributes']['locale'],x['attributes'].get('keywords')) for x in v['data'] if x['attributes']['locale'] in ['en-US','zh-Hans']])
+> PY`
+>
+> - Ran `rtk proxy /opt/homebrew/bin/asc localizations list --app 6451428572 --type app-info --app-info 503c1483-99eb-4c5f-9d51-4cad0513d2b2 --paginate --output json > .asc/appmate/data/current_appinfo_compare.json`
+>
+> - Ran `rtk proxy /opt/homebrew/bin/asc localizations list --version 85ac59dc-b538-43e8-b89a-881a4e1fb29b --paginate --output json > .asc/appmate/data/current_version_compare.json`
+>
+> Searched the web for `https://developer.apple.com/app-store/search/`
+>
+> - Ran `rtk proxy python3 - <<'PY'
+> import json
+> from pathlib import Path
+> r=Path('releases/ios/2.0.0/metadata');d=Path('.asc/appmate/data')
+> newi={x['attributes']['locale']:x['attributes'] for x in json.load(open(d/'current_appinfo_compare.json'))['data']};newv={x['attributes']['locale']:x['attributes'] for x in json.load(open(d/'current_version_compare.json'))['data']};oldv={x['attributes']['locale']:x['attributes'] for x in json.load(open(d/'tuneradar_v2_complete.json'))['data']}
+> for locale in sorted(newi):
+>  oldi=json.load(open(r/'app-info'/f'{locale}.json'));ov=oldv[locale];ni=newi[locale];nv=newv[locale]
+>  print(locale);print('name',oldi['name'],'=>',ni['name']);print('subtitle',oldi['subtitle'],'=>',ni['subtitle']);print('keywords',ov['keywords'],'=>',nv['keywords'])
+> PY`
+>
+> </details>
+>
+> 已核对到关键差异：这次不只是改名，23 个语言的标题都移除了 `FM AM`，大量“新闻、识曲、闹钟、睡眠定时、车载”等功能词也被曲风和心情词替换。
+>
+> 但英文 `Radio` 仍在标题，`Jazz` 是从关键词移到了副标题，并没有删除。因此可以解释一批旧词覆盖流失，却还不能把 `radio`、`jazz` 的掉榜直接归因于“词被删了”。我上一轮建议再把 Jazz 移回隐藏关键词，缺少历史对照依据，这条建议应撤回。
+>
+> <details><summary>Ran 2 commands</summary>
+>
+> - Ran `rtk proxy python3 - <<'PY'
+> import json,re
+> from pathlib import Path
+> p=Path('.asc/appmate/data');v2={x['attributes']['locale']:x['attributes'] for x in json.load(open(p/'tuneradar_v2_complete.json'))['data']};v3={x['attributes']['locale']:x['attributes'] for x in json.load(open(p/'current_version_compare.json'))['data']}
+> a='tuner,internet,online,stream,local,world,news,sports,talk,lofi,alarm,clock,sleep,timer,identify,car'
+> for x in ['TuneRadar: FM AM Radio','Live Music, Jazz & Song ID',a,'TuneRadar: FM AM Music Radio','Live Stations, Jazz & Song ID','TuneRadar - FM AM 收音机电台','新闻直播、听歌识曲、爵士与轻音乐','广播,调频,网络广播,睡眠定时,起床闹钟,车载,古典,摇滚,粤语,体育,老歌,助眠']:
+>  print(len(x),len(x.encode()),x)
+> o=set(re.findall(r'[a-z0-9]+',json.load(open('releases/ios/2.0.0/metadata/app-info/en-US.json'))['name'].lower()+' '+json.load(open('releases/ios/2.0.0/metadata/app-info/en-US.json'))['subtitle'].lower()+' '+v2['en-US']['keywords'].lower()));ni={x['attributes']['locale']:x['attributes'] for x in json.load(open(p/'current_appinfo_compare.json'))['data']};n=set(re.findall(r'[a-z0-9]+',ni['en-US']['name'].lower()+' '+ni['en-US']['subtitle'].lower()+' '+v3['en-US']['keywords'].lower()));print('removed',sorted(o-n));print('added',sorted(n-o));print('retained',sorted(n&o));print('currentchars',len(v3['en-US']['keywords']))
+> PY`
+> - Ran `rtk proxy git log -5 --format='%h %ad %s' --date=short -- releases/ios/2.0.0/metadata/app-info/en-US.json`
+>
+> </details>
+>
+> System error
+>
+> Selected model is at capacity. Please try a different model.
+</details>
+
+> **截图是哪一个国家/地区、哪个 ASO 平台的数据？你说丢失的词是 radio 和 jazz 两个词，还是 radio jazz / jazz radio 组合词？**
+>
+> 美区,radio jazz
+
+<details><summary>4 previous messages</summary>
+
+> 收到，是美区的完整词组 `radio jazz`。这个澄清很重要：2.0.0 和 3.0.0 都仍包含 `radio` 与 `jazz`，变化是 Jazz 从隐藏关键词移到了副标题。接下来会以这一个词组为重点，区分元数据调整的影响与发布后排名、第三方采集的波动。
+>
+> <details><summary>Created a file, ran 5 commands</summary>
+>
+> - Ran ``rtk proxy python3 - <<'PY'
+> import json
+> from pathlib import Path
+> p=Path('.asc/appmate/data');r=Path('releases/ios/2.0.0/metadata');o=Path('doc/appmate/2026-10-30');ni={x['attributes']['locale']:x['attributes'] for x in json.load(open(p/'current_appinfo_compare.json'))['data']};nv={x['attributes']['locale']:x['attributes'] for x in json.load(open(p/'current_version_compare.json'))['data']};ov={x['attributes']['locale']:x['attributes'] for x in json.load(open(p/'tuneradar_v2_complete.json'))['data']};rows=[];lines=['# 2.0.0 与 3.0.0 全语言元数据对照','','2.0.0 名称和副标题来自 2026-10-09 已入库发布留档；旧关键词及当前元数据来自 ASC 完整分页读回。旧名称不伪装成 ASC 的历史快照。','']
+> for loc in sorted(ni):
+>  oi=json.load(open(r/'app-info'/f'{loc}.json'));row={'locale':loc,'old':{k:oi[k] for k in ['name','subtitle']},'new':{k:ni[loc][k] for k in ['name','subtitle']}};row['old']['keywords']=ov[loc]['keywords'];row['new']['keywords']=nv[loc]['keywords'];rows.append(row);lines += ['## '+loc,'','| 字段 | 2.0.0 | 3.0.0 |','|---|---|---|']
+>  for key in ['name','subtitle','keywords']:lines.append('| '+key+' | `'+row['old'][key]+'` | `'+row['new'][key]+'` |')
+>  lines += ['']
+> (o/'version-metadata-diff.json').write_text(json.dumps(rows,ensure_ascii=False,indent=2));(o/'version-metadata-diff.md').write_text('\n'.join(lines));print('23 locales saved')
+> PY``
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python - <<'PY'
+> import requests,json,concurrent.futures,datetime
+> from pathlib import Path
+> words=['radio jazz','jazz radio','TuneRadar']
+> def query(w):
+>  try:
+>   r=requests.get('https://itunes.apple.com/search',params={'term':w,'country':'US','entity':'software','limit':200},timeout=90);r.raise_for_status();a=r.json()['results'];rank=next((i for i,x in enumerate(a,1) if x.get('bundleId')=='com.dz.simpleFm'),None);return {'keyword':w,'rank':rank,'returned':len(a),'top5':[(x.get('trackName'),x.get('trackId')) for x in a[:5]],'error':None}
+>  except Exception as e:return {'keyword':w,'error':type(e).__name__}
+> with concurrent.futures.ThreadPoolExecutor(max_workers=3) as p: results=list(p.map(query,words))
+> out={'queried_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'market':'US','source':'iTunes Search API','results':results};Path('.asc/appmate/data/us_jazz_phrase_check.json').write_text(json.dumps(out,ensure_ascii=False,indent=2));print(json.dumps(out,ensure_ascii=False))
+> PY`
+> - Ran `rtk proxy python3 -c "for x in ['TuneRadar: Jazz Radio FM AM','Live Music, Stations & Song ID','Live FM AM, Jazz & Song ID']:print(len(x),x)"`
+> - Ran `rtk proxy python3 - <<'PY'
+> import json
+> s=json.load(open('.asc/appmate/data/sales_first_downloads_normalized.json'))
+> for d in sorted(s):
+>  if d>='2026-10-20':print(d,sum(int(r['Units']) for r in s[d] if r.get('Apple Identifier')=='6451428572' and r.get('Country Code')=='US'))
+> PY`
+> - Wrote `./doc/appmate/2026-10-30/version-regression-analysis.md` (+136 -0)
+> - Ran `rtk proxy python3 -c "import json; x=json.load(open('.asc/appmate/data/tuneradar_v2_complete.json')); print(len(next(a['attributes']['keywords'] for a in x['data'] if a['attributes']['locale']=='en-US')))"`
+>
+> </details>
+>
+> 刚补查了美区完整词组：iTunes Search 目前仍能在 `radio jazz` 下找到 TuneRadar，位置约第 141；`jazz radio` 则未在本次返回结果中找到。它与截图平台的排名口径不同，但说明 `radio jazz` 目前并非完全搜不到。
+>
+> 我已准备一套修复草案：保留 TuneRadar 品牌和副标题里的 Jazz，恢复旧版的 FM、AM、新闻、识曲、睡眠定时与车载词。这样先恢复旧版的搜索入口，再观察同口径排名和真实搜索下载的变化。
+>
+> <details><summary>Edited 3 files, ran a command</summary>
+>
+> - Wrote `./doc/appmate/2026-10-30/01-aso-optimize.md` (+2 -0)
+> - Wrote `./doc/appmate/2026-10-30/README.md` (+2 -0)
+> - Wrote `./doc/appmate/2026-10-30/version-regression-analysis.md` (+3 -2)
+>
+> - Ran `rtk proxy python3 - <<'PY'
+> import json,re
+> from pathlib import Path
+> p=Path('doc/appmate/2026-10-30');rows=json.load(open(p/'version-metadata-diff.json'));en=next(r for r in rows if r['locale']=='en-US');title='TuneRadar: FM AM Music Radio';sub='Live Stations, Jazz & Song ID';kw='tuner,internet,online,stream,local,world,news,sports,talk,lofi,alarm,clock,sleep,timer,identify,car'
+> old=set(re.findall('[a-z0-9]+',' '.join(en['old'].values()).lower()));new=set(re.findall('[a-z0-9]+',' '.join([title,sub,kw]).lower()));assert old-new=={'ting'},old-new
+> assert len(title)<=30 and len(sub)<=30 and len(kw.encode())<=100
+> assert not set(kw.split(','))&set(re.findall('[a-z0-9]+',(title+' '+sub).lower()))
+> print('23 locale diffs; keyword lengths old/new',len(en['old']['keywords']),len(en['new']['keywords']));print('Recovery draft lengths',len(title),len(sub),len(kw));print('Old tokens missing',old-new)
+> PY`
+>
+> Tool call
+>
+> Tool: open_in_codex
+> Status: completed
+>
+> </details>
+</details>
+
+**这次改动幅度过大，确实丢掉了一批旧搜索入口；但美区 `radio jazz` 掉榜，不能简单解释为 Jazz 被删除。** 我已完成 23 个语言的对照，[完整复盘在这里](./doc/appmate/2026-10-30/version-regression-analysis.md)。
+
+另外，**撤回我上一轮“把 Jazz 从副标题移回关键词”的建议**，那条建议缺少旧版对照，不适合当前的恢复目标。
+
+### 1. 美区前后到底改了什么
+
+| 字段 | 2.0.0 | 3.0.0 |
+|---|---|---|
+| 名称/标题 | **Ting Radio - FM AM Stations** | **TuneRadar: Music Radio** |
+| 副标题 | **Live Music, News & Song ID** | **Lofi, Jazz & World Stations** |
+
+**2.0.0 关键词，99 字符：**
+
+```text
+tuner,internet,online,stream,local,world,sports,talk,jazz,lofi,alarm,clock,sleep,timer,identify,car
+```
+
+**3.0.0 关键词，100 字符：**
+
+```text
+live,internet,online,streaming,chill,relaxing,study,focus,80s,90s,oldies,pop,rock,hip hop,mood,globe
+```
+
+关键变化是：
+
+| 词 | 实际变化 |
+|---|---|
+| **FM、AM** | 从标题删除，其他字段未补回 |
+| **News、Song ID** | 从副标题删除，其他字段未补回 |
+| **tuner、local、sports、talk** | 删除 |
+| **alarm、clock、sleep、timer、identify、car** | 删除 |
+| **Radio** | 仍在标题 |
+| **Jazz、Lofi** | 从隐藏关键词移至副标题，仍然存在 |
+| **Live、World、Stations** | 保留，但换了位置 |
+
+**实质上，定位从“收音机及其功能”转成了“音乐曲风、年代与心情”。** 新增词并没有证据证明能补偿旧功能词带来的搜索覆盖。
+
+### 2. 覆盖暴跌与 `radio jazz` 要分开判断
+
+**整体覆盖下降，最值得怀疑的是旧词被集中移除。**
+
+FM/AM、新闻、体育、闹钟、定时、识曲、车载等词，原来可以参与相关查询，现在明确文本入口减少。这是可以直接确认的结构变化。但没有掉出词表，仍无法定量解释截图的全部跌幅。
+
+**`radio jazz` 则不是“组成词消失”。**
+
+旧版是标题里的 Radio＋关键词里的 Jazz；新版是标题里的 Radio＋副标题里的 Jazz，两者仍在。
+
+我刚补查美区 iTunes Search：
+
+| 查询词 | 本次结果 |
+|---|---|
+| `radio jazz` | TuneRadar **#141** |
+| `jazz radio` | 本次返回的 179 个结果中未找到 |
+| `TuneRadar` | **#1** |
+
+这与截图平台口径不同，不能替代其历史排名；但说明 `radio jazz` 在该接口中仍能匹配。**如果原平台只统计前 100 名，排名跌至 141 就可能显示为未覆盖。**
+
+目前不能确认是发布后的结果调整、用户行为变化、竞品变化还是采集时点造成，也没有依据断言“改名清空权重”或“等几天必然恢复”。Apple 只公开说明搜索综合考虑文本相关性与下载、评分等行为，没有公开固定字段权重倍数。[Apple 搜索说明](https://developer.apple.com/app-store/search/)
+
+### 3. 建议如何更正
+
+**先恢复旧版功能词结构，保留新品牌，也保留副标题中的 Jazz。** 暂时不要再整体换成另一套新定位。
+
+建议恢复草案：
+
+**标题，28/30：**
+
+```text
+TuneRadar: FM AM Music Radio
+```
+
+**副标题，29/30：**
+
+```text
+Live Stations, Jazz & Song ID
+```
+
+**关键词，99/100：**
+
+```text
+tuner,internet,online,stream,local,world,news,sports,talk,lofi,alarm,clock,sleep,timer,identify,car
+```
+
+这套草案：
+
+- 补回 **FM、AM、新闻、识曲、闹钟、定时、车载**等旧入口。
+- 保留 **Music 在标题、Jazz 在副标题**。
+- 按独立英文词核对，覆盖旧三字段中除旧品牌 **Ting** 外的全部词。
+- 不为凑满字符继续加入缺少需求证据的泛词。
+
+**它恢复的是词集合，不能保证旧组合和排名全部回来。** 也不建议仅因为 `radio jazz` 掉榜，就立刻把整个产品改成以爵士为主的标题。
+
+### 4. 下一步怎么判断是否有效
+
+先在截图平台固定美区和排名范围，导出发布前后明细，重点看：
+
+- `radio jazz`、`jazz radio` 的原排名与当前排名。
+- 掉出的主要是核心词，还是大量深层低排名词。
+- ASC 美区 **App Store Search 来源的曝光、首次下载和转化**是否同步下降。
+
+若真实搜索流量也下降，再采用一套恢复方案，同时尽量保持截图、价格和其他字段稳定。第 7、14 天复查可作为观察节点，但不作为保证恢复期限。
+
+[23 个语言完整前后对照](./doc/appmate/2026-10-30/version-metadata-diff.md)。本次仅准备分析和草案，未修改商店。
+
+> ```
+> Song ID 是非要不可吗?
+> ```
+
+**不必，Song ID 不是必留词。**
+
+之前保留它，是为了恢复旧版的功能表达；目前没有数据证明它带来过有效搜索下载，也没有理由一定占用副标题。
+
+针对当前的电台与爵士定位，我更倾向：
+
+```text
+Live Stations, Jazz & Lofi
+```
+
+**26/30 字符**，表达更集中，也保留现有 Jazz、Lofi。
+
+识曲功能可以放在截图和描述中说明；如果还想测试识曲相关搜索，可将关键词中的 `lofi` 换成 `song`，保留已有的 `identify`，关键词仍为 **99 字符**。这属于待验证选择，不代表一定比 Song ID 排名更好。
+
+> [$keyword-research](~/.agents/skills/keyword-research/SKILL.md) 结合这个Skill分析;从名称,副标题,到关键词,重新出一版;
+
+<details><summary>6 previous messages</summary>
+
+> 我会按你指定的 keyword-research Skill 重新筛词，再整理成美区的名称、副标题和关键词方案。目标沿用这次复盘：恢复电台核心搜索入口，重点保留 Jazz，同时避免没有需求证据的词占用可见位置。
+>
+> <details><summary>Created a file, ran 10 commands, searched the web</summary>
+>
+> - Ran `rtk proxy cat doc/appmate/2026-10-30/version-regression-analysis.md`
+>
+> - Ran `rtk proxy cat /Users/vonzen/.agents/skills/keyword-research/SKILL.md /Users/vonzen/.agents/skills/metadata-optimization/SKILL.md`
+>
+> - Ran `rtk proxy rg --files --hidden -g '*marketing-context*' -g '!\.git/**' -g '!\.asc/**'`
+>
+> - Ran `rtk proxy python3 scripts/appmate.py check`
+>
+> - Ran `rtk proxy sed -n '98,145p' /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/scripts/aso_optimize.py`
+>
+> - Ran `rtk proxy python3 - <<'PY'
+> import json
+> from pathlib import Path
+> p=Path('.asc/appmate/data');r=json.load(open(p/'keyword_reference_us.json'))['rows'];wanted=['radio','fm radio','am radio','jazz','jazz radio','radio jazz','radio tuner','internet radio','live radio','sleep timer','radio alarm','music','lofi','stream','tuner','oldies','smooth jazz']
+> for word in wanted:
+>  exact=next((x for x in r if x['keyword'].lower()==word),None)
+>  print(word,{k:exact[k] for k in ['popularity','difficulty','popularity_is_floor','fetched_at']} if exact else None)
+> print('existing rank sources',[(f.name,len(json.load(open(f)))) for f in [p/'corrected_serp_cache.json',p/'serp_details_cache.json']])
+> PY`
+>
+> Searched the web for `https://developer.apple.com/app-store/search/`
+>
+> - Ran `rtk proxy rg -n 'HINTS_URL|USER_AGENT|143441' /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/scripts/aso_optimize.py`
+>
+> - Ran `rtk proxy python3 - <<'PY'
+> items=['tuner,internet,online,stream,local,world,news,sports,talk,alarm,clock,sleep,timer,oldies,smooth,car','tuner,internet,online,stream,local,world,news,sports,talk,sleep,timer,alarm,car,oldies,smooth,song','tuner,internet,online,stream,local,world,news,sports,talk,sleep,timer,alarm,car,oldies,smooth,identify']
+> for x in items:print(len(x),x)
+> PY`
+>
+> - Wrote `./.asc/appmate/research_us_keywords.py` (+52 -0)
+>
+> Searched the web for `site:developer.apple.com/app-store/search/ "Don't repeat" "keywords" "subtitle" ...`
+>
+> - Ran `rtk proxy python3 - <<'PY'
+> import json
+> from pathlib import Path
+> p=Path('.asc/appmate/data');cache=json.load(open(p/'corrected_serp_cache.json'));ids=['com.simpleradio.SimpleRadioFree','mobi.digitalminds.itunerfree','com.puckey.radiogarden','com.tunein.TuneInRadio'];seen={}
+> for v in cache.values():
+>  for x in v.get('entries',[]):
+>   if x.get('bundle_id') in ids and x['bundle_id'] not in seen:seen[x['bundle_id']]={k:x.get(k) for k in ['name','description']}
+> for k,x in seen.items():print(k,x['name'],x['description'][:1000].replace('\n',' '))
+> PY`
+>
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python .asc/appmate/research_us_keywords.py`
+>
+> </details>
+>
+> 筛词时发现，FM/AM、Stations、Live 是几款直接竞品共同使用的核心表达，适合优先恢复；`radio jazz` 仍能匹配，也值得继续保留。Song ID 暂无搜索流量证据，不需要占副标题。
+>
+> 热度资料有明显缺口：现有表是较早的静态数据，多数长尾词没有精确记录。我会把可计算的参考分与“数据未知”分开列，避免用默认值得出虚假的优先级。
+>
+> <details><summary>Created a file, ran 5 commands</summary>
+>
+> - Ran `rtk proxy git status --short`
+> - Ran `rtk proxy python3 - <<'PY'
+> import json,datetime
+> from pathlib import Path
+> p=Path('.asc/appmate/data');rows=json.load(open(p/'keyword_research_comparison.json'));wanted=['radio','fm radio','am radio','radio stations','internet radio','radio jazz','jazz radio','lofi radio','oldies radio','smooth jazz','sleep timer','radio alarm']
+> for r in rows:
+>  if r['keyword'] in wanted:print(r['keyword'],r['ranks'],r['returned'])
+> print('options')
+> for s in ['TuneRadar: FM AM Radio','Live Stations, Jazz & Lofi','TuneRadar: Live FM AM Radio','Jazz, Lofi & World Stations','TuneRadar: Jazz Radio FM AM','Live Stations, Lofi & Oldies']:print(len(s),s)
+> print(datetime.datetime.fromtimestamp(1778849686,datetime.timezone.utc).isoformat())
+> PY`
+> - Wrote `./.asc/appmate/render_keyword_research.py` (+64 -0)
+> - Ran `rtk proxy python3 .asc/appmate/render_keyword_research.py`
+> - Ran `rtk proxy python3 - <<'PY'
+> from pathlib import Path
+> p=Path('.asc/appmate/render_keyword_research.py');b=p.read_bytes()
+> try:b.decode('utf-8');print('utf8 valid')
+> except UnicodeDecodeError as e:print(e,repr(b[max(0,e.start-30):e.start+30]));print('line',b[:e.start].count(b'\n')+1)
+> PY`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python .asc/appmate/render_keyword_research.py`
+>
+> </details>
+>
+> 新一版已收敛：标题恢复 FM/AM/Radio，副标题保留 Jazz 和 Lofi，Song ID 暂不进入可见字段。本轮查了 53 个美区查询；其中 `internet radio` 约第 29、`lofi radio` 约第 37，比只追泛词更值得优先观察。
+>
+> Apple 补全还出现了 `smooth jazz radio`，因此把 `smooth` 作为小范围扩词候选。它有查询表达依据，但目前没有可信的搜索量数据。
+>
+> <details><summary>Edited 3 files, ran 2 commands</summary>
+>
+> - Ran `rtk proxy sed -n '1,110p' doc/appmate/2026-10-30/us-keyword-research-v2.md`
+>
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python - <<'PY'
+> import json
+> from pathlib import Path
+> p=Path('doc/appmate/2026-10-30');e=json.load(open(p/'us-keyword-research-evidence.json'));print('Queries',len(e['rows']),'failures',[(x['keyword'],x['error']) for x in e['rows'] if x.get('error')]);print('Hint failures',[k for k,v in e['hints'].items() if v.get('error')]);print('Metadata',json.load(open(p/'us-keyword-research-metadata.json'))['primary'])
+> PY`
+>
+> Tool call
+>
+> Tool: open_in_codex
+> Status: completed
+>
+> - Wrote `./doc/appmate/2026-10-30/README.md` (+2 -0)
+> - Wrote `./doc/appmate/2026-10-30/us-keyword-research-v2.md` (+1 -1)
+> - Wrote `./doc/appmate/2026-10-30/version-regression-analysis.md` (+2 -0)
+>
+> </details>
+</details>
+
+结合这个 Skill，本轮查了 **53 个美区查询、5 组 Apple 搜索补全、4 个直接竞品**。我推荐下面这一版，目标是恢复电台核心入口，同时保留 Jazz、Lofi，暂时不放 Song ID。
+
+**名称，22/30：**
+
+```text
+TuneRadar: FM AM Radio
+```
+
+**副标题，26/30：**
+
+```text
+Live Stations, Jazz & Lofi
+```
+
+**关键词，99/100：**
+
+```text
+tuner,internet,online,stream,local,world,news,sports,talk,alarm,clock,sleep,timer,oldies,smooth,car
+```
+
+选择依据：
+
+| 词组 | 本次美区结果¹ | 安排 |
+|---|---:|---|
+| `fm radio`、`am radio` | 未入榜 | 恢复标题中的 FM、AM，明确电台品类 |
+| `internet radio` | #29 | 保留 `internet`，优先观察已有匹配 |
+| `lofi radio` | #37 | Lofi 继续保留在副标题 |
+| `radio jazz` | #141 | Radio、Jazz 均保留在可见字段 |
+| `oldies radio` | #132 | 保留隐藏词 `oldies` |
+| `smooth jazz` | 未入榜 | Apple 补全出现 `smooth jazz radio`，加入 `smooth` 测试 |
+
+这版与当前 3.0.0 的主要区别是：
+
+- **恢复 FM、AM 和功能入口**：新闻、谈话、体育、定时、闹钟、车载等。
+- **保留 Jazz、Lofi、Stations**，避免再次撤掉已有音乐场景。
+- **World 移入关键词，Live 移到副标题**，可见文案更直接表达直播收听。
+- **暂不安排 Song ID/identify**；目前没有证据证明值得为它占用字符。
+- 名称不强行填满 30 字符，保持易读。Music 已是主分类，本轮让出标题空间。
+
+字段长度、逗号格式、跨字段完整词重复均已检查；关键词取舍遵循 [Apple 产品页指南](https://developer.apple.com/app-store/product-page/)。
+
+**这是一版有依据的恢复候选，尚不能承诺排名恢复。** 当前缺少当期可靠搜索量，所以没有用默认热度值硬算“最佳方案”。采用后优先观察 `internet radio`、`lofi radio`、`radio jazz`，同时看美区搜索来源的曝光和首次下载。
+
+[完整研究、竞品差距及两个备选方案](./doc/appmate/2026-10-30/us-keyword-research-v2.md)。未修改商店。
+
+¹ 排名来自本次 iTunes Search 返回结果，与截图平台口径不同；“未入榜”指返回列表中未找到。
+
+> 所有语言参考英语策略进行调整吧,但是也要保重关键词有效,根据之前使用的skill;开始吧
+
+<details><summary>12 previous messages</summary>
+
+> 我会按已确定的英语策略调整全部 23 个语言：恢复核心电台和功能入口，保留当地相关曲风，并逐市场查补全与竞品用词。先准备和校验完整方案，再同步到可编辑的 ASC 版本；若当前只有已发布版本，我会保留可审阅草案，不提交审核。
+>
+> <details><summary>Ran 9 commands</summary>
+>
+> - Ran `rtk proxy cat /Users/vonzen/.codex/RTK.md`
+> - Ran `rtk proxy cat .cursor/skills/keyword-research/SKILL.md .cursor/skills/metadata-optimization/SKILL.md /Users/vonzen/.agents/skills/localization/SKILL.md`
+> - Ran `rtk proxy rg -n 'metadata|localizations' scripts/release/audit_tuneradar_aso.py scripts/release/prepare_tuneradar.py | head -n 70`
+> - Ran `rtk proxy git status --short`
+> - Ran `rtk proxy python3 scripts/appmate.py check`
+> - Ran `rtk proxy /opt/homebrew/bin/asc versions list --app 6451428572 --platform IOS --output json > .asc/appmate/data/versions_before_all_locales.json`
+> - Ran `rtk proxy python3 - <<'PY'
+> import json
+> j=json.load(open('.asc/appmate/data/versions_before_all_locales.json'));print([(x['id'],x['attributes'].get('versionString'),x['attributes'].get('appVersionState'),x['attributes'].get('appStoreState')) for x in j['data']])
+> PY`
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata --help`
+> - Ran `rtk proxy /opt/homebrew/bin/asc localizations update --help`
+>
+> </details>
+>
+> ASC 当前只有已发布的 3.0.0，没有可编辑版本，名称和副标题需要随新版本提交。全部语言方案我会继续准备；同步到 ASC 时，下一版本号用哪个？
+> - 3.0.1：创建待审草稿并同步元数据
+> - 先只保存本地方案，不创建 ASC 版本
+>
+> <details><summary>Created 2 files, edited a file, ran 14 commands</summary>
+>
+> - Ran `rtk proxy sed -n '50,75p' /Users/vonzen/.codex/plugins/cache/appmate-marketplace/appmate/1.0.1/scripts/aso_optimize.py`
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata validate --help`
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata pull --help`
+> - Wrote `./.asc/appmate/all_locale_candidates.json` (+25 -0)
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata pull --app 6451428572 --version 3.0.0 --platform IOS --dir .asc/aso-recovery-20261030/baseline --output json > .asc/appmate/data/metadata_pull_all_locales.json`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python - <<'PY'
+> import json,re
+> p=json.load(open('.asc/appmate/all_locale_candidates.json'))
+> for x in p:
+>  print(x['locale'],len(x['name']),len(x['subtitle']),len(x['keywords']),len(x['keywords'].encode()))
+>  vis=set(re.findall(r'[^\W_]+',(x['name']+' '+x['subtitle']).casefold()));dups=set(x['keywords'].casefold().split(','))&vis
+>  if dups:print(' DUP',dups)
+> PY`
+> - Ran `rtk proxy /opt/homebrew/bin/asc versions create --help`
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata plan --help`
+> - Wrote `./.asc/appmate/research_all_locales.py` (+44 -0)
+> - Ran `rtk proxy rg --files --hidden --no-ignore .asc/aso-recovery-20261030/baseline | head -n 8`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python - <<'PY'
+> import json
+> from pathlib import Path
+> p=Path('.asc/appmate/all_locale_candidates.json');j=json.load(open(p));x=next(x for x in j if x['locale']=='id');x['subtitle']='Siaran Langsung, Jazz & Lawas';x['keywords']='stasiun,online,internet,dengar,indonesia,pop,rock,dangdut,berita,olahraga,alarm,tidur,timer,mobil';p.write_text(json.dumps(j,ensure_ascii=False,indent=2));print(len(x['subtitle']),len(x['keywords']))
+> print('baseline count',len(list(Path('.asc/aso-recovery-20261030/baseline/app-info').glob('*.json'))))
+> print('example',json.load(open('.asc/aso-recovery-20261030/baseline/app-info/en-US.json')))
+> PY`
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata apply --help`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python .asc/appmate/research_all_locales.py`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python - <<'PY'
+> import json
+> from pathlib import Path
+> p=Path('.asc/appmate/data/all_locale_research');data=[json.load(open(f)) for f in p.glob('*.json')]
+> for loc in ['zh-Hans','zh-Hant','ja','ko','fr-FR','de-DE','es-ES','es-MX','pt-BR','pt-PT','it','nl-NL','da','pl','ru','uk','tr','hi','id','ms','th','vi']:
+>  hints=[x for x in data if x['locale']==loc and x['kind']=='hints'];search=[x for x in data if x['locale']==loc and x['kind']=='search'];print(loc,'hint',[(x['seed'],x.get('hints',[])[:4],x.get('error')) for x in hints]);print('apps',[(x['seed'],[(a['name']) for a in x.get('top_apps',[])[:3]]) for x in search[:2]])
+> PY`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python - <<'PY'
+> import json,collections
+> from pathlib import Path
+> rows=[json.load(open(f)) for f in Path('.asc/appmate/data/all_locale_research').glob('*.json')];print('counts',collections.Counter((r['kind'],r.get('error','ok')) for r in rows));print([(r['locale'],r['seed'],r.get('error'),r.get('returned')) for r in rows if r['kind']=='search' and (r.get('error') or r.get('returned')==0)])
+> PY`
+> - Wrote `./.asc/appmate/research_all_locales.py` (+5 -3)
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python - <<'PY'
+> import requests
+> for country,word in [('UA','радіо онлайн'),('MY','radio malaysia')]:
+>  r=requests.get('https://itunes.apple.com/search',params={'term':word,'country':country,'entity':'software','limit':50},timeout=45);print(country,r.status_code,len(r.content))
+> PY`
+>
+> </details>
+>
+> **ASC 当前只有已发布的 3.0.0，没有可编辑版本，名称和副标题需要随新版本提交。全部语言方案我会继续准备；同步到 ASC 时，下一版本号用哪个？**
+>
+> 3.1.0
+>
+> <details><summary>Ran a command</summary>
+>
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python .asc/appmate/research_all_locales.py > .asc/appmate/data/all_locale_research_retry.log`
+>
+> </details>
+>
+> 收到，目标版本用 **3.1.0**。我会同步到待审草稿，保持手动发布，不提交审核。
+>
+> 本地检索也发现了需要区别处理的地方：中文“爵士”有舞蹈意图混入，文案会明确写“爵士乐”；德语保留 Internetradio/Webradio，土耳其语保留 Radyo Dinle；巴西、西语等继续保留当地曲风，不逐字照搬英文。
+>
+> <details><summary>Created a file, ran 9 commands</summary>
+>
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python - <<'PY'
+> import json
+> from pathlib import Path
+> p=Path('.asc/appmate/all_locale_candidates.json');j=json.load(open(p))
+> for x in j:
+>  if x['locale']=='zh-Hans':x['subtitle']='实时广播 · 爵士乐与轻音乐'
+>  if x['locale']=='zh-Hant':x['subtitle']='即時廣播 · 爵士樂與輕音樂'
+>  if x['locale']=='pt-PT':x['subtitle']='Em direto, Jazz e Fado'
+>  if x['locale']=='da':x['keywords']=x['keywords'].replace(',musik','')
+>  if x['locale']=='ko':x['keywords']=x['keywords'].replace('음악,','클래식,')
+>  if x['locale']=='ru':x['keywords']=x['keywords'].replace('музыка,','местные,')
+>  if x['locale']=='uk':x['keywords']=x['keywords'].replace('музика,','місцеві,')
+> p.write_text(json.dumps(j,ensure_ascii=False,indent=2))
+> PY`
+>
+> - Ran `rtk proxy cat .asc/aso-recovery-20261030/baseline/version/3.0.0/en-US.json`
+>
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python - <<'PY'
+> import json,collections
+> j=json.load(open('.asc/appmate/data/all_locale_research.json'));print(collections.Counter((x['kind'],x.get('error','ok')) for x in j));print([(x['locale'],x['seed'],x.get('http_status')) for x in j if x.get('error')]);print('ranks',[(x['locale'],x['seed'],x.get('self_rank')) for x in j if x.get('self_rank')])
+> for loc in ['tr','hi','uk','ru','ms','th','vi']:
+>  print(loc,[(x['seed'],[a['name'] for a in x.get('top_apps',[])[:3]]) for x in j if x['locale']==loc and x['kind']=='search'])
+> PY`
+>
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python - <<'PY'
+> for x in ['TuneRadar: วิทยุออนไลน์ FM AM','TuneRadar: Nghe Radio FM AM','TuneRadar: Radio Nghe Nhạc','TuneRadar: FM AM Radyo Dinle']:
+>  print(len(x),x)
+> PY`
+>
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python - <<'PY'
+> import json
+> from pathlib import Path
+> p=Path('.asc/appmate/all_locale_candidates.json');j=json.load(open(p))
+> for x in j:
+>  if x['locale']=='th':x['name']='TuneRadar: วิทยุออนไลน์ FM AM';x['keywords']=x['keywords'].replace('ออนไลน์,','')
+>  if x['locale']=='vi':x['name']='TuneRadar: Nghe Radio FM AM';x['keywords']=x['keywords'].replace('nghe nhạc,','nhạc,')
+>  if x['locale']=='tr':x['keywords']+=',jazz'
+> p.write_text(json.dumps(j,ensure_ascii=False,indent=2))
+> PY`
+>
+> - Wrote `./.asc/appmate/prepare_all_locales.py` (+64 -0)
+>
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python .asc/appmate/prepare_all_locales.py`
+>
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata validate --dir releases/ios/3.1.0/metadata --output json > .asc/aso-recovery-20261030/validation.json`
+>
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python - <<'PY'
+> import json
+> x=json.load(open('.asc/aso-recovery-20261030/validation.json'));print(x)
+> PY`
+>
+> Tool call
+>
+> Tool: open_in_codex
+> Status: completed
+>
+> - Ran `rtk proxy /opt/homebrew/bin/asc versions create --app 6451428572 --version 3.1.0 --platform IOS --release-type MANUAL --copy-metadata-from 3.0.0 --output json > .asc/aso-recovery-20261030/version-created.json`
+>
+> </details>
+>
+> 23 个语言的方案已完成，共 **69 个字段改动**。46 份元数据文件通过 ASC 校验，**0 错误、0 警告**。另外保留了本次已能匹配的泰语在线广播、越南语 Bolero、马来语 Melayu 和乌克兰语爵士表达。
+>
+> 接下来创建 3.1.0 草稿、同步字段，并从 ASC 独立读回逐项核对。
+>
+> <details><summary>Ran 20 commands</summary>
+>
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python - <<'PY'
+> import json
+> from pathlib import Path
+> p=Path('.asc/aso-recovery-20261030/version-created.json')
+> if p.exists() and p.stat().st_size:
+>  j=json.load(open(p));print(str(j)[:2000])
+> PY`
+> - Ran `rtk proxy /opt/homebrew/bin/asc apps info list --app 6451428572 --output json > .asc/aso-recovery-20261030/appinfos-after-create.json`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python - <<'PY'
+> import json
+> j=json.load(open('.asc/aso-recovery-20261030/appinfos-after-create.json'));print([(x['id'],x['attributes'].get('appStoreState'),x['attributes'].get('state')) for x in j['data']])
+> PY`
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata plan --app 6451428572 --version 3.1.0 --platform IOS --dir releases/ios/3.1.0/metadata --review-dir .asc/aso-recovery-20261030/review --output json > .asc/aso-recovery-20261030/plan.json`
+> - Ran `rtk proxy ls .asc/aso-recovery-20261030/review`
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata approve --help`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python - <<'PY'
+> import json
+> from pathlib import Path
+> for f in ['plan.json','review/plan.json']:
+>  j=json.load(open(Path('.asc/aso-recovery-20261030')/f));print(f,list(j) if isinstance(j,dict) else type(j));print(str(j)[:4800])
+> PY`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python - <<'PY'
+> import json
+> j=json.load(open('.asc/aso-recovery-20261030/plan.json'))['plan'];assert j['appInfoId']=='cef4cafe-d63e-492f-be68-2b7b6f4a3d22';assert j['versionId']=='f9cdb6bf-69e4-4576-b2da-9ad54ee2efc4';assert not j.get('adds') and not j.get('deletes');assert len(j['updates'])==69
+> assert all((x['scope']=='app-info' and x['field'] in ['name','subtitle']) or (x['scope']=='version' and x['field']=='keywords') for x in j['updates']);print('69 expected fields; editable app info; no adds or deletes')
+> PY`
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata approve --review-dir .asc/aso-recovery-20261030/review --all --note 'User authorized all 23 localizations and selected version 3.1.0. Metadata only; no App Review submission.' --output json > .asc/aso-recovery-20261030/approved.json`
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata apply --app 6451428572 --version 3.1.0 --platform IOS --app-info cef4cafe-d63e-492f-be68-2b7b6f4a3d22 --dir releases/ios/3.1.0/metadata --review-dir .asc/aso-recovery-20261030/review --confirm --output json > .asc/aso-recovery-20261030/applied.json`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python - <<'PY'
+> import json
+> from pathlib import Path
+> p=Path('.asc/aso-recovery-20261030/applied.json');print('receipt bytes',p.stat().st_size)
+> PY`
+> - Ran `rtk proxy git status --short`
+> - Ran `rtk proxy /opt/homebrew/bin/asc versions view --version-id f9cdb6bf-69e4-4576-b2da-9ad54ee2efc4 --output json > .asc/aso-recovery-20261030/version-after.json`
+> - Ran `rtk proxy /opt/homebrew/bin/asc localizations list --app 6451428572 --type app-info --app-info 503c1483-99eb-4c5f-9d51-4cad0513d2b2 --paginate --output json > .asc/aso-recovery-20261030/live-appinfo-after.json`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python - <<'PY'
+> import json
+> j=json.load(open('.asc/aso-recovery-20261030/applied.json'));print(list(j));print({k:v for k,v in j.items() if k not in ['plan','updates','changes','operations','results']})
+> PY`
+> - Ran `rtk proxy /opt/homebrew/bin/asc localizations list --version 85ac59dc-b538-43e8-b89a-881a4e1fb29b --paginate --output json > .asc/aso-recovery-20261030/live-version-after.json`
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata pull --app 6451428572 --version 3.1.0 --platform IOS --app-info cef4cafe-d63e-492f-be68-2b7b6f4a3d22 --dir .asc/aso-recovery-20261030/readback --output json > .asc/aso-recovery-20261030/readback-receipt.json`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python - <<'PY'
+> import json
+> j=json.load(open('.asc/aso-recovery-20261030/version-after.json'));print(j.keys());print(j.get('data',j).get('attributes',j))
+> PY`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python - <<'PY'
+> import json
+> from pathlib import Path
+> root=Path('.asc/aso-recovery-20261030');local=Path('releases/ios/3.1.0/metadata');back=root/'readback';base=root/'baseline';plan=json.load(open('doc/aso-recovery-20261030/plan.json'))
+> checks=[]
+> for p in plan['locales']:
+>  loc=p['locale'];a=json.load(open(back/'app-info'/f'{loc}.json'));v=json.load(open(back/'version/3.1.0'/f'{loc}.json'))
+>  assert a['name']==p['name'] and a['subtitle']==p['subtitle'] and v['keywords']==p['keywords'],loc
+>  assert a==json.load(open(local/'app-info'/f'{loc}.json')),(loc,'full app info')
+>  assert v==json.load(open(local/'version/3.1.0'/f'{loc}.json')),(loc,'full version')
+>  checks.append({'locale':loc,'name':True,'subtitle':True,'keywords':True,'other_fields_match':True})
+> for file,scope in [('live-appinfo-after.json','app-info'),('live-version-after.json','version/3.0.0')]:
+>  raw=json.load(open(root/file))['data'];assert len(raw)==23
+>  for x in raw:
+>   a=x['attributes'];b=json.load(open(base/scope/(a['locale']+'.json')))
+>   assert all(a.get(k)==val for k,val in b.items()),(scope,a['locale'])
+> version=json.load(open(root/'version-after.json'));assert version['state']=='PREPARE_FOR_SUBMISSION'
+> result={'version':'3.1.0','version_id':version['id'],'state':version['state'],'locales':23,'fields_verified':69,'full_canonical_files_match':46,'live_3_0_0_unchanged':True,'checks':checks}
+> Path('doc/aso-recovery-20261030/readback-verification.json').write_text(json.dumps(result,ensure_ascii=False,indent=2));plan['state']='applied_and_independently_verified';plan['version_id']=version['id'];plan['app_info_id']='cef4cafe-d63e-492f-be68-2b7b6f4a3d22';Path('doc/aso-recovery-20261030/plan.json').write_text(json.dumps(plan,ensure_ascii=False,indent=2));print({k:v for k,v in result.items() if k!='checks'})
+> PY`
+> - Ran `rtk proxy /opt/homebrew/bin/asc versions list --app 6451428572 --platform IOS --output json > .asc/aso-recovery-20261030/versions-final.json`
+>
+> </details>
+>
+> ASC 同步已完成，独立读回确认 **23 个语言、69 个目标字段全部一致**，其余文本与本地基线也一致。线上 3.0.0 已核对保持原值；3.1.0 当前为 `PREPARE_FOR_SUBMISSION`，尚未提交审核。
+>
+> <details><summary>Edited a file, ran a command</summary>
+>
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python - <<'PY'
+> import json
+> j=json.load(open('.asc/aso-recovery-20261030/versions-final.json'));v=next(x for x in j['data'] if x['attributes']['versionString']=='3.1.0');print(v['attributes']);assert v['attributes']['releaseType']=='MANUAL'
+> PY`
+>
+> - Wrote `./doc/aso-recovery-20261030/README.md` (+13 -0)
+>
+> Tool call
+>
+> Tool: open_in_codex
+> Status: completed
+>
+> </details>
+</details>
+
+已完成，**23 个语言已同步到 ASC 的 3.1.0 草稿**。
+
+- 调整 **69 个字段**：名称、副标题、关键词。
+- 完成 **92 组本地补全、92 组搜索检索**，结合竞品和历史词调整，保留当地曲风与已有匹配词。
+- 46 份文件校验通过，**0 错误、0 警告**；69 个字段独立读回全部一致。
+- 线上 **3.0.0 保持不变**。
+
+[查看全部语言方案、前后差异与核验结果](./doc/aso-recovery-20261030/README.md)
+
+**3.1.0 尚未提交审核，保持手动发布。** 构建和最终更新说明仍待准备；关键词调整的实际效果需发布后验证。
+
+> 名称/副标题不超过30字符，关键词不超过100字符;
+> 我看很多语言都有浪费空间啊!
+
+<details><summary>2 previous messages</summary>
+
+> 我会逐语言检查剩余空间：名称和副标题补充自然、相关的表达，关键词用本地检索和历史词补齐，不单纯凑字数。修改后会重新校验，并同步读回 3.1.0 草稿。
+>
+> <details><summary>Created a file, edited a file, ran 11 commands</summary>
+>
+> - Ran `rtk proxy cat /Users/vonzen/.codex/RTK.md`
+> - Ran `rtk proxy cat /Users/vonzen/.agents/skills/keyword-research/SKILL.md /Users/vonzen/.agents/skills/metadata-optimization/SKILL.md`
+> - Ran `rtk proxy git status --short`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python - <<'PY'
+> import json
+> from pathlib import Path
+> p=Path('doc/aso-recovery-20261030/plan.json');j=json.load(open(p));print(j.keys());print(j.get('state'));print([(x['locale'],len(x['name']),len(x['subtitle']),len(x['keywords'])) for x in j['locales']])
+> PY`
+> - Ran `rtk proxy python3 scripts/appmate.py check`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python - <<'PY'
+> x=[
+> 'TuneRadar: Online FM AM Radio','Live Stations: Jazz, Lofi, Pop',
+> 'TuneRadar - FM AM 全球收音机与在线电台','爵士乐、轻音乐与经典老歌，听歌识曲、睡眠定时、车载收听',
+> 'TuneRadar - FM AM 全球收音機與線上電台','爵士樂、輕音樂與經典老歌，聽歌辨識、睡眠定時、車用收聽',
+> 'TuneRadar - FM AM 世界のネットラジオ','ジャズ・懐メロ・作業用BGM、スリープタイマー、曲名検索',
+> 'TuneRadar - FM AM 인터넷 라디오 듣기','실시간 방송, 재즈·로파이·올드팝과 수면 타이머',
+> 'TuneRadar Radio FM AM en ligne','En direct: Jazz, Chill & Oldies',
+> 'TuneRadar: FM AM Radio hören','Live-Sender, Jazz, Oldies, Pop',
+> 'TuneRadar: Radio FM AM Online','En directo, Jazz y Clásicos',
+> 'TuneRadar: Radio FM AM en Vivo','Salsa, Baladas, Jazz y Ranchera',
+> 'TuneRadar: Rádio FM AM Online','Ao vivo: Sertanejo, Pagode, Jazz',
+> 'TuneRadar: Ouvir Rádio FM AM','Em direto: Jazz, Fado e Oldies',
+> 'TuneRadar: Radio FM AM Online','In diretta: Jazz, Relax e Pop',
+> 'TuneRadar: FM AM Radio Online','Live zenders: Jazz, Oldies, Pop',
+> 'TuneRadar: Lyt til FM AM Radio','Live stationer, Jazz & Oldies',
+> 'TuneRadar: Radio FM AM Online','Na żywo: Jazz, Disco Polo, Pop',
+> 'TuneRadar: Радио FM AM Онлайн','Прямой эфир: Джаз, Ретро и Рок',
+> 'TuneRadar: Радіо FM AM Онлайн','Прямий ефір: Джаз, Ретро і Рок',
+> 'TuneRadar: FM AM Radyo Dinle','Canlı: Caz, Arabesk ve Nostalji',
+> 'TuneRadar: FM AM ऑनलाइन रेडियो','लाइव, बॉलीवुड, जैज़ और पुराने गाने',
+> 'TuneRadar: Dengar Radio FM AM','Siaran Langsung, Jazz & Lawas',
+> 'TuneRadar: Dengar Radio FM AM','Siaran Langsung, Jazz & Melayu',
+> 'TuneRadar: วิทยุออนไลน์ FM AM','ฟังสด แจ๊ส เพลงเก่า และตั้งเวลาปิด',
+> 'TuneRadar: Nghe Radio FM AM','Trực tiếp, Bolero, Jazz & Relax']
+> for i in range(0,len(x),2):print(len(x[i]),x[i],'|',len(x[i+1]),x[i+1])
+> PY`
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata pull --app 6451428572 --version 3.1.0 --platform IOS --app-info cef4cafe-d63e-492f-be68-2b7b6f4a3d22 --dir .asc/aso-space-20261030/baseline --output json > .asc/appmate/data/space-baseline.json`
+> - Wrote `./.asc/appmate/expand_locale_space.py` (+109 -0)
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python .asc/appmate/expand_locale_space.py`
+> - Wrote `./.asc/appmate/expand_locale_space.py` (+1 -1)
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python .asc/appmate/expand_locale_space.py`
+> - Wrote `./.asc/appmate/expand_locale_space.py` (+1 -3)
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python .asc/appmate/expand_locale_space.py`
+> - Wrote `./.asc/appmate/expand_locale_space.py` (+1 -1)
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python .asc/appmate/expand_locale_space.py`
+>
+> </details>
+</details>
+
+> 处理完了吗?
+
+<details><summary>16 previous messages</summary>
+
+> Context compaction
+>
+> Source: automatic
+> Status: completed
+>
+> 还没全部完成：23 种语言的补充方案正在做最后的长度校验，尚未将这轮修改同步到 ASC。我会继续完成同步和读回核对，再给你各语言的实际字符用量。
+>
+> <details><summary>Edited a file, ran 10 commands</summary>
+>
+> - Ran `rtk proxy cat /Users/vonzen/.codex/RTK.md`
+> - Ran `rtk proxy sed -n '1,260p' .asc/appmate/expand_locale_space.py`
+> - Ran `rtk proxy cat .cursor/skills/keyword-research/SKILL.md .cursor/skills/metadata-optimization/SKILL.md`
+> - Ran `rtk proxy ls .asc/aso-space-20261030/baseline`
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata --help`
+> - Wrote `./.asc/appmate/expand_locale_space.py` (+2 -1)
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python .asc/appmate/expand_locale_space.py`
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata validate --help`
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata plan --help`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python -c 'import json;from pathlib import Path;p=json.loads(Path("doc/aso-space-20261030/changes.json").read_text());[(print(x["locale"],x["after"]["keywords"],"\n  removed:",x["removed_keywords"],"added:",x["added_keywords"])) for x in p];print(Path(".asc/aso-space-20261030/baseline/app-info/en-US.json").read_text());print(Path(".asc/aso-space-20261030/baseline/version/3.1.0/en-US.json").read_text()[:600])'`
+> - Ran `rtk proxy git status --short`
+>
+> </details>
+>
+> 长度校验已通过：22 种语言的关键词达到 100 字符，越南语为 99 字符；所有名称和副标题均在 30 字符内。空缺较多的中、日、韩等语言已补充相关词，移到标题或副标题中的词也已从关键词栏移出。接下来同步到 3.1.0 草稿并核对保存结果。
+>
+> <details><summary>Ran 15 commands</summary>
+>
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata apply --help`
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata approve --help`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python -c 'import json;from pathlib import Path;r=Path(".");p=json.loads((r/"doc/aso-recovery-20261030/plan.json").read_text());n=json.loads((r/"doc/aso-space-20261030/plan.json").read_text());b=r/".asc/aso-space-20261030/baseline";t=r/"releases/ios/3.1.0/metadata";assert len(list(b.rglob("*.json")))==46; old={x["locale"]:x for x in p["locales"]}; changes=0
+> for x in n["locales"]:
+>  loc=x["locale"]
+>  for scope,fields in [("app-info",["name","subtitle"]),("version/3.1.0",["keywords"])]:
+>   path=Path(scope)/(loc+".json");data=json.loads((b/path).read_text());assert all(data[k]==old[loc][k] for k in fields),(loc,scope,"baseline mismatch");assert json.loads((t/path).read_text())==data,(loc,"local metadata diverged")
+>   for k in fields:changes+=int(data[k]!=x[k]);data[k]=x[k]
+>   (t/path).write_text(json.dumps(data,ensure_ascii=False,indent=2)+"\n")
+> print("Verified current draft baseline; updated 46 canonical files; changed fields:",changes)'`
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata validate --dir releases/ios/3.1.0/metadata --output json > doc/aso-space-20261030/validation.json`
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata plan --app 6451428572 --version 3.1.0 --platform IOS --app-info cef4cafe-d63e-492f-be68-2b7b6f4a3d22 --dir releases/ios/3.1.0/metadata --review-dir .asc/aso-space-20261030/review --output json > .asc/aso-space-20261030/plan-result.json`
+> - Ran `rtk proxy cat doc/aso-space-20261030/validation.json`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python -c 'import json;from pathlib import Path;p=Path(".asc/aso-space-20261030/review/plan.json");d=json.loads(p.read_text());print(json.dumps(d,ensure_ascii=False)[:6500])'`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python -c 'import json;from pathlib import Path;d=json.loads(Path(".asc/aso-space-20261030/review/plan.json").read_text());p=d["plan"];assert d["options"]["appInfoId"]=="cef4cafe-d63e-492f-be68-2b7b6f4a3d22";assert p["versionId"]=="f9cdb6bf-69e4-4576-b2da-9ad54ee2efc4";assert not p["adds"] and not p["deletes"];assert len(p["updates"])==62;assert all(x["field"] in ["name","subtitle","keywords"] for x in p["updates"]);v=json.loads(Path("doc/aso-space-20261030/validation.json").read_text());assert v["valid"] and v["errorCount"]==0;print("Scope verified: 62 field changes on editable 3.1.0 only; no additions/deletions")'`
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata approve --review-dir .asc/aso-space-20261030/review --all --note 'User requested all-language character utilization improvements for 3.1.0; metadata draft synchronization only. No App Review submission.' --output json > .asc/aso-space-20261030/approval-result.json`
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata apply --app 6451428572 --version 3.1.0 --platform IOS --app-info cef4cafe-d63e-492f-be68-2b7b6f4a3d22 --dir releases/ios/3.1.0/metadata --review-dir .asc/aso-space-20261030/review --confirm --output json > .asc/aso-space-20261030/apply-result.json`
+> - Ran ````rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python -c 'import json;from pathlib import Path;r=Path("doc/aso-space-20261030");p=json.loads((r/"plan.json").read_text());a=json.loads((r/"changes.json").read_text());lines=["# TuneRadar 3.1.0 全语言字符利用修订","","状态：本地校验通过，ASC 同步及独立读回核对中。","","本轮在前一版恢复策略上补充相关词，不改变 FM / AM / Radio、Jazz、本地电台和收听场景的定位。名称与副标题限制各 30 字符；关键词限制 100 字符，计入空格、标点及逗号。未使用截断词或空白填充。","","补词来自此前 23 个本地化市场的 92 次 App Store 搜索及 92 次联想词查询，并结合历史元数据、现有电台类型和已支持功能。不是每个补充词都有独立搜索量或难度数据；未把候选词推断成有量关键词，也不保证恢复某个排名。","","英文将 Online 移入名称，并在副标题增加 Pop，释放关键词栏给 country；radio 和 jazz 均保留在可索引字段。中文等原有空缺较大的语言补充音乐类型、收听用途与功能词。墨西哥、巴西、马来西亚、越南等保留对应的本地音乐类型。移入名称/副标题的完整词从关键词栏移除；不同语言同义词和自然复合词不简单按相同字根删除。","","## 字符数前后对照","","前后数字按「名称 / 副标题 / 关键词」排列。名称和副标题保留 0–3 字符余量，以完整自然表达为准；关键词 22 种语言为 100/100，越南语为 99/100。","","| 语言 | 前一版 | 本轮 |","|---|---|---|"]
+> for x in a:lines.append("| "+x["locale"]+" | "+" / ".join(map(str,x["before_lengths"]))+" | "+" / ".join(map(str,x["after_lengths"]))+" |")
+> lines.extend(["","## 完整字段",""])
+> for x in a:
+>  y=x["after"];z=x["after_lengths"];lines.extend(["### "+x["locale"],"",f"名称（{z[0]}/30）：{y[chr(110)+chr(97)+chr(109)+chr(101)]}","",f"副标题（{z[1]}/30）："+y["subtitle"],"",f"关键词（{z[2]}/100）：","","```text",y["keywords"],"```",""])
+> lines.extend(["## 验证与限制","","46 个 canonical JSON 文件通过 ASC CLI 校验，0 错误、0 警告。同步范围仅限 3.1.0 草稿的名称、副标题和关键词。提交 App Review 需要用户检查后明确授权。","","本轮没有重新测量搜索排名，也没有把字符占用提高解释为排名提升。发布后应在同一平台、同一国家持续观察 radio jazz、internet radio、lofi radio 及当地已有排名词，并对照自然搜索曝光、产品页转化和下载量。",""])
+> (r/"README.md").write_text("\n".join(lines));print("Wrote full 23-language review report")'````
+> - Ran `rtk proxy /opt/homebrew/bin/asc versions list --help`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python -c 'import json;from pathlib import Path;d=json.loads(Path(".asc/aso-space-20261030/apply-result.json").read_text());print(json.dumps(d)[:2500])'`
+> - Ran `rtk proxy /opt/homebrew/bin/asc versions list --app 6451428572 --version 3.1.0 --platform IOS --output json > .asc/aso-space-20261030/version-state.json`
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata pull --app 6451428572 --version 3.1.0 --platform IOS --app-info cef4cafe-d63e-492f-be68-2b7b6f4a3d22 --dir .asc/aso-space-20261030/readback --output json > .asc/aso-space-20261030/pull-result.json`
+>
+> </details>
+>
+> [https://github.com/mustafakendiguzel/aso-workbench](https://github.com/mustafakendiguzel/aso-workbench)
+> 参考这个标,再调整下美区关键字,副标题啥的;
+> 另外副标题,标题,关键字中不允许出现&等符号,只通过,分割, 这条适用于所有语言;
+> 先处理这个,在补齐;
+>
+> User context
+>
+> Images:
+> - `/var/folders/_t/p2044ppx58d0wkmt8vhb3rhr0000gn/T/codex-clipboard-356906f7-09ed-494b-918d-df85e277cb00.png`
+>
+> 收到，我先按新要求调整：所有语言的名称、副标题和关键词只用英文逗号 `,` 分隔，移除 `&`、冒号、短横线等符号，再补足有效词。美区会结合截图和仓库的评分逻辑重新取舍，先核实这些指标的含义。
+>
+> <details><summary>Ran 10 commands, searched the web</summary>
+>
+> - Ran `rtk proxy rg --files -g '*aso*' -g '*marketing*' -g '*workbench*' -g AGENTS.md`
+>
+> Searched the web for `https://github.com/mustafakendiguzel/aso-workbench`
+>
+> - Ran `rtk proxy python3 scripts/appmate.py check`
+>
+> - Ran `rtk proxy ls .asc/appmate`
+>
+> - Ran `rtk proxy sed -n '1,180p' doc/aso-recovery-20261030/research-evidence.json`
+>
+> - Ran `rtk proxy ls -la '/Users/vonzen/Library/Application Support/ASO Workbench'`
+>
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python -c 'import sqlite3;from pathlib import Path;c=sqlite3.connect("file:"+str(Path.home()/"Library/Application Support/ASO Workbench/store.sqlite")+"?mode=ro",uri=True);print(c.execute("SELECT name,sql FROM sqlite_master WHERE type=\x27table\x27").fetchall())'`
+>
+> - Ran `rtk proxy sed -n '1,220p' .asc/appmate/research_us_keywords.py`
+>
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python -c 'import json;from pathlib import Path;r=Path(".asc/aso-space-20261030/readback");t=Path("releases/ios/3.1.0/metadata");files=list(t.rglob("*.json"));assert len(files)==46;assert all(json.loads(f.read_text())==json.loads((r/f.relative_to(t)).read_text()) for f in files);p=Path("doc/aso-space-20261030/plan.json");d=json.loads(p.read_text());d["state"]="applied_and_independently_verified";p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+"\n");print("Earlier revision: all 46 full files independently matched ASC")'`
+>
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python -c 'import sqlite3,json;from pathlib import Path;c=sqlite3.connect("file:"+str(Path.home()/"Library/Application Support/ASO Workbench/store.sqlite")+"?mode=ro",uri=True);c.row_factory=sqlite3.Row;apps=[dict(x) for x in c.execute("SELECT Z_PK,ZTRACKID,ZNAME FROM ZTRACKEDAPP WHERE ZTRACKID=?",(6451428572,))];print(apps);rows=c.execute("SELECT k.Z_PK,k.ZTEXT,k.ZBRANDPROBABILITY,k.ZFITPROBABILITY,m.ZCOUNTRYCODE FROM ZTRACKEDKEYWORD k JOIN ZTRACKEDMARKET m ON k.ZMARKET=m.Z_PK JOIN ZTRACKEDAPP a ON m.ZAPP=a.Z_PK WHERE a.ZTRACKID=? AND m.ZCOUNTRYCODE=?",(6451428572,"US")).fetchall();out=[]
+> for row in rows:
+>  d=dict(row);pk=d["Z_PK"];r=c.execute("SELECT ZPOSITION,ZOBSERVEDCOUNT,ZOUTCOMEKIND,ZFETCHEDAT,ZSIGNALSDATA,ZRESULTSDATA FROM ZRANKOBSERVATION WHERE ZKEYWORD=? ORDER BY ZFETCHEDAT DESC LIMIT 1",(pk,)).fetchone();p=c.execute("SELECT ZPOPULARITY1TO100,ZUPPERBOUND,ZPOPULARITYINGENRE,ZGENRERAW,ZANYGENRE,ZSCOPE,ZFETCHEDAT FROM ZPOPULARITYOBSERVATION WHERE ZKEYWORD=? ORDER BY ZFETCHEDAT DESC LIMIT 1",(pk,)).fetchone();d["rank"]=dict(r) if r else None;d["popularity"]=dict(p) if p else None
+>  for k in ["ZSIGNALSDATA","ZRESULTSDATA"]:
+>   if d["rank"] and d["rank"][k]:
+>    try:d["rank"][k]=json.loads(d["rank"][k])
+>    except Exception:d["rank"][k]="non-json blob"
+>  out.append(d)
+> Path(".asc/appmate/data/workbench-us-observations.json").write_text(json.dumps(out,ensure_ascii=False,indent=2));print(json.dumps([{k:v for k,v in x.items() if k!="rank"}|{"rank":{k:v for k,v in (x["rank"] or {}).items() if k!="ZRESULTSDATA"}} for x in out],ensure_ascii=False))'`
+>
+> - Ran `rtk proxy rg --files .asc/aso-workbench-reference/Sources/ASOCore`
+>
+> </details>
+>
+> 截图里最需要区分的是：`>193` 表示返回的 193 条结果中没找到，并不是第 193 名；`<52` 只是热度上界。`internet` 的热度还来自工具类，不能直接当作 `internet radio` 的需求量。我会优先保留相关组合词和已有排名的 `oldies`，降低单独泛词的优先级。
+>
+> 标题还是还是按: 或-等方式分割应用名和宣传语
+>
+> 明白：标题保留 `TuneRadar: …` 或 `TuneRadar - …` 的品牌分隔方式；副标题和关键词只用英文逗号 `,` 分隔。所有语言仍移除 `&` 等其他分隔符。
+>
+> <details><summary>Created a file, edited a file, ran 13 commands</summary>
+>
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python -c 'import json;from pathlib import Path;x=json.loads(Path(".asc/appmate/data/keyword_research_comparison.json").read_text());print(json.dumps(x,ensure_ascii=False));print(Path(".asc/appmate/data/keyword_research_hints.json").read_text())'`
+> - Ran `rtk proxy git clone --depth 1 https://github.com/mustafakendiguzel/aso-workbench.git .asc/aso-workbench-reference`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python -c 'vals=["TuneRadar: Internet FM Radio","TuneRadar: Internet Radio","Live Stations,Jazz,Lofi,Oldies","Jazz,Lofi,Oldies,Live Stations","am,tuner,online,smooth,local,stream,alarm,clock,sleep,timer,news,sports,talk,country,blues,relax"];[(print(len(v),v)) for v in vals]'`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python -c 'import json;from pathlib import Path;x=json.loads(Path(".asc/appmate/data/workbench-us-observations.json").read_text());
+> for word in ["internet","tuner","oldies","carplay"]:
+>  d=next(r for r in x if r["ZTEXT"]==word);print(word,json.dumps(d["rank"]["ZRESULTSDATA"],ensure_ascii=False)[:1400])'`
+> - Ran `rtk proxy ls .asc/aso-workbench-reference`
+> - Ran `rtk proxy rg -n 'opportunity|golden|brandRisk|brand.*results|outside|observedCount' .asc/aso-workbench-reference/Sources/ASOCore .asc/aso-workbench-reference/Sources/ASOWorkbench -g '*.swift'`
+> - Ran `rtk proxy rg -n 'func.*difficulty|enum.*Difficulty|struct.*Difficulty|brand' .asc/aso-workbench-reference/Sources/ASOCore -g '*.swift'`
+> - Ran `rtk proxy sed -n '100,220p' .asc/aso-workbench-reference/Sources/ASOCore/Validation/ASORules.swift`
+> - Ran `rtk proxy sed -n '1,150p' .asc/aso-workbench-reference/Sources/ASOCore/Analysis/TitleMatch.swift`
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata pull --app 6451428572 --version 3.1.0 --platform IOS --app-info cef4cafe-d63e-492f-be68-2b7b6f4a3d22 --dir .asc/aso-workbench-20261030/baseline --output json > .asc/appmate/data/workbench-revision-baseline.json`
+> - Wrote `./.asc/appmate/prepare_workbench_revision.py` (+110 -0)
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python .asc/appmate/prepare_workbench_revision.py`
+> - Wrote `./.asc/appmate/prepare_workbench_revision.py` (+1 -1)
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python .asc/appmate/prepare_workbench_revision.py`
+> - Wrote `./.asc/appmate/prepare_workbench_revision.py` (+1 -0)
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python .asc/appmate/prepare_workbench_revision.py`
+>
+> </details>
+>
+> 美区方案已改为突出 `Internet Radio`，副标题保留 `Jazz`、`Lofi`，并加入截图中已有排名的 `Oldies`。`oldies` 虽被工具标为品牌，但搜索结果也包含多款老歌电台，这是通用类型词，值得保留；`shazam`、`radio javan` 这类明确品牌词不加入。全语言的分隔符也已按你最新要求调整。
+>
+> <details><summary>Created a file, edited a file, ran 9 commands</summary>
+>
+> - Wrote `./.asc/appmate/prepare_workbench_revision.py` (+2 -0)
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python .asc/appmate/prepare_workbench_revision.py`
+> - Wrote `./.asc/appmate/prepare_workbench_revision.py` (+2 -0)
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python .asc/appmate/prepare_workbench_revision.py`
+> - Wrote `./.asc/appmate/prepare_workbench_revision.py` (+1 -1)
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python .asc/appmate/prepare_workbench_revision.py`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python -c 'import json;from pathlib import Path;r=Path(".");p=json.loads((r/"doc/aso-space-20261030/plan.json").read_text());n=json.loads((r/"doc/aso-workbench-20261030/plan.json").read_text());b=r/".asc/aso-workbench-20261030/baseline";t=r/"releases/ios/3.1.0/metadata";old={x["locale"]:x for x in p["locales"]};files=list(b.rglob("*.json"));assert len(files)==46
+> # Complete the conflict check on every file before any writes.
+> for f in files:
+>  rel=f.relative_to(b);assert json.loads(f.read_text())==json.loads((t/rel).read_text()),str(rel)
+> changes=0
+> for x in n["locales"]:
+>  loc=x["locale"]
+>  for scope,fields in [("app-info",["name","subtitle"]),("version/3.1.0",["keywords"])]:
+>   path=Path(scope)/(loc+".json");data=json.loads((b/path).read_text());assert all(data[k]==old[loc][k] for k in fields),(loc,scope)
+>   for k in fields:changes+=int(data[k]!=x[k]);data[k]=x[k]
+>   (t/path).write_text(json.dumps(data,ensure_ascii=False,indent=2)+"\n")
+> print("Updated 46 canonical files after complete conflict check; changed fields",changes);en=next(x for x in n["locales"] if x["locale"]=="en-US");print(json.dumps(en,ensure_ascii=False))'`
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata validate --dir releases/ios/3.1.0/metadata --output json > doc/aso-workbench-20261030/validation.json`
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata plan --app 6451428572 --version 3.1.0 --platform IOS --app-info cef4cafe-d63e-492f-be68-2b7b6f4a3d22 --dir releases/ios/3.1.0/metadata --review-dir .asc/aso-workbench-20261030/review --output json > .asc/aso-workbench-20261030/plan-result.json`
+> - Wrote `./.asc/appmate/render_workbench_revision.py` (+64 -0)
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python .asc/appmate/render_workbench_revision.py`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python -c 'import json;from pathlib import Path;d=json.loads(Path(".asc/aso-workbench-20261030/review/plan.json").read_text());p=d["plan"];v=json.loads(Path("doc/aso-workbench-20261030/validation.json").read_text());assert v["valid"] and v["errorCount"]==0;assert p["appInfoId"]=="cef4cafe-d63e-492f-be68-2b7b6f4a3d22";assert p["versionId"]=="f9cdb6bf-69e4-4576-b2da-9ad54ee2efc4";assert not p["adds"] and not p["deletes"];assert len(p["updates"])==34;assert all(x["field"] in ["name","subtitle","keywords"] for x in p["updates"]);print("Validated 46 files, no errors/warnings; verified 34 draft-only field changes")'`
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata approve --review-dir .asc/aso-workbench-20261030/review --all --note 'User authorized US keyword revision from Workbench evidence and all-locale punctuation changes, keeping title brand separators. Draft metadata only, no review submission.' --output json > .asc/aso-workbench-20261030/approval-result.json`
+>
+> </details>
+>
+> 这轮 23 种语言已通过字符数和标点校验，正在写入 ASC 3.1.0 草稿。美区标题为 `TuneRadar: Internet Radio, FM`（29/30），副标题为 `Live Stations,Jazz,Lofi,Oldies`（30/30），关键词为 100/100。写入后还会独立读回核对。
+>
+> <details><summary>Ran 10 commands</summary>
+>
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata apply --app 6451428572 --version 3.1.0 --platform IOS --app-info cef4cafe-d63e-492f-be68-2b7b6f4a3d22 --dir releases/ios/3.1.0/metadata --review-dir .asc/aso-workbench-20261030/review --confirm --output json > .asc/aso-workbench-20261030/apply-result.json`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python -c 'from pathlib import Path;import json;p=Path(".asc/aso-workbench-20261030/apply-result.json");d=json.loads(p.read_text());assert d["applied"] and not d["dryRun"];print("ASC applied",len(d["updates"]),"field changes")'`
+> - Ran `rtk proxy git status --short`
+> - Ran `rtk proxy /opt/homebrew/bin/asc versions list --app 6451428572 --version 3.1.0 --platform IOS --output json > .asc/aso-workbench-20261030/version-state.json`
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata pull --app 6451428572 --version 3.1.0 --platform IOS --app-info cef4cafe-d63e-492f-be68-2b7b6f4a3d22 --dir .asc/aso-workbench-20261030/readback --output json > .asc/aso-workbench-20261030/readback-pull.json`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python -c 'import json;from pathlib import Path;d=json.loads(Path(".asc/aso-workbench-20261030/version-state.json").read_text());print(json.dumps(d,ensure_ascii=False)[:2000])'`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python -c 'import json,unicodedata,datetime as dt;from pathlib import Path;r=Path(".");t=r/"releases/ios/3.1.0/metadata";b=r/".asc/aso-workbench-20261030/readback";baseline=r/".asc/aso-workbench-20261030/baseline";files=list(t.rglob("*.json"));assert len(files)==46;assert len(list(b.rglob("*.json")))==46;checks=0
+> for f in files:
+>  rel=f.relative_to(t);a=json.loads(f.read_text());remote=json.loads((b/rel).read_text());old=json.loads((baseline/rel).read_text());assert a==remote,str(rel)
+>  fields=["name","subtitle"] if rel.parts[0]=="app-info" else ["keywords"]
+>  for k in a:
+>   if k not in fields:assert a[k]==old[k],(str(rel),k)
+>  for k in fields:
+>   val=a[k];assert len(val)<=(100 if k=="keywords" else 30);text=val.split(": ",1)[1] if k=="name" and ": " in val else val.split(" - ",1)[1] if k=="name" else val;assert all(c.isalnum() or unicodedata.category(c).startswith("M") or c==" " or c=="," for c in text),(str(rel),k);checks+=1
+> state=json.loads((r/".asc/aso-workbench-20261030/version-state.json").read_text())["data"][0];attrs=state["attributes"];assert attrs["appStoreState"]=="PREPARE_FOR_SUBMISSION";assert attrs["releaseType"]=="MANUAL";d={"verified_at":dt.datetime.now(dt.timezone.utc).isoformat(),"full_files_matched":46,"metadata_fields_checked":checks,"unchanged_other_fields":True,"character_limits_passed":True,"punctuation_whitelist_passed":True,"version":"3.1.0","state":attrs["appStoreState"],"release_type":attrs["releaseType"],"review_submitted":False};(r/"doc/aso-workbench-20261030/readback-verification.json").write_text(json.dumps(d,indent=2)+"\n");p=r/"doc/aso-workbench-20261030/plan.json";plan=json.loads(p.read_text());plan["state"]="applied_and_independently_verified";p.write_text(json.dumps(plan,ensure_ascii=False,indent=2)+"\n");print(json.dumps(d,ensure_ascii=False))'`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python .asc/appmate/render_workbench_revision.py`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python -c 'from pathlib import Path
+> for folder in ["aso-recovery-20261030","aso-space-20261030"]:
+>  p=Path("doc")/folder/"README.md";s=p.read_text();note="本文件为历史方案。当前已同步并独立读回核对的最终文本见 [美区证据与全语言分隔符修订](../aso-workbench-20261030/README.md)。\n\n"
+>  if not s.startswith(note):p.write_text(note+s)
+> print("Marked earlier reports as historical; current report links added")'`
+> - Ran `rtk proxy git -C .asc/aso-workbench-reference rev-parse HEAD`
+>
+> </details>
+</details>
+
+已完成，已同步到 **ASC 3.1.0 草稿**，23 种语言均已独立读回核对，尚未提交审核。
+
+美区最终版：
+
+| 字段 | 内容 | 字符 |
+|---|---|---:|
+| 标题 | `TuneRadar: Internet Radio, FM` | 29/30 |
+| 副标题 | `Live Stations,Jazz,Lofi,Oldies` | 30/30 |
+
+关键词 **100/100**：
+
+```text
+am,tuner,online,smooth,local,stream,alarm,clock,sleep,timer,news,sports,talk,country,blues,relax,pop
+```
+
+将已有组合词排名的 `Internet Radio` 提升到标题，`Oldies` 提升到副标题，保留 Jazz、Lofi。没有把截图的 `<52` 当作精确热度；它只是上界。[指标说明](https://github.com/mustafakendiguzel/aso-workbench/blob/main/docs/POPULARITY.md)
+
+所有语言的标题保留品牌冒号或短横线；副标题、关键词统一使用英文逗号，已移除 `&` 等分隔符。关键词使用量：**20 种语言 100 字符，德语及越南语 99，法语 98**。
+
+[查看全部语言、字符数与调整依据](./doc/aso-workbench-20261030/README.md)
+
+> 改完后,列出来
+
+<details><summary>2 previous messages</summary>
+
+> 我把修改后的 23 种语言名称、副标题和关键词逐项列出，并标注字符数。
+>
+> <details><summary>Ran a command</summary>
+>
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python -c 'import json;from pathlib import Path;p=json.loads(Path("doc/aso-workbench-20261030/plan.json").read_text());print("state",p["state"])
+> for x in p["locales"]:
+>  print(x["locale"])
+>  for k in ["name","subtitle","keywords"]:print(k,len(x[k]),x[k])'`
+>
+> </details>
+</details>
+
+以下为已同步到 **ASC 3.1.0 草稿**的全部 23 种语言，已读回核对。括号为字符用量。
+
+1. **英语（美国）`en-US`**
+
+   名称（29/30）：`TuneRadar: Internet Radio, FM`
+   副标题（30/30）：`Live Stations,Jazz,Lofi,Oldies`
+   关键词（100/100）：
+   ```text
+   am,tuner,online,smooth,local,stream,alarm,clock,sleep,timer,news,sports,talk,country,blues,relax,pop
+   ```
+
+2. **简体中文 `zh-Hans`**
+
+   名称（28/30）：`TuneRadar - FM AM 全球收音机与在线电台`
+   副标题（30/30）：`爵士乐,轻音乐,经典老歌,听歌识曲,睡眠定时,CarPlay`
+   关键词（100/100）：
+   ```text
+   调频,网络,新闻,体育,起床闹钟,车载,古典,摇滚,粤语,助眠,世界,网络广播,新闻直播,体育资讯,流行,民谣,钢琴,纯音乐,蓝调,乡村,电子,嘻哈,怀旧金曲,放松,学习,专注,心情,语言,国家,地区
+   ```
+
+3. **繁体中文 `zh-Hant`**
+
+   名称（28/30）：`TuneRadar - FM AM 全球收音機與線上電台`
+   副标题（30/30）：`爵士樂,輕音樂,經典老歌,聽歌辨識,睡眠定時,CarPlay`
+   关键词（100/100）：
+   ```text
+   調頻,網路,新聞,體育,起床鬧鐘,車用,古典,搖滾,粵語,助眠,世界,網路廣播,新聞直播,體育資訊,流行,民謠,鋼琴,純音樂,藍調,鄉村,電子,嘻哈,懷舊金曲,放鬆,讀書,專注,心情,語言,國家,地區
+   ```
+
+4. **日语 `ja`**
+
+   名称（27/30）：`TuneRadar - FM AM 世界のネットラジオ`
+   副标题（28/30）：`ジャズ,懐メロ,作業用BGM,スリープタイマー,曲名検索`
+   关键词（100/100）：
+   ```text
+   放送局,洋楽,邦楽,ローファイ,ニュース,スポーツ,目覚まし,車,クラシック,ロック,ポップ,演歌,ブルース,ピアノ,ヒップホップ,チル,癒し,勉強,集中,リラックス,お気に入り,履歴,地域,言語,国
+   ```
+
+5. **韩语 `ko`**
+
+   名称（28/30）：`TuneRadar - FM AM 인터넷 라디오 듣기`
+   副标题（27/30）：`실시간 방송,재즈,로파이,올드팝,수면 타이머,알람`
+   关键词（100/100）：
+   ```text
+   방송국,클래식,뉴스,스포츠,케이팝,차량,세계,발라드,힙합,팝송,록,피아노,휴식,공부,집중,즐겨찾기,최근기록,드라이브,음악검색,노래찾기,언어,나라,지역,채널,백그라운드,블루스,컨트리
+   ```
+
+6. **法语 `fr-FR`**
+
+   名称（28/30）：`TuneRadar: Radio FM en ligne`
+   副标题（27/30）：`En direct,Jazz,Chill,Oldies`
+   关键词（98/100）：
+   ```text
+   am,webradio,stations,écouter,internet,local,monde,infos,sport,réveil,alarme,sommeil,minuteur,blues
+   ```
+
+7. **德语 `de-DE`**
+
+   名称（28/30）：`TuneRadar: FM AM Radio hören`
+   副标题（29/30）：`Live,Jazz,Oldies,Klassik,Rock`
+   关键词（99/100）：
+   ```text
+   internetradio,webradio,online,lokal,nachrichten,sport,radiowecker,schlaf,timer,auto,schlager,sender
+   ```
+
+8. **西班牙语（西班牙）`es-ES`**
+
+   名称（29/30）：`TuneRadar: Radio FM AM Online`
+   副标题（29/30）：`En directo,Jazz,Clásicos,Rock`
+   关键词（100/100）：
+   ```text
+   emisoras,internet,escuchar,local,mundo,noticias,deportes,alarma,dormir,temporizador,coche,salsa,lofi
+   ```
+
+9. **西班牙语（墨西哥）`es-MX`**
+
+   名称（30/30）：`TuneRadar: Radio FM AM en Vivo`
+   副标题（30/30）：`Salsa,Baladas,Jazz,Cumbia,Lofi`
+   关键词（100/100）：
+   ```text
+   emisoras,online,internet,escuchar,local,mundo,ranchera,noticias,deportes,alarma,auto,pop,rock,dormir
+   ```
+
+10. **葡萄牙语（巴西）`pt-BR`**
+
+    名称（29/30）：`TuneRadar: Rádio FM AM Online`
+    副标题（30/30）：`Ao vivo,Sertanejo,Jazz,MPB,Pop`
+    关键词（100/100）：
+    ```text
+    emissoras,internet,ouvir,local,mundo,gospel,notícias,esportes,alarme,dormir,timer,carro,forró,pagode
+    ```
+
+11. **葡萄牙语（葡萄牙）`pt-PT`**
+
+    名称（28/30）：`TuneRadar: Ouvir Rádio FM AM`
+    副标题（30/30）：`Em direto,Jazz,Fado,Oldies,Pop`
+    关键词（100/100）：
+    ```text
+    emissoras,online,internet,local,mundo,notícias,desporto,alarme,dormir,temporizador,carro,relaxar,rap
+    ```
+
+12. **意大利语 `it`**
+
+    名称（29/30）：`TuneRadar: Radio FM AM Online`
+    副标题（30/30）：`In diretta,Jazz,Relax,Pop,Lofi`
+    关键词（100/100）：
+    ```text
+    emittenti,stazioni,internet,ascolta,locali,mondo,notizie,sport,sveglia,timer,sonno,auto,rock,canzoni
+    ```
+
+13. **荷兰语 `nl-NL`**
+
+    名称（29/30）：`TuneRadar: FM AM Radio Online`
+    副标题（28/30）：`Live zenders,Jazz,Oldies,Pop`
+    关键词（100/100）：
+    ```text
+    internetradio,luisteren,lokaal,wereld,nieuws,sport,wekker,slaaptimer,auto,nederlandstalig,rock,chill
+    ```
+
+14. **丹麦语 `da`**
+
+    名称（30/30）：`TuneRadar: Lyt til FM AM Radio`
+    副标题（30/30）：`Live stationer,Jazz,Oldies,Pop`
+    关键词（100/100）：
+    ```text
+    netradio,online,lokal,verden,nyheder,sport,vækkeur,alarm,sleeptimer,bil,dansk,rock,hiphop,afslapning
+    ```
+
+15. **波兰语 `pl`**
+
+    名称（29/30）：`TuneRadar: Radio FM AM Online`
+    副标题（30/30）：`Na żywo,Jazz,Disco Polo,Relaks`
+    关键词（100/100）：
+    ```text
+    stacje,internetowe,słuchaj,lokalne,świat,wiadomości,sport,budzik,sen,timer,samochód,oldies,rock,lofi
+    ```
+
+16. **俄语 `ru`**
+
+    名称（29/30）：`TuneRadar: Радио FM AM Онлайн`
+    副标题（30/30）：`Прямой эфир,Джаз,Ретро,Рок,Поп`
+    关键词（100/100）：
+    ```text
+    слушать,станции,местные,новости,спорт,будильник,таймер,сон,авто,мир,блюз,хиты,лоуфай,язык,страны,рэп
+    ```
+
+17. **乌克兰语 `uk`**
+
+    名称（29/30）：`TuneRadar: Радіо FM AM Онлайн`
+    副标题（30/30）：`Прямий ефір,Джаз,Ретро,Рок,Поп`
+    关键词（100/100）：
+    ```text
+    слухати,станції,місцеві,новини,спорт,будильник,таймер,сон,авто,світ,блюз,хіти,лоуфай,мова,країни,реп
+    ```
+
+18. **土耳其语 `tr`**
+
+    名称（28/30）：`TuneRadar: FM AM Radyo Dinle`
+    副标题（30/30）：`Canlı,Caz,Arabesk,Nostalji,Pop`
+    关键词（100/100）：
+    ```text
+    istasyon,internet,online,türkçe,türkü,haber,spor,alarm,uyku,zamanlayıcı,araba,dünya,jazz,sakin,yerel
+    ```
+
+19. **印地语 `hi`**
+
+    名称（30/30）：`TuneRadar: FM AM ऑनलाइन रेडियो`
+    副标题（30/30）：`लाइव,बॉलीवुड,जैज़,भक्ति,पंजाबी`
+    关键词（100/100）：
+    ```text
+    हिंदी,पुराने गाने,समाचार,अलार्म,टाइमर,नींद,दुनिया,देश,स्थानीय,संगीत,रॉक,पॉप,लोफाई,शांत,इतिहास,स्टेशन
+    ```
+
+20. **印度尼西亚语 `id`**
+
+    名称（29/30）：`TuneRadar: Dengar Radio FM AM`
+    副标题（30/30）：`Siaran Langsung,Jazz,Lawas,Pop`
+    关键词（100/100）：
+    ```text
+    stasiun,online,internet,indonesia,rock,dangdut,berita,olahraga,alarm,tidur,timer,mobil,lofi,mood,rap
+    ```
+
+21. **马来语 `ms`**
+
+    名称（29/30）：`TuneRadar: Dengar Radio FM AM`
+    副标题（27/30）：`Siaran Langsung,Jazz,Melayu`
+    关键词（100/100）：
+    ```text
+    stesen,online,internet,malaysia,nostalgia,berita,sukan,penggera,pemasa,tidur,kereta,dunia,pop,santai
+    ```
+
+22. **泰语 `th`**
+
+    名称（29/30）：`TuneRadar: วิทยุออนไลน์ FM AM`
+    副标题（28/30）：`ฟังสด,แจ๊ส,เพลงเก่า,ตั้งเวลา`
+    关键词（100/100）：
+    ```text
+    สถานี,เพลงไทย,เพลงสากล,ข่าว,กีฬา,นาฬิกาปลุก,นอน,รถ,lofi,ผ่อนคลาย,สมาธิ,เรียน,ป๊อป,ร็อก,คลาสสิก,บลูส์
+    ```
+
+23. **越南语 `vi`**
+
+    名称（27/30）：`TuneRadar: Nghe Radio FM AM`
+    副标题（30/30）：`Trực tiếp,Bolero,Jazz,Lofi,Pop`
+    关键词（99/100）：
+    ```text
+    đài,phát thanh,trực tuyến,nhạc,việt,thư giãn,tin tức,thể thao,báo thức,hẹn giờ,ngủ,xe,rock,thế giới
+    ```
+
+> 标题还是改为FM AM Stations吧,其他看着调整
+
+<details><summary>4 previous messages</summary>
+
+> 我会把美区标题改为 `TuneRadar: FM AM Stations`，再检查副标题和关键词，避免重复，并保留 Internet Radio、Jazz、Lofi、Oldies 的覆盖。
+>
+> <details><summary>Created a file, ran 11 commands</summary>
+>
+> - Ran `rtk proxy cat AGENTS.md /Users/vonzen/.codex/RTK.md`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python -c 'import json;from pathlib import Path;p=Path("releases/ios/3.1.0/metadata");print((p/"app-info/en-US.json").read_text());print(json.loads((p/"version/3.1.0/en-US.json").read_text())["keywords"]);d=json.loads(Path("doc/aso-workbench-20261030/plan.json").read_text());print(d["state"],d["version_id"],d["app_info_id"])'`
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata pull --app 6451428572 --version 3.1.0 --platform IOS --app-info cef4cafe-d63e-492f-be68-2b7b6f4a3d22 --dir .asc/aso-fm-am-stations-20261030/baseline --output json > .asc/appmate/data/fm-am-stations-baseline.json`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python -c 'vals=["TuneRadar: FM AM Stations","Live Radio,Jazz,Lofi,Oldies","internet,tuner,online,smooth,local,stream,alarm,clock,sleep,timer,news,sports,talk,country,blues,pop"];[(print(len(v),v)) for v in vals]'`
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata plan --help`
+> - Wrote `./.asc/appmate/prepare_fm_am_stations_revision.py` (+49 -0)
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python .asc/appmate/prepare_fm_am_stations_revision.py`
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata validate --dir releases/ios/3.1.0/metadata --output json > doc/aso-fm-am-stations-20261030/validation.json`
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata plan --app 6451428572 --version 3.1.0 --platform IOS --app-info cef4cafe-d63e-492f-be68-2b7b6f4a3d22 --dir releases/ios/3.1.0/metadata --review-dir .asc/aso-fm-am-stations-20261030/review --output json > .asc/aso-fm-am-stations-20261030/plan-result.json`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python -c 'import json;from pathlib import Path;d=json.loads(Path(".asc/aso-fm-am-stations-20261030/review/plan.json").read_text());p=d["plan"];v=json.loads(Path("doc/aso-fm-am-stations-20261030/validation.json").read_text());assert v["valid"] and not v["errorCount"];assert p["appInfoId"]=="cef4cafe-d63e-492f-be68-2b7b6f4a3d22";assert p["versionId"]=="f9cdb6bf-69e4-4576-b2da-9ad54ee2efc4";assert not p["adds"] and not p["deletes"];assert {(x["locale"],x["field"]) for x in p["updates"]}=={("en-US",f) for f in ["name","subtitle","keywords"]};print("Verified: only en-US name/subtitle/keywords; 46 files valid")'`
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata approve --review-dir .asc/aso-fm-am-stations-20261030/review --all --note 'User requested FM AM Stations title and related subtitle/keyword adjustments. Editable metadata draft only.' --output json > .asc/aso-fm-am-stations-20261030/approval-result.json`
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata apply --app 6451428572 --version 3.1.0 --platform IOS --app-info cef4cafe-d63e-492f-be68-2b7b6f4a3d22 --dir releases/ios/3.1.0/metadata --review-dir .asc/aso-fm-am-stations-20261030/review --confirm --output json > .asc/aso-fm-am-stations-20261030/apply-result.json`
+>
+> </details>
+>
+> 标题已按要求改为 `FM AM Stations`。副标题相应改为 `Live Radio,Jazz,Lofi,Oldies`，关键词中的 AM 移入标题，空位补回 internet。三项均符合字符限制，正在保存并核对 ASC 草稿。
+>
+> <details><summary>Ran 4 commands</summary>
+>
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python -c 'import json;from pathlib import Path;d=json.loads(Path(".asc/aso-fm-am-stations-20261030/apply-result.json").read_text());assert d["applied"] and not d["dryRun"];assert len(d["updates"])==3;print("ASC applied 3 fields")'`
+> - Ran `rtk proxy /opt/homebrew/bin/asc versions list --app 6451428572 --version 3.1.0 --platform IOS --output json > .asc/aso-fm-am-stations-20261030/version-state.json`
+> - Ran `rtk proxy /opt/homebrew/bin/asc metadata pull --app 6451428572 --version 3.1.0 --platform IOS --app-info cef4cafe-d63e-492f-be68-2b7b6f4a3d22 --dir .asc/aso-fm-am-stations-20261030/readback --output json > .asc/aso-fm-am-stations-20261030/readback-pull.json`
+> - Ran `rtk proxy /Users/vonzen/.local/share/appmate/venv/bin/python -c 'import json,datetime as dt;from pathlib import Path;r=Path(".");base=r/".asc/aso-fm-am-stations-20261030/baseline";remote=r/".asc/aso-fm-am-stations-20261030/readback";local=r/"releases/ios/3.1.0/metadata";files=list(local.rglob("*.json"));assert len(files)==46 and len(list(remote.rglob("*.json")))==46;diff=[]
+> for f in files:
+>  rel=f.relative_to(local);a=json.loads(f.read_text());b=json.loads((remote/rel).read_text());old=json.loads((base/rel).read_text());assert a==b,str(rel)
+>  for k in set(a)|set(old):
+>   if a.get(k)!=old.get(k):diff.append((str(rel),k))
+> assert set(diff)=={("app-info/en-US.json","name"),("app-info/en-US.json","subtitle"),("version/3.1.0/en-US.json","keywords")},diff
+> v=json.loads((r/".asc/aso-fm-am-stations-20261030/version-state.json").read_text())["data"][0]["attributes"];assert v["appStoreState"]=="PREPARE_FOR_SUBMISSION" and v["releaseType"]=="MANUAL";out=r/"doc/aso-fm-am-stations-20261030";d={"verified_at":dt.datetime.now(dt.timezone.utc).isoformat(),"full_files_matched":46,"changed_fields":diff,"other_22_locales_unchanged":True,"version":"3.1.0","state":v["appStoreState"],"release_type":v["releaseType"],"review_submitted":False};(out/"readback-verification.json").write_text(json.dumps(d,ensure_ascii=False,indent=2)+"\n");p=out/"plan.json";data=json.loads(p.read_text());data["state"]="applied_and_independently_verified";p.write_text(json.dumps(data,ensure_ascii=False,indent=2)+"\n");report=out/"README.md";report.write_text(report.read_text().replace("状态：prepared_not_applied","状态：已同步至 ASC 3.1.0 草稿并独立读回验证，46 份完整文件一致，未提交审核。"));prior=r/"doc/aso-workbench-20261030/README.md";note="美区最新修改：标题已按用户要求改为 FM AM Stations，副标题与关键词同时调整，见 [美区最新方案](../aso-fm-am-stations-20261030/README.md)。以下美区内容为上一轮快照，其他 22 种语言保持有效。\n\n";text=prior.read_text();prior.write_text(note+text.replace("这是当前推荐版本，替代前两轮字符补充方案。","这是上一轮完整快照。"));print(json.dumps(d,ensure_ascii=False))'`
+>
+> </details>
+</details>
+
+已修改并同步到 **ASC 3.1.0 草稿**，读回核对一致。
+
+| 字段 | 修改后 | 字符数 |
+|---|---|---:|
+| 标题 | `TuneRadar: FM AM Stations` | 25/30 |
+| 副标题 | `Live Radio,Jazz,Lofi,Oldies` | 27/30 |
+
+关键词（**100/100**）：
+
+```text
+internet,tuner,online,smooth,local,stream,alarm,clock,sleep,timer,news,sports,talk,country,blues,pop
+```
+
+配套调整：副标题用 Radio 替换已进入标题的 Stations；关键词移除 AM、补回 internet，保留 Jazz、Lofi、Oldies。
+
+其他 22 种语言保持上一版，尚未提交审核。

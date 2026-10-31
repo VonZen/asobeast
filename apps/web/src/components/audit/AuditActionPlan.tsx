@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useState } from "react";
 import type {
   AppAuditResult,
@@ -83,7 +85,7 @@ export function AuditActionPlan({
       className="flex flex-col gap-3"
     >
       <h2 id="action-plan-heading" className="text-lg font-medium">
-        Action plan
+        <LocalizedText en="Action plan" />
       </h2>
       <Tabs defaultValue="quickWins">
         <TabsList scrollable>

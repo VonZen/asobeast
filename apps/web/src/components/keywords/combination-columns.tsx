@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { createColumnHelper } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -62,7 +64,11 @@ export const COMBINATION_COLUMNS = columnHelper.columns([
   columnHelper.display({
     id: "select",
     enableHiding: false,
-    header: () => <span className="sr-only">Select</span>,
+    header: () => (
+      <span className="sr-only">
+        <LocalizedText en="Select" />
+      </span>
+    ),
     cell: ({ row }) => (
       <Checkbox
         checked={row.getIsSelected()}

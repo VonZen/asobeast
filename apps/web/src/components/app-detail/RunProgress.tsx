@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useEffect, useId, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Clock, LoaderCircle } from "lucide-react";
@@ -77,7 +79,7 @@ export function RunProgress({ appId }: { appId: string }) {
         >
           <div className="flex flex-col gap-0.5">
             <h3 id={headingId} className="text-sm font-medium">
-              Today&rsquo;s run
+              <LocalizedText en="Today’s run" />
             </h3>
             <p className="text-caption text-muted-foreground">
               {startedSentence(data)}
@@ -97,7 +99,7 @@ export function RunProgress({ appId }: { appId: string }) {
           </ul>
           {data.state === "complete" ? null : (
             <p className="text-caption text-muted-foreground">
-              Run daily queues what is still missing.
+              <LocalizedText en="Run daily queues what is still missing." />
             </p>
           )}
         </PopoverContent>

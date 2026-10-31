@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { Download } from "lucide-react";
 import { KEYWORD_IMPORT_LIMIT } from "@asobeast/shared";
 import { Button } from "@/components/ui/button";
@@ -25,7 +27,9 @@ export function ImportFileStep({
 }) {
   return (
     <div className="flex flex-col gap-2">
-      <Label htmlFor="keyword-import-file">Keyword file</Label>
+      <Label htmlFor="keyword-import-file">
+        <LocalizedText en="Keyword file" />
+      </Label>
       <div className="flex flex-wrap items-center gap-2">
         <Input
           id="keyword-import-file"
@@ -40,7 +44,7 @@ export function ImportFileStep({
           onClick={() => downloadCsv("keyword-import-template.csv", TEMPLATE)}
         >
           <Download aria-hidden />
-          Download template
+          <LocalizedText en="Download template" />
         </Button>
       </div>
       <p className="text-xs text-muted-foreground">

@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import type { ComponentProps } from "react";
 import { ListFilter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -33,9 +35,11 @@ export function KeywordFiltersSheet({
       </SheetTrigger>
       <SheetContent side="bottom" className="max-h-[80svh]">
         <SheetHeader>
-          <SheetTitle>Filters</SheetTitle>
+          <SheetTitle>
+            <LocalizedText en="Filters" />
+          </SheetTitle>
           <SheetDescription>
-            Narrow the keywords by source, bucket, status, grade and position.
+            <LocalizedText en="Narrow the keywords by source, bucket, status, grade and position." />
           </SheetDescription>
         </SheetHeader>
         <div className="flex flex-col items-start gap-2">

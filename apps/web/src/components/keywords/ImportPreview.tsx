@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { flexRender, useTable } from "@tanstack/react-table";
@@ -79,7 +81,7 @@ export function ImportPreview({
         {busy ? (
           <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Loader2 aria-hidden className="size-3.5 animate-spin" />
-            Updating
+            <LocalizedText en="Updating" />
           </span>
         ) : null}
       </div>
@@ -98,7 +100,7 @@ export function ImportPreview({
         containerClassName="max-h-72 overflow-y-auto rounded-xl border bg-card"
       >
         <TableCaption className="sr-only">
-          Every row of the file, with what an import would do with it.
+          <LocalizedText en="Every row of the file, with what an import would do with it." />
         </TableCaption>
         <TableHeader className="sticky top-0 bg-card">
           {table.getHeaderGroups().map((headerGroup) => (

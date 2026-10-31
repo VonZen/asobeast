@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/table";
 import { ariaSort } from "@/lib/table/sorting";
 import { cn } from "@/lib/utils";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 
 const STICKY_COLUMNS: Record<string, string | undefined> = {
   select: "sticky left-0 z-10 w-10 min-w-10 bg-inherit",
@@ -37,6 +39,7 @@ export function KeywordsDataTable({
   emptyBody?: string;
   onClearFilters: () => void;
 }) {
+  const locale = useInterfaceLanguage();
   const scrollRef = useRef<HTMLDivElement>(null);
   const rows = table.getRowModel().rows;
   const virtualize = rows.length > VIRTUALIZE_ABOVE;
@@ -92,10 +95,12 @@ export function KeywordsDataTable({
               >
                 {header.isPlaceholder
                   ? null
-                  : flexRender(
-                      header.column.columnDef.header,
-                      header.getContext(),
-                    )}
+                  : typeof header.column.columnDef.header === "string"
+                    ? interfaceCopy(locale, header.column.columnDef.header)
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
               </TableHead>
             ))}
           </TableRow>

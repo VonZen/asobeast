@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, type RefCallback } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { BellPlus, Check, Loader2 } from "lucide-react";
 import type { CategoryCollection, ChartFollowItem } from "@asobeast/shared";
@@ -39,6 +40,7 @@ function Following({
   claimRef: RefCallback<HTMLElement>;
   onActivate: () => void;
 }) {
+  const language = useInterfaceLanguage();
   const [confirming, setConfirming] = useState(false);
   const stopped = useRef(false);
   const mutation = useUnfollowChart(() => {
@@ -52,7 +54,7 @@ function Following({
       <AlertDialogTrigger asChild>
         <Button ref={claimRef} variant="outline">
           <Check aria-hidden />
-          Following
+          {language === "zh-CN" ? "已关注" : "Following"}
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent
@@ -61,15 +63,20 @@ function Following({
         }}
       >
         <AlertDialogHeader>
-          <AlertDialogTitle>Stop following this category?</AlertDialogTitle>
+          <AlertDialogTitle>
+            {language === "zh-CN"
+              ? "取消关注此类别？"
+              : "Stop following this category?"}
+          </AlertDialogTitle>
           <AlertDialogDescription>
-            The daily run stops capturing its free, paid and grossing charts;
-            stored days stay.
+            {language === "zh-CN"
+              ? "每日任务将停止采集该类别的免费、付费和畅销排行榜；已保存的数据会保留。"
+              : "The daily run stops capturing its free, paid and grossing charts; stored days stay."}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={mutation.isPending}>
-            Cancel
+            {language === "zh-CN" ? "取消" : "Cancel"}
           </AlertDialogCancel>
           <AlertDialogAction
             disabled={mutation.isPending}
@@ -79,7 +86,7 @@ function Following({
               unfollowOnce(follows.map((follow) => follow.id));
             }}
           >
-            Stop following
+            {language === "zh-CN" ? "取消关注" : "Stop following"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -100,6 +107,7 @@ function Follow({
   buttonRef: RefCallback<HTMLButtonElement>;
   onActivate: () => void;
 }) {
+  const language = useInterfaceLanguage();
   const mutation = useFollowCategory(category);
   const followOnce = useSingleFlight(mutation);
 
@@ -118,7 +126,7 @@ function Follow({
       ) : (
         <BellPlus aria-hidden />
       )}
-      Follow category
+      {language === "zh-CN" ? "关注类别" : "Follow category"}
     </Button>
   );
 }

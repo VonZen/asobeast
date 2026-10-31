@@ -1,6 +1,8 @@
 "use client";
 
 import type { AppListItem, ChartPage } from "@asobeast/shared";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { componentCopy } from "@/lib/component-copy";
 import { ChartColumn } from "./ChartColumn";
 import type { ChartSearch } from "./chart-params";
 import { COLUMNS_GRID } from "./skeletons";
@@ -17,6 +19,7 @@ export function ChartColumns({
   busy: boolean;
   search: Pick<ChartSearch, "compare" | "date">;
 }) {
+  const locale = useInterfaceLanguage();
   return (
     <>
       <div aria-busy={busy} className={COLUMNS_GRID}>
@@ -29,7 +32,7 @@ export function ChartColumns({
           />
         ))}
       </div>
-      <aside aria-label="Trending">
+      <aside aria-label={componentCopy(locale, "Trending")}>
         <TrendingPanel pages={pages} />
       </aside>
     </>

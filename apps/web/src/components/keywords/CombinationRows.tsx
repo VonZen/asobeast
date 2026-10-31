@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useState } from "react";
 import { flexRender } from "@tanstack/react-table";
 import { FilteredEmpty } from "@/components/data-table/FilteredEmpty";
@@ -33,8 +35,7 @@ export function CombinationRows({
     <div className="flex flex-col gap-3">
       <Table containerClassName="rounded-xl border bg-card">
         <TableCaption className="sr-only">
-          Keyword combinations built from the words of your listing, where those
-          words appear, and whether each phrase is tracked.
+          <LocalizedText en="Keyword combinations built from the words of your listing, where those words appear, and whether each phrase is tracked." />
         </TableCaption>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (

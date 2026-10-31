@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, startTransition, useDeferredValue, useState } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useQueryState } from "nuqs";
 import { storefrontLanguage } from "@asobeast/shared";
@@ -52,22 +53,28 @@ function ShowAll({
   expanded: boolean;
   onShowAll: () => void;
 }) {
+  const language = useInterfaceLanguage();
   if (total <= shown) return null;
   return (
     <div className="flex flex-wrap items-center gap-3 pt-2">
       <p className="text-caption text-muted-foreground">
-        {searching
-          ? `Search covers the ${formatNumber(shown)} loaded of ${formatNumber(total)} reviews`
-          : `Showing ${formatNumber(shown)} of ${formatNumber(total)}`}
+        {language === "zh-CN"
+          ? searching
+            ? `搜索范围为已加载的 ${formatNumber(shown)} 条评论，共 ${formatNumber(total)} 条`
+            : `显示 ${formatNumber(shown)} 条，共 ${formatNumber(total)} 条`
+          : searching
+            ? `Search covers the ${formatNumber(shown)} loaded of ${formatNumber(total)} reviews`
+            : `Showing ${formatNumber(shown)} of ${formatNumber(total)}`}
       </p>
       {expanded ? (
         <p className="text-caption text-muted-foreground">
-          The page shows at most {REVIEWS_SHOW_ALL_LIMIT} reviews; narrow the
-          filters to reach the others.
+          {language === "zh-CN"
+            ? `此页面最多显示 ${REVIEWS_SHOW_ALL_LIMIT} 条评论；请缩小筛选范围以查看其他评论。`
+            : `The page shows at most ${REVIEWS_SHOW_ALL_LIMIT} reviews; narrow the filters to reach the others.`}
         </p>
       ) : (
         <Button variant="outline" size="sm" onClick={onShowAll}>
-          Show all
+          {language === "zh-CN" ? "显示全部" : "Show all"}
         </Button>
       )}
     </div>
@@ -91,6 +98,7 @@ function ReviewCards({
   onClearFilters: () => void;
   onResetSearch: () => void;
 }) {
+  const language = useInterfaceLanguage();
   const { data: app } = useSuspenseQuery(appDetailOptions(id));
   const viewKey = JSON.stringify(view);
   const [expandedView, setExpandedView] = useState<string | null>(null);
@@ -113,24 +121,44 @@ function ReviewCards({
       <EmptyState
         title={
           queueCleared
-            ? "Nothing needs a reply"
-            : "No reviews match these filters"
+            ? language === "zh-CN"
+              ? "没有需要回复的评论"
+              : "Nothing needs a reply"
+            : language === "zh-CN"
+              ? "没有符合筛选条件的评论"
+              : "No reviews match these filters"
         }
         body={
           queueCleared
-            ? "Every stored review has a reply or a saved draft."
-            : "Nothing stored matches the selected rating, version, period and reply state."
+            ? language === "zh-CN"
+              ? "所有已保存的评论都有回复或草稿。"
+              : "Every stored review has a reply or a saved draft."
+            : language === "zh-CN"
+              ? "没有评论符合所选评分、版本、时间和回复状态。"
+              : "Nothing stored matches the selected rating, version, period and reply state."
         }
         action={
           <Button variant="outline" onClick={onClearFilters}>
-            {queueCleared ? "Show all reviews" : "Clear filters"}
+            {language === "zh-CN"
+              ? queueCleared
+                ? "显示所有评论"
+                : "清除筛选"
+              : queueCleared
+                ? "Show all reviews"
+                : "Clear filters"}
           </Button>
         }
       />
     ) : (
       <EmptyState
-        title="No reviews stored yet"
-        body="Reviews appear after the next daily sync."
+        title={
+          language === "zh-CN" ? "尚无已保存的评论" : "No reviews stored yet"
+        }
+        body={
+          language === "zh-CN"
+            ? "下次每日同步后将显示评论。"
+            : "Reviews appear after the next daily sync."
+        }
       />
     );
   }
@@ -144,15 +172,23 @@ function ReviewCards({
     <div className="flex flex-col">
       {shown.length === 0 ? (
         <EmptyState
-          title="No reviews match this search"
+          title={
+            language === "zh-CN"
+              ? "没有符合搜索条件的评论"
+              : "No reviews match this search"
+          }
           body={
             quotedPhrase(query) === null
-              ? "Search looks through the titles, texts, authors and replies of the reviews loaded here."
-              : "A search in quotes matches whole words in the titles and texts of the reviews loaded here."
+              ? language === "zh-CN"
+                ? "搜索已加载评论的标题、正文、作者和回复。"
+                : "Search looks through the titles, texts, authors and replies of the reviews loaded here."
+              : language === "zh-CN"
+                ? "带引号的搜索会匹配已加载评论标题和正文中的完整词语。"
+                : "A search in quotes matches whole words in the titles and texts of the reviews loaded here."
           }
           action={
             <Button variant="outline" onClick={onResetSearch}>
-              Reset search
+              {language === "zh-CN" ? "重置搜索" : "Reset search"}
             </Button>
           }
         />
@@ -185,7 +221,13 @@ function ReviewCards({
                         onReply(review.id);
                       }}
                     >
-                      {review.reply?.text ? "Edit reply" : "Reply"}
+                      {language === "zh-CN"
+                        ? review.reply?.text
+                          ? "编辑回复"
+                          : "回复"
+                        : review.reply?.text
+                          ? "Edit reply"
+                          : "Reply"}
                     </Button>
                   )
                 }
@@ -219,6 +261,7 @@ function ReviewCards({
 }
 
 export function ReviewsList({ id }: { id: string }) {
+  const language = useInterfaceLanguage();
   const [score, setScore] = useQueryState("score", reviewScoreParser);
   const [version, setVersion] = useQueryState("version", reviewVersionParser);
   const [since, setSince] = useQueryState("since", reviewSinceParser);
@@ -234,8 +277,12 @@ export function ReviewsList({ id }: { id: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardDescription>Reviews</CardDescription>
-        <CardTitle>User reviews</CardTitle>
+        <CardDescription>
+          {language === "zh-CN" ? "评论" : "Reviews"}
+        </CardDescription>
+        <CardTitle>
+          {language === "zh-CN" ? "用户评论" : "User reviews"}
+        </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <Suspense fallback={<ReviewCountsSkeleton />}>

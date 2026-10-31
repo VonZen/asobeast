@@ -1,3 +1,4 @@
+import { LocalizedText } from "@/components/layout/LocalizedText";
 const STEPS = [
   {
     name: "display",
@@ -43,7 +44,9 @@ const RANKS = [
 export function TypeScale() {
   return (
     <section aria-label="Type scale" className="flex flex-col gap-6">
-      <h2 className="text-sm font-semibold">Type scale</h2>
+      <h2 className="text-sm font-semibold">
+        <LocalizedText en="Type scale" />
+      </h2>
 
       <div className="flex flex-col gap-4">
         {STEPS.map((step) => (
@@ -63,22 +66,21 @@ export function TypeScale() {
         <div className="overflow-x-auto">
           <table className="w-full max-w-lg text-sm">
             <caption className="sr-only">
-              A rank column, a volume column and a score column rendered with
-              the numeric treatment.
+              <LocalizedText en="A rank column, a volume column and a score column rendered with the numeric treatment." />
             </caption>
             <thead>
               <tr className="border-b text-left text-label text-muted-foreground uppercase">
                 <th scope="col" className="py-1.5 font-medium">
-                  Keyword
+                  <LocalizedText en="Keyword" />
                 </th>
                 <th scope="col" className="py-1.5 text-right font-medium">
-                  Position
+                  <LocalizedText en="Position" />
                 </th>
                 <th scope="col" className="py-1.5 text-right font-medium">
-                  Popularity
+                  <LocalizedText en="Popularity" />
                 </th>
                 <th scope="col" className="py-1.5 text-right font-medium">
-                  Score
+                  <LocalizedText en="Score" />
                 </th>
               </tr>
             </thead>

@@ -1,4 +1,6 @@
 import type { AuthField, AuthFieldError } from "./field-error";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 
 export function FieldErrorMessage({
   error,
@@ -9,6 +11,7 @@ export function FieldErrorMessage({
   field: AuthField;
   id: string;
 }) {
+  const locale = useInterfaceLanguage();
   if (error?.field !== field) return null;
   return (
     <p
@@ -16,7 +19,7 @@ export function FieldErrorMessage({
       role={field === "form" ? "alert" : undefined}
       className="text-sm text-destructive"
     >
-      {error.message}
+      {interfaceCopy(locale, error.message)}
     </p>
   );
 }

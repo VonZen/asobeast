@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { keywordFieldLocalizations } from "@asobeast/shared";
 import { AppLocalizationsSection } from "@/components/localizations/AppLocalizationsSection";
@@ -27,6 +28,7 @@ export function MetadataAuditView({
   hasLocalizations: boolean;
   keywordFields: boolean;
 }) {
+  const language = useInterfaceLanguage();
   const { market, home } = useMarket(id);
   const localization = useLocalization(id).localization ?? undefined;
   const { data: result } = useSuspenseQuery(
@@ -73,10 +75,14 @@ export function MetadataAuditView({
       ) : null}
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-medium">Keyword coverage</h2>
+        <h2 className="text-lg font-medium">
+          {language === "zh-CN" ? "关键词覆盖情况" : "Keyword coverage"}
+        </h2>
         {result.coverage.length === 0 ? (
           <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
-            Track keywords to see how your metadata covers them.
+            {language === "zh-CN"
+              ? "追踪关键词后，可以查看元数据对它们的覆盖情况。"
+              : "Track keywords to see how your metadata covers them."}
           </div>
         ) : (
           <CoverageTable
@@ -89,7 +95,9 @@ export function MetadataAuditView({
       {result.store === "APP_STORE" &&
       result.keywordFieldSuggestion !== null ? (
         <section className="flex flex-col gap-3">
-          <h2 className="text-lg font-medium">Suggestion</h2>
+          <h2 className="text-lg font-medium">
+            {language === "zh-CN" ? "建议" : "Suggestion"}
+          </h2>
           <KeywordFieldSuggestionCard
             suggestion={result.keywordFieldSuggestion}
             editHref={editLocalizationHref(

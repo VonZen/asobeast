@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Plus } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import { Button } from "@/components/ui/button";
 import { addCompetitor, ApiError } from "@/lib/api";
 import { invalidateCompetitorMutation } from "@/lib/queries";

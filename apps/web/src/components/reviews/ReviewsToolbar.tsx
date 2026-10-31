@@ -1,6 +1,8 @@
 "use client";
 
 import { Suspense } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 import {
   useMutation,
   useQuery,
@@ -8,7 +10,7 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query";
 import type { Options } from "nuqs";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import {
   REVIEW_REPLY_STATES,
   REVIEW_SORTS,
@@ -77,6 +79,7 @@ function VersionSelect({
   version: string;
   onChange: (next: string) => void;
 }) {
+  const language = useInterfaceLanguage();
   const { data } = useSuspenseQuery(reviewsOptions(id, {}));
 
   return (
@@ -85,10 +88,14 @@ function VersionSelect({
       onValueChange={(next) => onChange(next === ALL ? "" : next)}
     >
       <SelectTrigger className="w-[140px]" aria-label="Filter by version">
-        <SelectValue placeholder="All versions" />
+        <SelectValue
+          placeholder={language === "zh-CN" ? "所有版本" : "All versions"}
+        />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value={ALL}>All versions</SelectItem>
+        <SelectItem value={ALL}>
+          {language === "zh-CN" ? "所有版本" : "All versions"}
+        </SelectItem>
         {data.versions.map((item) => (
           <SelectItem key={item} value={item}>
             v{item}
@@ -108,6 +115,7 @@ function ReplyStateSelect({
   view: ReviewView;
   onChange: (next: ReviewReplyState | null) => void;
 }) {
+  const language = useInterfaceLanguage();
   const { data } = useQuery(reviewsOptions(id, countsFilters(view)));
 
   return (
@@ -118,13 +126,19 @@ function ReplyStateSelect({
       }
     >
       <SelectTrigger className="w-[170px]" aria-label="Filter by reply state">
-        <SelectValue placeholder="Any reply state" />
+        <SelectValue
+          placeholder={
+            language === "zh-CN" ? "全部回复状态" : "Any reply state"
+          }
+        />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value={ALL}>Any reply state</SelectItem>
+        <SelectItem value={ALL}>
+          {language === "zh-CN" ? "全部回复状态" : "Any reply state"}
+        </SelectItem>
         {shownReplyStates(data?.counts, view.replyState).map((option) => (
           <SelectItem key={option.value} value={option.value}>
-            {option.label}
+            {interfaceCopy(language, option.label)}
           </SelectItem>
         ))}
       </SelectContent>
@@ -139,6 +153,7 @@ function SinceSelect({
   since: RatingsRange | null;
   onChange: (next: RatingsRange | null) => void;
 }) {
+  const language = useInterfaceLanguage();
   return (
     <Select
       value={since ?? ALL}
@@ -147,13 +162,17 @@ function SinceSelect({
       }
     >
       <SelectTrigger className="w-[150px]" aria-label="Filter by date">
-        <SelectValue placeholder="Any time" />
+        <SelectValue
+          placeholder={language === "zh-CN" ? "全部时间" : "Any time"}
+        />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value={ALL}>Any time</SelectItem>
+        <SelectItem value={ALL}>
+          {language === "zh-CN" ? "全部时间" : "Any time"}
+        </SelectItem>
         {RATINGS_RANGES.map((preset) => (
           <SelectItem key={preset} value={preset}>
-            {rangeLabel(preset)}
+            {interfaceCopy(language, rangeLabel(preset))}
           </SelectItem>
         ))}
       </SelectContent>
@@ -219,6 +238,7 @@ export function ReviewsToolbar({
   onSort,
   onQuery,
 }: ReviewsToolbarProps) {
+  const language = useInterfaceLanguage();
   return (
     <div className="flex flex-wrap items-center gap-2">
       <div
@@ -256,7 +276,7 @@ export function ReviewsToolbar({
         <SelectContent>
           {SORT_OPTIONS.map((option) => (
             <SelectItem key={option.value} value={option.value}>
-              {option.label}
+              {interfaceCopy(language, option.label)}
             </SelectItem>
           ))}
         </SelectContent>

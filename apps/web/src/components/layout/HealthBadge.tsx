@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { answeredDatabaseDown } from "./health-answer";
+import { useInterfaceLanguage } from "./InterfaceLanguageProvider";
+import { interfaceCopy } from "@/lib/interface-copy";
 
 function hoursAgo(iso: string): number {
   return Math.max(
@@ -105,6 +107,7 @@ export function HealthBadge() {
 }
 
 function ApiStatus() {
+  const locale = useInterfaceLanguage();
   const { data, error, isPending } = useQuery(healthOptions);
   const state = resolveState(data, error, isPending);
 
@@ -113,10 +116,12 @@ function ApiStatus() {
       <TooltipTrigger asChild>
         <span className="inline-flex items-center gap-1.5">
           {state.mark}
-          <span className="sr-only sm:not-sr-only">{state.label}</span>
+          <span className="sr-only sm:not-sr-only">
+            {interfaceCopy(locale, state.label)}
+          </span>
         </span>
       </TooltipTrigger>
-      <TooltipContent>{state.detail}</TooltipContent>
+      <TooltipContent>{interfaceCopy(locale, state.detail)}</TooltipContent>
     </Tooltip>
   );
 }

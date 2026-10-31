@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/layout/LocalizedText";
+
 import { useState } from "react";
 import Link from "next/link";
 import type { KeywordFieldSuggestion } from "@asobeast/shared";
@@ -41,7 +43,7 @@ export function KeywordFieldSuggestionCard({
         </div>
         {suggestion.value.length === 0 ? (
           <p className="mt-2 text-sm text-muted-foreground">
-            Every tracked keyword is already covered.
+            <LocalizedText en="Every tracked keyword is already covered." />
           </p>
         ) : (
           <>
@@ -59,7 +61,7 @@ export function KeywordFieldSuggestionCard({
               href={editHref}
               className="mt-2 text-sm text-foreground underline decoration-primary underline-offset-4"
             >
-              Edit this keyword field
+              <LocalizedText en="Edit this keyword field" />
             </Link>
           </>
         )}

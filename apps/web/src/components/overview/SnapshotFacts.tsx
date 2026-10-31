@@ -1,6 +1,7 @@
 "use client";
 
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { AppIcon } from "@/components/AppIcon";
 import { useMarket } from "@/components/app-detail/use-market";
 import {
@@ -15,6 +16,7 @@ import { queryMarket } from "@/lib/market";
 import { appListingOptions } from "@/lib/queries";
 
 export function SnapshotFacts({ id }: { id: string }) {
+  const language = useInterfaceLanguage();
   const { market, home } = useMarket(id);
   const country = queryMarket(market, home);
   const { data: detail } = useSuspenseQuery(appListingOptions(id, country));
@@ -30,13 +32,17 @@ export function SnapshotFacts({ id }: { id: string }) {
         }`
       : null,
     snapshot?.installs != null
-      ? `${formatCompact(snapshot.installs)} installs`
+      ? language === "zh-CN"
+        ? `${formatCompact(snapshot.installs)} 次安装`
+        : `${formatCompact(snapshot.installs)} installs`
       : null,
     snapshot?.version ? `v${snapshot.version}` : null,
     snapshot?.price != null
       ? formatPrice(snapshot.price, snapshot.currency)
       : null,
-    snapshot ? `Snapshot ${formatDate(snapshot.capturedAt)}${where}` : null,
+    snapshot
+      ? `${language === "zh-CN" ? "快照" : "Snapshot"} ${formatDate(snapshot.capturedAt, language)}${where}`
+      : null,
   ].filter((fact): fact is string => fact !== null);
 
   return (
@@ -50,7 +56,9 @@ export function SnapshotFacts({ id }: { id: string }) {
         </div>
       ) : (
         <p className="text-body text-muted-foreground">
-          No store snapshot yet. Refresh to capture one.
+          {language === "zh-CN"
+            ? "尚无商店快照，刷新后即可获取。"
+            : "No store snapshot yet. Refresh to capture one."}
         </p>
       )}
     </div>

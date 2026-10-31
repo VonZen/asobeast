@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useQueryState } from "nuqs";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import type {
   AppLocalizationItem,
   AppLocalizationsResult,
@@ -38,6 +39,7 @@ export function RemoveLocalizationDialog({
   id: string;
   item: AppLocalizationItem;
 }) {
+  const zh = useInterfaceLanguage() === "zh-CN";
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [fieldLocale, setFieldLocale] = useQueryState(
@@ -58,10 +60,15 @@ export function RemoveLocalizationDialog({
       if (fieldLocale === item.localization) {
         void setFieldLocale(null, { history: "replace" });
       }
-      toast.success(`Removed ${name}`);
+      toast.success(zh ? `已移除${name}` : `Removed ${name}`);
     },
     onError: (err) =>
-      toast.error(apiErrorMessage(err, `Could not remove ${name}`)),
+      toast.error(
+        apiErrorMessage(
+          err,
+          zh ? `无法移除${name}` : `Could not remove ${name}`,
+        ),
+      ),
   });
   const removeOnce = useSingleFlight(remove);
 
@@ -78,19 +85,25 @@ export function RemoveLocalizationDialog({
           size="sm"
           className="text-destructive hover:text-destructive"
         >
-          Remove localization
+          {zh ? "移除本地化版本" : "Remove localization"}
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Remove {name}?</AlertDialogTitle>
+          <AlertDialogTitle>
+            {zh ? `移除${name}？` : `Remove ${name}?`}
+          </AlertDialogTitle>
           <AlertDialogDescription>
-            {removeDescription(item)}
+            {zh
+              ? item.readBy.length === 0
+                ? "将删除此本地化版本的关键词字段；因其他原因跟踪的词组会保留。"
+                : `将删除此关键词字段。在${item.readBy.map((reader) => reader.country.toUpperCase()).join("、")}市场中，这些词组不再作为关键词字段词组跟踪；因其他原因跟踪的词组会保留。`
+              : removeDescription(item)}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={remove.isPending}>
-            Cancel
+            {zh ? "取消" : "Cancel"}
           </AlertDialogCancel>
           <AlertDialogAction
             variant="destructive"
@@ -100,7 +113,13 @@ export function RemoveLocalizationDialog({
               removeOnce();
             }}
           >
-            {remove.isPending ? "Removing…" : "Remove"}
+            {remove.isPending
+              ? zh
+                ? "正在移除…"
+                : "Removing…"
+              : zh
+                ? "移除"
+                : "Remove"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

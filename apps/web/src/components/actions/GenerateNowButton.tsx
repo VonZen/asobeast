@@ -1,8 +1,9 @@
 "use client";
 
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { toast } from "@/lib/localized-toast";
 import { Button } from "@/components/ui/button";
 import { runActions } from "@/lib/api";
 import { actionSummaryOptions, invalidateActionMutation } from "@/lib/queries";
@@ -22,6 +23,7 @@ export function GenerateNowButton({
 }: {
   generatedAt: string | null;
 }) {
+  const language = useInterfaceLanguage();
   const queryClient = useQueryClient();
   const [followed, setFollowed] = useState<FollowedRun | null>(null);
 
@@ -34,7 +36,12 @@ export function GenerateNowButton({
       );
       setFollowed({ since: generatedAt, startedAt: Date.now() });
     },
-    onError: () => toast.error("Could not queue generation"),
+    onError: () =>
+      toast.error(
+        language === "zh-CN"
+          ? "无法将生成任务加入队列"
+          : "Could not queue generation",
+      ),
   });
   const runOnce = useSingleFlight(run);
 
@@ -76,7 +83,13 @@ export function GenerateNowButton({
         if (!busy) runOnce();
       }}
     >
-      {busy ? "Generating…" : "Generate now"}
+      {language === "zh-CN"
+        ? busy
+          ? "正在生成…"
+          : "立即生成"
+        : busy
+          ? "Generating…"
+          : "Generate now"}
     </Button>
   );
 }
