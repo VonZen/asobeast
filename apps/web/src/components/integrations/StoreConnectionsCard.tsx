@@ -238,6 +238,22 @@ function ConnectionDetails({
         >
           {interfaceCopy(language, replies.text)}
         </dd>
+        {item.store === "APP_STORE" ? (
+          <>
+            <dt className="text-muted-foreground">
+              {language === "zh-CN"
+                ? "元数据发布权限"
+                : "Metadata publish access"}
+            </dt>
+            <dd className="text-muted-foreground">
+              {item.metadataPublishAccess === "unknown"
+                ? language === "zh-CN"
+                  ? "尚未验证（首次实际发布后确定）"
+                  : "Not tested (determined after first confirmed write)"
+                : item.metadataPublishAccess}
+            </dd>
+          </>
+        ) : null}
       </dl>
       <p
         role="status"

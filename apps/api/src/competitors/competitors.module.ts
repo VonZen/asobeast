@@ -3,12 +3,17 @@ import { AppsModule } from '../apps/apps.module';
 import { KeywordsModule } from '../keywords/keywords.module';
 import { StoreProvidersModule } from '../store-providers/store-providers.module';
 import { CompetitorSuggestionsService } from './competitor-suggestions.service';
+import { CompetitorCategoryService } from './competitor-category.service';
 import { CompetitorsController } from './competitors.controller';
 import { CompetitorsService } from './competitors.service';
 
 @Module({
   imports: [AppsModule, KeywordsModule, StoreProvidersModule],
   controllers: [CompetitorsController],
-  providers: [CompetitorsService, CompetitorSuggestionsService],
+  providers: [
+    CompetitorCategoryService,
+    CompetitorsService,
+    CompetitorSuggestionsService,
+  ],
 })
 export class CompetitorsModule {}

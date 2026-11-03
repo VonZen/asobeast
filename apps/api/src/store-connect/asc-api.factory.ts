@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { AscAnalyticsApi } from './asc-analytics-api';
+import { AscMetadataApi } from './asc-metadata-api';
 import { AscRequester } from './asc-requester';
 import { AscReviewsApi } from './asc-reviews-api';
 import { type AscCredentials, AscTokenCache } from './asc-token';
@@ -17,6 +18,10 @@ export class AscApiFactory {
 
   reviews(credentials: AscCredentials): AscReviewsApi {
     return new AscReviewsApi(this.requester(credentials));
+  }
+
+  metadata(credentials: AscCredentials): AscMetadataApi {
+    return new AscMetadataApi(this.requester(credentials));
   }
 
   private requester(credentials: AscCredentials): AscRequester {

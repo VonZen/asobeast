@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Store } from '@prisma/client';
 import {
+  normalizeText,
   CHANGE_IMPACT_WINDOWS,
   ChangeImpactItem,
   ChangeImpactReport,
@@ -38,7 +39,7 @@ export class ChangeImpactService {
   ): Promise<ChangeImpactReport> {
     const app = await this.prisma.app.findFirst({
       where: { id: appId },
-      select: { id: true, country: true, store: true },
+      select: { id: true, country: true, store: true, name: true },
     });
     if (!app) {
       throw new NotFoundException(`App ${appId} not found`);
@@ -63,6 +64,7 @@ export class ChangeImpactService {
       app.id,
       market,
       impactReadPlan(changes, today),
+      app.name,
     );
 
     const measured = measureChangeImpact({ changes, keywords, today });
@@ -120,6 +122,7 @@ export class ChangeImpactService {
     appId: string,
     country: string,
     plan: ImpactReadPlan,
+    appName: string | null,
   ): Promise<ImpactKeyword[]> {
     if (plan.metricsUntil === null) {
       return [];
@@ -127,8 +130,11 @@ export class ChangeImpactService {
     const rows = await this.prisma.trackedKeyword.findMany({
       where: { appId, active: true, keyword: { country } },
       select: {
+        relevance: true,
+        tags: true,
         keyword: {
           select: {
+            text: true,
             metrics: {
               where: { date: { lte: plan.metricsUntil } },
               orderBy: { date: 'desc' },
@@ -142,6 +148,15 @@ export class ChangeImpactService {
         },
       },
     });
-    return rows.map((row) => row.keyword);
+    const brand = normalizeText(appName ?? '');
+    return rows.map((row) => ({
+      ...row.keyword,
+      text: row.keyword.text,
+      relevance: row.relevance,
+      isBrand:
+        (row.tags ?? []).some((tag) => tag.toLowerCase() === 'brand') ||
+        (brand.length > 1 &&
+          normalizeText(row.keyword.text ?? '').includes(brand)),
+    }));
   }
 }

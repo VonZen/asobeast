@@ -1,6 +1,7 @@
 "use client";
 
 import { LocalizedText } from "@/components/layout/LocalizedText";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 
 import { Suspense } from "react";
 import { ChevronDown } from "lucide-react";
@@ -47,6 +48,7 @@ export function KeywordCombinations({
   });
   const [, setCountry] = useQueryState("country", countryParser);
   const home = formatCountry(homeCountry);
+  const zh = useInterfaceLanguage() === "zh-CN";
 
   return (
     <Card>
@@ -71,11 +73,9 @@ export function KeywordCombinations({
           </h3>
         </CardTitle>
         <CardDescription>
-          Every phrase of one to three words that the words in your{" "}
-          {LISTING_FIELDS[store]} can form, in any order, and whether you track
-          it in your home market. Coverage on the metadata page checks the
-          reverse: whether each tracked keyword appears word for word in one
-          field.
+          {zh
+            ? `从${store === "APP_STORE" ? "标题、副标题及关键词字段" : "标题及简短描述"}中提取的单词，列出其可以组成的 1–3 词组合（不限顺序），并显示是否已在主要市场跟踪。元数据页的覆盖率检查则用于验证：已跟踪关键词是否完整出现在某个字段中。`
+            : `Every phrase of one to three words that the words in your ${LISTING_FIELDS[store]} can form, in any order, and whether you track it in your home market. Coverage on the metadata page checks the reverse: whether each tracked keyword appears word for word in one field.`}
         </CardDescription>
       </CardHeader>
       {params.open ? (
@@ -93,14 +93,16 @@ export function KeywordCombinations({
           ) : (
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-dashed p-4">
               <p className="text-sm text-muted-foreground">
-                Combinations come from the listing in your home market, {home}.
+                {zh
+                  ? `关键词组合来自主要市场 ${home} 的商店元数据。`
+                  : `Combinations come from the listing in your home market, ${home}.`}
               </p>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => void setCountry(null)}
               >
-                Switch to {home}
+                {zh ? `切换到 ${home}` : `Switch to ${home}`}
               </Button>
             </div>
           )}

@@ -1,4 +1,4 @@
-import { fetch } from 'undici';
+import { fetch, ProxyAgent } from 'undici';
 import { AscUnreachableError } from './asc-errors';
 import { readBounded, ResponseTooLargeError } from './bounded-body';
 
@@ -8,7 +8,7 @@ export const ASC_TIMEOUT_MS = 20_000;
 export const ASC_DOWNLOAD_TIMEOUT_MS = 120_000;
 
 export interface AscRequest {
-  method: 'GET' | 'POST' | 'DELETE';
+  method: 'GET' | 'POST' | 'PATCH' | 'DELETE';
   path: string;
   token?: string;
   body?: unknown;
@@ -29,6 +29,7 @@ interface AscTransportOptions {
   origin: string;
   timeoutMs: number;
   downloadTimeoutMs: number;
+  proxyUrl?: string;
 }
 
 const parseBody = (text: string): unknown => {
@@ -47,7 +48,9 @@ export function createAscTransport({
   origin,
   timeoutMs,
   downloadTimeoutMs,
+  proxyUrl,
 }: AscTransportOptions): AscTransport {
+  const dispatcher = proxyUrl ? new ProxyAgent(proxyUrl) : undefined;
   return async ({ method, path, token, body, absoluteUrl, maxBytes }) => {
     const download = absoluteUrl !== undefined;
     try {
@@ -63,6 +66,7 @@ export function createAscTransport({
         body: body === undefined ? undefined : JSON.stringify(body),
         signal: AbortSignal.timeout(download ? downloadTimeoutMs : timeoutMs),
         redirect: 'error',
+        ...(dispatcher ? { dispatcher } : {}),
       });
       const retryAfter = response.headers.get('retry-after');
       if (download && response.ok) {

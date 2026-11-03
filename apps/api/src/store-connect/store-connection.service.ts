@@ -22,6 +22,7 @@ import { WorkspaceContext } from '../common/tenancy/workspace-context';
 import { PrismaService } from '../prisma/prisma.service';
 import type { AscAnalyticsApi } from './asc-analytics-api';
 import type { AscReviewsApi } from './asc-reviews-api';
+import type { AscMetadataApi } from './asc-metadata-api';
 import type { GcsApi } from './play/gcs-api';
 import {
   GOOGLE_OAUTH_CLIENT,
@@ -190,6 +191,28 @@ export class StoreConnectionService {
     return this.openWith('APP_STORE', isAscCredentials, (credentials) =>
       this.appStore.reviews(credentials),
     );
+  }
+
+  openAppStoreMetadata(): Promise<OpenedConnection<AscMetadataApi> | null> {
+    return this.openWith('APP_STORE', isAscCredentials, (credentials) =>
+      this.appStore.metadata(credentials),
+    );
+  }
+
+  async setMetadataPublishEnabled(enabled: boolean): Promise<void> {
+    await this.prisma.storeConnection.updateMany({
+      where: { store: 'APP_STORE' },
+      data: { metadataPublishEnabled: enabled },
+    });
+  }
+
+  async markMetadataPublishAccess(
+    access: 'allowed' | 'forbidden',
+  ): Promise<void> {
+    await this.prisma.storeConnection.updateMany({
+      where: { store: 'APP_STORE' },
+      data: { metadataPublishAccess: access },
+    });
   }
 
   openPlay(): Promise<OpenedConnection<GcsApi> | null> {

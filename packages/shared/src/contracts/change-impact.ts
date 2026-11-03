@@ -24,6 +24,17 @@ export interface ChangeImpactFunnel {
   finalOn?: string;
 }
 
+export interface WeightedKeywordChange {
+  keyword: string;
+  before: number | null;
+  after: number | null;
+  popularity: number | null;
+  difficulty: number | null;
+  relevance: number | null;
+  value: number;
+  gain: number;
+}
+
 export interface ChangeImpactWindow {
   days: ChangeImpactWindowDays;
   status: ChangeImpactStatus;
@@ -35,6 +46,10 @@ export interface ChangeImpactWindow {
   visibilityAfter: number | null;
   visibilityChange: number | null;
   overlappingChanges: string[];
+  weightedValueBefore?: number | null;
+  weightedValueAfter?: number | null;
+  weightedValueChange?: number | null;
+  valueRows?: WeightedKeywordChange[];
   funnel?: ChangeImpactFunnel | null;
 }
 

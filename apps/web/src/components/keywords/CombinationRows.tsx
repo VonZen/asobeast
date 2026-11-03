@@ -3,6 +3,7 @@
 import { LocalizedText } from "@/components/layout/LocalizedText";
 
 import { useState } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { flexRender } from "@tanstack/react-table";
 import { FilteredEmpty } from "@/components/data-table/FilteredEmpty";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,7 @@ export function CombinationRows({
   onClearFilters: () => void;
 }) {
   const [pages, setPages] = useState(1);
+  const zh = useInterfaceLanguage() === "zh-CN";
   const rows = table.getRowModel().rows;
   const shown = rows.slice(0, pages * COMBINATION_PAGE_SIZE);
   const next = Math.min(COMBINATION_PAGE_SIZE, rows.length - shown.length);
@@ -56,7 +58,11 @@ export function CombinationRows({
             <TableRow>
               <TableCell colSpan={table.getVisibleLeafColumns().length}>
                 <FilteredEmpty
-                  title="No combinations match these filters"
+                  title={
+                    zh
+                      ? "没有符合筛选条件的关键词组合"
+                      : "No combinations match these filters"
+                  }
                   onClear={onClearFilters}
                 />
               </TableCell>
@@ -86,7 +92,9 @@ export function CombinationRows({
       {rows.length > COMBINATION_PAGE_SIZE ? (
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-caption text-muted-foreground" aria-live="polite">
-            Showing {formatNumber(shown.length)} of {formatNumber(rows.length)}
+            {zh
+              ? `显示 ${formatNumber(shown.length)} 项，共 ${formatNumber(rows.length)} 项`
+              : `Showing ${formatNumber(shown.length)} of ${formatNumber(rows.length)}`}
           </p>
           {next > 0 ? (
             <Button
@@ -94,7 +102,7 @@ export function CombinationRows({
               size="sm"
               onClick={() => setPages((count) => count + 1)}
             >
-              Show {next} more
+              {zh ? `再显示 ${next} 项` : `Show ${next} more`}
             </Button>
           ) : null}
         </div>

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Store } from '@prisma/client';
 import {
   AppStoreLocalization,
@@ -40,6 +40,11 @@ import {
 } from '../apps/listing-texts';
 import { missingListing } from '../apps/missing-listing';
 import { ScreenshotsService } from '../screenshots/screenshots.service';
+import { StoreConnectionService } from '../store-connect/store-connection.service';
+import type {
+  AscMetadataListing,
+  AscListingFields,
+} from '../store-connect/asc-metadata-api';
 import {
   screenshotTextCoverage,
   screenshotTextState,
@@ -55,11 +60,47 @@ interface AuditListings {
 
 @Injectable()
 export class MetadataService {
+  private readonly logger = new Logger(MetadataService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly keywords: KeywordsService,
     private readonly screenshots: ScreenshotsService,
+    private readonly connections: StoreConnectionService,
   ) {}
+
+  /**
+   * Read-only: the keyword field App Store Connect holds for each localization.
+   * Never throws for a missing or failing connection; the editor then stays empty.
+   */
+  async onlineKeywordFields(
+    appId: string,
+  ): Promise<{ connected: boolean; items: Record<string, string> }> {
+    const app = await this.ensureApp(appId);
+    if (app.store !== Store.APP_STORE || app.isCompetitor) {
+      return { connected: false, items: {} };
+    }
+    try {
+      const connection = await this.connections.openAppStoreMetadata();
+      if (!connection || connection.status !== 'active') {
+        return { connected: false, items: {} };
+      }
+      const all = await connection.api.snapshots(app.storeAppId);
+      return {
+        connected: true,
+        items: Object.fromEntries(
+          all
+            .filter((entry) => entry.fields.keywords?.trim())
+            .map((entry) => [entry.locale, entry.fields.keywords!.trim()]),
+        ),
+      };
+    } catch (error) {
+      this.logger.warn(
+        `Could not read online keyword fields: ${error instanceof Error ? error.message : 'unknown'}`,
+      );
+      return { connected: false, items: {} };
+    }
+  }
 
   async audit(
     appId: string,
@@ -81,14 +122,28 @@ export class MetadataService {
     ]);
     const active = tracked.filter((item) => item.active);
     const read = await this.readListings(app, market, localization, active);
+    const { source, warning, keywords, extraFields } =
+      await this.preferConnectedMetadata(app, market, localization, read);
     const { listings, view } = read;
-    const keywordFields = fieldPhrases(stored);
+    if (localization !== null && !view)
+      throw missingListing(market, localization);
+    if (market !== app.country && !view) throw missingListing(market);
+    const keywordFields = new Map(fieldPhrases(stored));
     const viewLocalization =
       localization ?? keywordFieldLocalizations(market)[0];
+    if (keywords !== undefined && viewLocalization) {
+      keywordFields.set(
+        viewLocalization,
+        keywords
+          .split(',')
+          .map((part) => part.trim())
+          .filter(Boolean),
+      );
+    }
 
     const keywordFieldValue =
       app.store === Store.APP_STORE
-        ? keywordFieldOf(keywordFields, viewLocalization)
+        ? (keywords ?? keywordFieldOf(keywordFields, viewLocalization))
         : '';
     const context: LintContext = {
       titleWords: tokenize(view?.title ?? ''),
@@ -102,7 +157,7 @@ export class MetadataService {
     const fields =
       app.store === Store.GOOGLE_PLAY
         ? this.playFields(view, context)
-        : this.appStoreFields(view, context, keywordFieldValue);
+        : this.appStoreFields(view, context, keywordFieldValue, extraFields);
 
     const coverage = this.judgeCoverage(app, active, read, keywordFields);
     const shots = await this.screenshotsOf(app.store, listings, [
@@ -117,6 +172,8 @@ export class MetadataService {
     return {
       appId,
       store: app.store,
+      metadataSource: source,
+      ...(warning ? { metadataSourceWarning: warning } : {}),
       fields,
       coverage: coverage.map((row) =>
         textOf(row.listingCountry)?.status === 'ready'
@@ -167,13 +224,113 @@ export class MetadataService {
         : localized
             .get(market)
             ?.find((entry) => entry.localization === localization)?.texts;
-    if (localization !== null && !view) {
-      throw missingListing(market, localization);
-    }
-    if (market !== app.country && !view) {
-      throw missingListing(market);
-    }
     return { listings, localized, view };
+  }
+
+  private async preferConnectedMetadata(
+    app: {
+      id: string;
+      store: Store;
+      country: string;
+      storeAppId: string;
+      isCompetitor: boolean;
+    },
+    market: string,
+    localization: AppStoreLocalization | null,
+    read: AuditListings,
+  ): Promise<{
+    source: 'app-store-connect' | 'storefront-snapshot';
+    warning?: string;
+    keywords?: string;
+    extraFields?: Pick<AscListingFields, 'promotionalText' | 'whatsNew'>;
+  }> {
+    if (app.store !== Store.APP_STORE || app.isCompetitor) {
+      return { source: 'storefront-snapshot' };
+    }
+    try {
+      const connection = await this.connections.openAppStoreMetadata();
+      if (!connection || connection.status !== 'active') {
+        return { source: 'storefront-snapshot' };
+      }
+      const all: AscMetadataListing[] = await connection.api.snapshots(
+        app.storeAppId,
+      );
+      const byLocale = new Map(all.map((entry) => [entry.locale, entry]));
+      const requestedLocale =
+        localization ?? keywordFieldLocalizations(market)[0];
+      const selected = requestedLocale
+        ? byLocale.get(requestedLocale)
+        : undefined;
+      if (!selected) {
+        return {
+          source: 'storefront-snapshot',
+          warning:
+            'The selected locale is not available in App Store Connect; showing stored storefront metadata.',
+        };
+      }
+      // Read all applicable ASC localizations for the market, so keyword
+      // coverage uses the same authoritative metadata as the visible fields.
+      for (const [locale, entry] of byLocale) {
+        if (
+          !keywordFieldLocalizations(market).includes(
+            locale as AppStoreLocalization,
+          )
+        )
+          continue;
+        const known = (read.localized.get(market) ?? []).find(
+          (row) => row.localization === locale,
+        )?.texts;
+        const base = known ?? read.listings.get(market);
+        if (!base) continue;
+        const localized: ListingTexts = {
+          ...base,
+          title: entry.fields.name ?? base.title,
+          subtitle: entry.fields.subtitle ?? base.subtitle,
+          description: entry.fields.description ?? base.description,
+        };
+        read.localized.set(market, [
+          ...(read.localized.get(market) ?? []).filter(
+            (row) => row.localization !== locale,
+          ),
+          { localization: locale, texts: localized },
+        ]);
+      }
+      const original = read.view ?? read.listings.get(market);
+      const replacement: ListingTexts = {
+        id: original?.id ?? '',
+        title: selected.fields.name ?? original?.title ?? '',
+        subtitle: selected.fields.subtitle ?? original?.subtitle ?? null,
+        summary: original?.summary ?? null,
+        description: selected.fields.description ?? original?.description ?? '',
+      };
+      read.view = replacement;
+      if (localization === null) {
+        read.listings.set(market, replacement);
+      } else {
+        const entries = read.localized.get(market) ?? [];
+        read.localized.set(market, [
+          ...entries.filter((entry) => entry.localization !== localization),
+          { localization, texts: replacement },
+        ]);
+      }
+      return {
+        source: 'app-store-connect',
+        keywords: selected.fields.keywords,
+        extraFields: {
+          promotionalText: selected.fields.promotionalText,
+          whatsNew: selected.fields.whatsNew,
+        },
+      };
+    } catch (error) {
+      this.logger.warn(
+        `App Store Connect metadata read failed for ${app.id}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      return {
+        source: 'storefront-snapshot',
+        warning:
+          'App Store Connect metadata could not be read; showing stored storefront metadata.',
+      };
+    }
   }
 
   private async screenshotsOf(
@@ -230,6 +387,7 @@ export class MetadataService {
     view: ListingTexts | undefined,
     context: LintContext,
     keywordFieldValue: string,
+    extraFields?: Pick<AscListingFields, 'promotionalText' | 'whatsNew'>,
   ): MetadataFieldAudit[] {
     const store = Store.APP_STORE;
     const title = view?.title ?? '';
@@ -268,6 +426,27 @@ export class MetadataService {
           STORE_FIELD_LIMITS.APP_STORE.description!.limit,
         ),
       ),
+      ...(extraFields
+        ? (['promotionalText', 'whatsNew'] as const).map((field) => {
+            const text = extraFields[field] ?? '';
+            const limit = STORE_FIELD_LIMITS.APP_STORE[field]!.limit;
+            const chars = countChars(text);
+            return this.field(
+              store,
+              field,
+              text,
+              chars > limit
+                ? [
+                    {
+                      rule: 'over-limit',
+                      severity: 'error' as const,
+                      message: `Exceeds the ${limit} character limit (${chars}).`,
+                    },
+                  ]
+                : [],
+            );
+          })
+        : []),
     ];
   }
 
@@ -333,10 +512,19 @@ export class MetadataService {
     store: Store;
     name: string | null;
     country: string;
+    storeAppId: string;
+    isCompetitor: boolean;
   }> {
     const app = await this.prisma.app.findFirst({
       where: { id: appId },
-      select: { id: true, store: true, name: true, country: true },
+      select: {
+        id: true,
+        store: true,
+        name: true,
+        country: true,
+        storeAppId: true,
+        isCompetitor: true,
+      },
     });
     if (!app) {
       throw new NotFoundException(`App ${appId} not found`);

@@ -6,3 +6,4 @@ export * from './seasonal';
 export * from './keyword-field';
 export * from './keyword-tags';
 export * from './visibility';
+export * from './legal-footer';

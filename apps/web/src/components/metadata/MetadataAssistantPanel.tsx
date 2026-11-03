@@ -31,6 +31,7 @@ import { useSingleFlight } from "@/lib/single-flight";
 import { DraftLocalizationSelect } from "./DraftLocalizationSelect";
 import { DraftLocalizationSkeleton } from "./skeletons";
 import { LintIssueRow } from "./LintIssueRow";
+import { MetadataPublishPanel } from "./MetadataPublishPanel";
 
 const STORE_FIELDS: Record<Store, MetadataField[]> = {
   APP_STORE: ["title", "subtitle", "keywordField"],
@@ -215,11 +216,13 @@ export function MetadataAssistantPanel({
           ))}
         </div>
       ) : null}
+      {store === "APP_STORE" && drafts.length > 0 ? (
+        <MetadataPublishPanel appId={appId} locale={drafted} drafts={drafts} />
+      ) : null}
       <p className="text-xs text-muted-foreground">
-        {componentCopy(
-          locale,
-          "Drafts are suggestions — AsoBeast never writes to the store.",
-        )}
+        {locale === "zh-CN"
+          ? "草稿仅作为建议；只有明确启用并确认后才会写入商店。"
+          : "Drafts are suggestions. Publishing requires explicit enablement and confirmation."}
       </p>
     </section>
   );

@@ -8,6 +8,7 @@ import {
   ChangeImpactWindow,
   ChangeImpactWindowDays,
   visibility,
+  type WeightedKeywordChange,
 } from '@asobeast/shared';
 import {
   addDays,
@@ -36,6 +37,9 @@ export interface ChangeDay {
 export interface ImpactKeyword {
   metrics: Metric[];
   rankings: Ranking[];
+  text?: string;
+  relevance?: number | null;
+  isBrand?: boolean;
 }
 
 export interface ImpactReadPlan {
@@ -58,6 +62,10 @@ interface Pair {
   before: number | null;
   after: number | null;
   traffic: number | null;
+  difficulty: number | null;
+  keyword: string;
+  relevance: number | null;
+  isBrand: boolean;
 }
 
 type Shift = Exclude<keyof ChangeImpactMovement, 'measured'>;
@@ -165,9 +173,97 @@ const pairsOn = (
         before: before.position,
         after: after.position,
         traffic: metricAt(keyword.metrics, baseline)?.traffic ?? null,
+        difficulty: metricAt(keyword.metrics, baseline)?.difficulty ?? null,
+        keyword: keyword.text ?? '',
+        relevance: keyword.relevance ?? null,
+        isBrand: keyword.isBrand ?? false,
       },
     ];
   });
+
+export function keywordValue(
+  popularity: number | null,
+  difficulty: number | null,
+  relevance: number | null,
+  isBrand: boolean,
+): number {
+  const traffic = Math.min(100, Math.max(0, popularity ?? 0));
+  const obstacle = Math.min(100, Math.max(0, difficulty ?? 50));
+  const fit = isBrand ? 0 : relevance === null ? 0.8 : relevance >= 50 ? 1 : 0;
+  return traffic * (1 - (obstacle / 100) ** 2) * fit;
+}
+
+export const positionVisibility = (rank: number | null): number => {
+  if (rank === null || rank < 1) return 0;
+  if (rank === 1) return 100;
+  if (rank === 2) return 90;
+  if (rank === 3) return 80;
+  if (rank <= 5) return 65;
+  if (rank <= 10) return 50;
+  if (rank <= 20) return 25;
+  if (rank <= 50) return 8;
+  if (rank <= 100) return 2;
+  return 0.5;
+};
+
+function weightedMoves(pairs: Pair[]) {
+  const rows: WeightedKeywordChange[] = pairs.map((pair) => {
+    const value = keywordValue(
+      pair.traffic,
+      pair.difficulty,
+      pair.relevance,
+      pair.isBrand,
+    );
+    const gain =
+      ((positionVisibility(pair.after) - positionVisibility(pair.before)) *
+        value) /
+      100;
+    return {
+      keyword: pair.keyword,
+      before: pair.before,
+      after: pair.after,
+      popularity: pair.traffic,
+      difficulty: pair.difficulty,
+      relevance: pair.relevance,
+      value: roundToTenth(value),
+      gain: Math.round(gain * 100) / 100,
+    };
+  });
+  const totalBefore = pairs.reduce(
+    (sum, pair) =>
+      sum +
+      (positionVisibility(pair.before) *
+        keywordValue(
+          pair.traffic,
+          pair.difficulty,
+          pair.relevance,
+          pair.isBrand,
+        )) /
+        100,
+    0,
+  );
+  const totalAfter = pairs.reduce(
+    (sum, pair) =>
+      sum +
+      (positionVisibility(pair.after) *
+        keywordValue(
+          pair.traffic,
+          pair.difficulty,
+          pair.relevance,
+          pair.isBrand,
+        )) /
+        100,
+    0,
+  );
+  return {
+    weightedValueBefore: roundToTenth(totalBefore),
+    weightedValueAfter: roundToTenth(totalAfter),
+    weightedValueChange: roundToTenth(totalAfter - totalBefore),
+    valueRows: rows
+      .sort((a, b) => Math.abs(b.gain) - Math.abs(a.gain))
+      .slice(0, 20),
+  };
+}
 
 const shiftOf = (pair: Pair): Shift | null => {
   if (pair.before === null) {
@@ -292,6 +388,7 @@ function windowFor(
     visibilityBefore: before,
     visibilityAfter: after,
     visibilityChange: roundToTenth(after - before),
+    ...weightedMoves(pairs),
   };
 }
 

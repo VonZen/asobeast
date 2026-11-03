@@ -13,6 +13,13 @@ import { apiFetch } from "./client";
 const pathOf = (store: Store): string => `/store-connections/${store}`;
 const SIGN_IN_PATH = `${pathOf("GOOGLE_PLAY")}/sign-in`;
 
+export function setMetadataPublishing(enabled: boolean): Promise<void> {
+  return apiFetch<void>("/store-connections/APP_STORE/metadata-publishing", {
+    method: "PUT",
+    body: JSON.stringify({ enabled }),
+  });
+}
+
 export function getStoreConnections(): Promise<StoreConnectionState> {
   return apiFetch<StoreConnectionState>("/store-connections");
 }

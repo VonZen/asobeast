@@ -3,6 +3,7 @@
 import { LocalizedText } from "@/components/layout/LocalizedText";
 
 import Link from "next/link";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { useAuth } from "@/components/auth/use-auth";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,16 +35,21 @@ export function TrackCombinationsDialog({
   onConfirm: () => void;
 }) {
   const storefront = formatCountry(market);
+  const zh = useInterfaceLanguage() === "zh-CN";
   const { isOperator } = useAuth();
   return (
     <Dialog open={open} onOpenChange={(next) => !pending && onOpenChange(next)}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            Track {keywordCount(count)} in {storefront}?
+            {zh
+              ? `在 ${storefront} 跟踪 ${formatNumber(count)} 个关键词？`
+              : `Track ${keywordCount(count)} in ${storefront}?`}
           </DialogTitle>
           <DialogDescription>
-            Each tracked keyword adds one store search a day in {storefront}.
+            {zh
+              ? `每个跟踪关键词每天在 ${storefront} 增加一次商店搜索请求。`
+              : `Each tracked keyword adds one store search a day in ${storefront}.`}
             {isOperator ? (
               <>
                 {" "}

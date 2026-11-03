@@ -9,6 +9,8 @@ import {
 } from './apple-popularity';
 import { appleAdsPopularityClient } from './apple-popularity.client';
 import { ApplePopularitySync } from './apple-popularity.sync';
+import { AppleAdsCampaignService } from './apple-ads-campaign.service';
+import { AppleAdsCampaignController } from './apple-ads-campaign.controller';
 import { OfficialPopularityLookup } from './official-popularity';
 import { ScoringService } from './scoring.service';
 import { StatsCollectorService } from './stats-collector.service';
@@ -34,10 +36,12 @@ function applePopularityClient(
 
 @Module({
   imports: [StoreProvidersModule],
+  controllers: [AppleAdsCampaignController],
   providers: [
     StatsCollectorService,
     ScoringService,
     ApplePopularitySync,
+    AppleAdsCampaignService,
     OfficialPopularityLookup,
     {
       provide: ApplePopularityClient,

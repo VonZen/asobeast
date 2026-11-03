@@ -3,7 +3,8 @@
 import { useRef, useState } from "react";
 import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Trash2 } from "lucide-react";
+import { ExternalLink, Trash2 } from "lucide-react";
+import { storeUrl } from "@/components/top-charts/chart-actions";
 import { toast } from "@/lib/localized-toast";
 import type { CompetitorItem } from "@asobeast/shared";
 import { AppIcon } from "@/components/AppIcon";
@@ -29,6 +30,7 @@ import { siblingControl, useCloseFocusHandoff } from "@/lib/focus-handoff";
 import { invalidateCompetitorMutation } from "@/lib/queries";
 import {
   formatNumber,
+  formatDate,
   formatPrice,
   formatRating,
   storeLabel,
@@ -83,7 +85,33 @@ function CompetitorCard({
         <AppIcon src={competitor.iconUrl} name={competitor.name} />
         <div className="flex min-w-0 flex-1 flex-col gap-2">
           <div className="flex min-w-0 flex-col gap-1">
-            <span className="truncate font-medium">{name}</span>
+            <div className="flex min-w-0 items-center gap-1.5">
+              <span className="truncate font-medium">{name}</span>
+              {competitor.storeAppId && competitor.country ? (
+                <a
+                  href={storeUrl(
+                    competitor.store,
+                    competitor.storeAppId,
+                    competitor.country,
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={
+                    language === "zh-CN"
+                      ? `在商店查看 ${name}`
+                      : `Open ${name} in store`
+                  }
+                  title={
+                    language === "zh-CN"
+                      ? "在新标签页打开商店页面"
+                      : "Open store page in a new tab"
+                  }
+                  className="shrink-0 text-muted-foreground hover:text-foreground"
+                >
+                  <ExternalLink className="size-4" aria-hidden />
+                </a>
+              ) : null}
+            </div>
             <div className="flex flex-wrap items-center gap-1.5">
               <Badge variant="secondary" className="w-fit">
                 {storeLabel(competitor.store)}
@@ -106,6 +134,12 @@ function CompetitorCard({
               <span>{formatPrice(snapshot.price, snapshot.currency)}</span>
             ) : null}
             {snapshot?.version ? <span>v{snapshot.version}</span> : null}
+            {snapshot?.releasedAt ? (
+              <span>
+                {language === "zh-CN" ? "上架：" : "Released: "}
+                {formatDate(snapshot.releasedAt)}
+              </span>
+            ) : null}
           </div>
         </div>
         <AlertDialog

@@ -1,3 +1,4 @@
+import { IsBoolean } from 'class-validator';
 import {
   Body,
   Controller,
@@ -32,6 +33,10 @@ import { StoreConnectionBodyPipe } from './dto/store-connection-body.pipe';
 import { StoreParamDto } from './dto/store-param.dto';
 import { StoreConnectionService } from './store-connection.service';
 
+class MetadataPublishSwitchBody {
+  @IsBoolean() enabled!: boolean;
+}
+
 @ApiTags('store-connect')
 @ApiExtraModels(AppStoreConnectionDto, PlayConnectionDto)
 @Controller('store-connections')
@@ -46,6 +51,15 @@ export class StoreConnectionsController {
   })
   state(): Promise<StoreConnectionState> {
     return this.connections.state();
+  }
+
+  @Put('APP_STORE/metadata-publishing')
+  @SessionOnly()
+  @UseGuards(OwnerGuard)
+  metadataPublishSwitch(
+    @Body() body: MetadataPublishSwitchBody,
+  ): Promise<void> {
+    return this.connections.setMetadataPublishEnabled(body.enabled);
   }
 
   @Put(':store')

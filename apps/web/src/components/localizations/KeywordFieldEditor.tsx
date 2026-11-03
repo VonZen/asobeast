@@ -1,7 +1,9 @@
 "use client";
 
 import { useId, useRef, useState, type ReactNode } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
+import { getOnlineKeywordFields } from "@/lib/api";
 import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import {
   KEYWORD_FIELD_CHAR_LIMIT,
@@ -83,7 +85,19 @@ export function KeywordFieldEditor({
   const saveButton = useRef<HTMLButtonElement>(null);
   const name = localizationName(item.localization);
   const [draft, setDraft] = useState<string | null>(null);
-  const text = draft ?? item.phrases.join(",");
+  // A localization with no saved field starts from what App Store Connect holds.
+  const online = useQuery({
+    queryKey: ["online-keyword-fields", id],
+    queryFn: () => getOnlineKeywordFields(id),
+    staleTime: 5 * 60_000,
+    retry: false,
+  });
+  const onlineText =
+    item.phrases.length === 0
+      ? (online.data?.items[item.localization] ?? "")
+      : "";
+  const text = draft ?? (item.phrases.join(",") || onlineText);
+  const prefilled = draft === null && onlineText !== "";
   const field = keywordFieldDraft(text, item.phrases);
   const over = field.over > 0;
   const {
@@ -113,8 +127,19 @@ export function KeywordFieldEditor({
         aria-label={zh ? `${name}关键词字段` : `${name} keyword field`}
         aria-describedby={countId}
         aria-invalid={over}
-        placeholder="fitness,workout,running,cardio"
+        placeholder={
+          zh
+            ? "该语言还没有关键词字段"
+            : "No keyword field for this localization yet"
+        }
       />
+      {prefilled ? (
+        <p className="text-caption text-muted-foreground">
+          {zh
+            ? "已从 App Store Connect 读取线上的关键词。保存后才会记入 asobeast。"
+            : "Read from App Store Connect. It is only recorded in asobeast once you save."}
+        </p>
+      ) : null}
       <KeywordFieldUsage field={field} countId={countId} />
       {item.readBy.length === 0 ? (
         <p className="text-caption text-muted-foreground">

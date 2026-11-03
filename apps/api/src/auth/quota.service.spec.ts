@@ -267,8 +267,8 @@ describe('QuotaService', () => {
     ).resolves.toBe('imported');
   });
 
-  it('caps competitors even on a self hosted instance', async () => {
-    const { quota, stored, tx, scoped } = build(false, { competitors: 10 });
+  it('enforces only an explicitly configured self-hosted competitor cap', async () => {
+    const { quota, stored, tx, scoped } = build(false, { competitors: 10 }, 10);
 
     await expect(
       detailOf(() =>
@@ -302,11 +302,15 @@ describe('QuotaService', () => {
     ).resolves.toBeUndefined();
   });
 
-  it('skips the pre-check on a self hosted instance, except for competitors', async () => {
-    const { quota, appCount, scoped } = build(false, {
-      apps: 500,
-      competitors: 10,
-    });
+  it('skips the pre-check on self hosted instances unless a cap is explicitly configured', async () => {
+    const { quota, appCount, scoped } = build(
+      false,
+      {
+        apps: 500,
+        competitors: 10,
+      },
+      10,
+    );
 
     await expect(
       scoped(() => quota.assertRoom('apps')),
@@ -458,15 +462,15 @@ describe('QuotaService', () => {
   it('reports the configured competitor cap', async () => {
     const { quota, scoped } = build(false, {}, 40);
 
-    await expect(scoped(() => quota.limitFor('competitors'))).resolves.toBe(
-      40,
-    );
+    await expect(scoped(() => quota.limitFor('competitors'))).resolves.toBe(40);
   });
 
   it('reports competitors as unlimited when configured that way', async () => {
     const { quota, scoped } = build(false, {}, null);
 
-    await expect(scoped(() => quota.limitFor('competitors'))).resolves.toBeNull();
+    await expect(
+      scoped(() => quota.limitFor('competitors')),
+    ).resolves.toBeNull();
   });
 
   it('admits a competitor past the shipped cap once it is raised', async () => {
@@ -506,8 +510,8 @@ describe('QuotaService', () => {
     );
   });
 
-  it('offers no upgrade path on a self hosted instance', async () => {
-    const { quota, stored, tx, scoped } = build(false, { competitors: 10 });
+  it('offers no upgrade path on a self hosted instance with a configured cap', async () => {
+    const { quota, stored, tx, scoped } = build(false, { competitors: 10 }, 10);
 
     await expect(
       detailOf(() =>

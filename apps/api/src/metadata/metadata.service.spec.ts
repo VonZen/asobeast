@@ -5,6 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import type { ScreenshotPolicy } from '../screenshots/screenshot-policy';
 import { ScreenshotsService } from '../screenshots/screenshots.service';
 import { MetadataService } from './metadata.service';
+import type { StoreConnectionService } from '../store-connect/store-connection.service';
 
 const tracked = (text: string, country: string): TrackedKeywordItem => ({
   keywordId: `kw_${text}_${country}`,
@@ -104,6 +105,8 @@ const build = (
         store,
         name: 'Focus Timer',
         country: options.country ?? 'us',
+        storeAppId: '123',
+        isCompetitor: false,
       }),
       findMany: jest.fn().mockResolvedValue([]),
     },
@@ -128,12 +131,16 @@ const build = (
       .fn()
       .mockReturnValue(store === Store.GOOGLE_PLAY ? 'unsupported' : 'on'),
   } as unknown as ScreenshotPolicy;
+  const connection = {
+    openAppStoreMetadata: jest.fn().mockResolvedValue(null),
+  };
   const service = new MetadataService(
     prisma,
     keywords,
     new ScreenshotsService(prisma, policy),
+    connection as unknown as StoreConnectionService,
   );
-  return { service, appSnapshot, snapshotScreenshot };
+  return { service, appSnapshot, snapshotScreenshot, connection };
 };
 
 describe('MetadataService.audit', () => {
@@ -197,6 +204,65 @@ describe('MetadataService.audit', () => {
     expect(result.keywordFieldSuggestion).toMatchObject({
       localization: 'pl',
     });
+  });
+
+  it('prefers connected App Store Connect metadata and its keyword field', async () => {
+    const { service, connection } = build(Store.APP_STORE);
+    const api = {
+      snapshots: jest.fn().mockResolvedValue([
+        {
+          locale: 'en-US',
+          fields: {
+            name: 'TuneRadar: Music Radio',
+            subtitle: 'Lofi, Jazz & World Stations',
+            keywords: 'radio,lofi,jazz',
+            description: 'Official description',
+            promotionalText: 'Browse stations',
+            whatsNew: 'Discover more music',
+          },
+          versionState: 'PREPARE_FOR_SUBMISSION',
+          versionString: '3.0',
+        },
+      ]),
+    };
+    connection.openAppStoreMetadata.mockResolvedValue({
+      status: 'active',
+      api,
+    });
+    const result = await service.audit('app_1');
+    expect(result.metadataSource).toBe('app-store-connect');
+    expect(result.fields.find((field) => field.field === 'title')?.value).toBe(
+      'TuneRadar: Music Radio',
+    );
+    expect(
+      result.fields.find((field) => field.field === 'subtitle')?.value,
+    ).toBe('Lofi, Jazz & World Stations');
+    expect(
+      result.fields.find((field) => field.field === 'keywordField')?.value,
+    ).toBe('radio,lofi,jazz');
+    expect(
+      result.fields.find((field) => field.field === 'promotionalText')?.value,
+    ).toBe('Browse stations');
+    expect(
+      result.fields.find((field) => field.field === 'whatsNew')?.value,
+    ).toBe('Discover more music');
+    expect(api.snapshots).toHaveBeenCalledWith('123');
+  });
+
+  it('reports ASC errors and falls back without erasing stored metadata', async () => {
+    const { service, connection } = build(Store.APP_STORE);
+    connection.openAppStoreMetadata.mockResolvedValue({
+      status: 'active',
+      api: {
+        snapshots: jest.fn().mockRejectedValue(new Error('ASC unavailable')),
+      },
+    });
+    const result = await service.audit('app_1');
+    expect(result.metadataSource).toBe('storefront-snapshot');
+    expect(result.metadataSourceWarning).toContain('could not be read');
+    expect(result.fields.find((field) => field.field === 'title')?.value).toBe(
+      'Focus Timer',
+    );
   });
 
   it('never reads screenshots for a google play audit', async () => {

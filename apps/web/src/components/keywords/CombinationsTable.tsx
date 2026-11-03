@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useTable, type RowSelectionState } from "@tanstack/react-table";
 import type { Store } from "@asobeast/shared";
@@ -63,6 +64,7 @@ function ListingCombinations({
   setParams,
   keywordField,
 }: CombinationsProps & { keywordField: readonly string[] }) {
+  const zh = useInterfaceLanguage() === "zh-CN";
   const { data: app } = useSuspenseQuery(appDetailOptions(id));
   const { data: tracked } = useSuspenseQuery(keywordsOptions(id, homeCountry));
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
@@ -106,8 +108,14 @@ function ListingCombinations({
   if (result.words.length === 0) {
     return (
       <EmptyState
-        title="No listing words to combine yet"
-        body="Combinations appear once AsoBeast has captured a listing with words in the fields this store indexes."
+        title={
+          zh ? "暂无可组合的元数据词语" : "No listing words to combine yet"
+        }
+        body={
+          zh
+            ? "采集到商店可索引的标题、副标题等字段后，将显示关键词组合。"
+            : "Combinations appear once AsoBeast has captured a listing with words in the fields this store indexes."
+        }
       />
     );
   }
@@ -116,8 +124,9 @@ function ListingCombinations({
     <div className="flex flex-col gap-3">
       {result.truncated ? (
         <p role="note" className="text-caption text-muted-foreground">
-          Your listing forms {formatNumber(result.total)} combinations. The
-          first {formatNumber(COMBINATION_LIMIT)}, shortest first, are listed.
+          {zh
+            ? `商店元数据可形成 ${formatNumber(result.total)} 个组合，当前展示最短的 ${formatNumber(COMBINATION_LIMIT)} 个。`
+            : `Your listing forms ${formatNumber(result.total)} combinations. The first ${formatNumber(COMBINATION_LIMIT)}, shortest first, are listed.`}
         </p>
       ) : null}
       <CombinationFilters

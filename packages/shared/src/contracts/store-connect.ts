@@ -48,6 +48,8 @@ export interface StoreConnectionItem {
   apps: StoreConnectionApp[];
   bucket?: string | null;
   replyAccess?: StoreReplyAccess;
+  metadataPublishEnabled?: boolean;
+  metadataPublishAccess?: StoreReplyAccess;
   credential?: StoreCredentialKind;
 }
 

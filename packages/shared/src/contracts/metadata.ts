@@ -45,6 +45,8 @@ export interface KeywordFieldSuggestion {
 export interface MetadataAuditResult {
   appId: string;
   store: Store;
+  metadataSource?: 'app-store-connect' | 'storefront-snapshot';
+  metadataSourceWarning?: string;
   fields: MetadataFieldAudit[];
   coverage: KeywordCoverageRow[];
   keywordFieldSuggestion: KeywordFieldSuggestion | null;

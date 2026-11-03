@@ -206,10 +206,10 @@ export class ChangesService {
     prev: DiffableChangeSnapshot | null,
     next: DiffableChangeSnapshot,
   ): Promise<DetectedChange[]> {
-    const changes = await this.withVerifiedIcons(
-      prev,
-      next,
-      detectChanges(prev, next),
+    const changes = await this.excludeOwnMetadataPublishes(
+      appId,
+      listing.localization ?? null,
+      await this.withVerifiedIcons(prev, next, detectChanges(prev, next)),
     );
     const country = storedMarket(listing.home, listing.market);
     const localization = listing.localization ?? null;
@@ -230,15 +230,57 @@ export class ChangesService {
     prev: DiffableChangeSnapshot | null,
     next: DiffableChangeSnapshot,
   ): Promise<DetectedChange[]> {
-    const changes = await this.withVerifiedIcons(
-      prev,
-      next,
-      detectChanges(prev, next),
+    const changes = await this.excludeOwnMetadataPublishes(
+      appId,
+      null,
+      await this.withVerifiedIcons(prev, next, detectChanges(prev, next)),
     );
     if (changes.length > 0) {
       await this.persist(appId, changes);
     }
     return changes;
+  }
+
+  private async excludeOwnMetadataPublishes(
+    appId: string,
+    localization: string | null,
+    changes: DetectedChange[],
+  ): Promise<DetectedChange[]> {
+    if (
+      !changes.some((change) =>
+        ['title', 'subtitle', 'whatsNew'].includes(change.field),
+      )
+    ) {
+      return changes;
+    }
+    const records = await this.prisma.metadataPublishRecord.findMany({
+      where: {
+        appId,
+        status: { in: ['success', 'partial'] },
+        ...(localization ? { locale: localization } : {}),
+        createdAt: { gte: new Date(Date.now() - 30 * DAY_MS) },
+      },
+      select: { fields: true },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    });
+    const fieldMap: Record<string, string> = {
+      title: 'name',
+      subtitle: 'subtitle',
+      whatsNew: 'whatsNew',
+    };
+    return changes.filter((change) => {
+      const field = fieldMap[change.field];
+      if (!field || change.after === null) return true;
+      return !records.some((record) => {
+        const value = (record.fields as Record<string, unknown>)[field];
+        if (typeof value !== 'string') return false;
+        return (
+          change.after ===
+          (change.field === 'whatsNew' ? truncateChangeText(value) : value)
+        );
+      });
+    });
   }
 
   private async withVerifiedIcons(

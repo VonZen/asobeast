@@ -102,7 +102,7 @@ export function ConnectAppStoreDialog({
       label={label}
       description={componentCopy(
         locale,
-        "Create a team key with the Admin role in Users and Access, Integrations, so AsoBeast can ask Apple for the reports. AsoBeast checks it with Apple, stores it encrypted and never shows it again.",
+        "Use an Admin team key from App Store Connect → Users and Access → Integrations. Admin is the recommended default for analytics reports, metadata updates and review replies. Metadata publishing stays disabled until you explicitly enable it in Settings; the key alone never publishes. AsoBeast encrypts the key and never displays it again.",
       )}
       error={error}
       pending={mutation.isPending}
@@ -169,8 +169,8 @@ export function ConnectAppStoreDialog({
         />
         <p className="text-xs text-muted-foreground">
           {locale === "zh-CN"
-            ? "粘贴密钥，或选择已下载的 .p8 文件。管理员角色的团队密钥支持报告读取与评论回复；「销售和报告」角色只能读取报告，「客户支持」角色只能回复评论。"
-            : "Paste the key or choose the .p8 file you downloaded. A team key with the Admin role covers reports and replies; Sales and Reports reads reports only, Customer Support replies only."}{" "}
+            ? "粘贴密钥，或选择已下载的 .p8 文件。默认使用具有管理员（Admin）权限的团队密钥，以支持报表读取、元数据更新与评论回复；元数据发布仍须在设置中单独开启，不会自动发布。"
+            : "Paste the key or choose the .p8 file you downloaded. Use an Admin team key for reports, metadata publishing and replies. Publishing metadata additionally requires explicit activation in Settings."}{" "}
           <a
             href={`${STORE_FUNNEL_GUIDE}#create-the-key`}
             target="_blank"

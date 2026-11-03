@@ -2,7 +2,13 @@
 
 import { Suspense } from "react";
 import Link from "next/link";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
+import { syncStore } from "@/lib/api";
+import { Button } from "@/components/ui/button";
 import type { Store, StoreFunnelReport } from "@asobeast/shared";
 import { useKeywordScope } from "@/components/app-detail/use-market";
 import { useAuth } from "@/components/auth/use-auth";
@@ -148,6 +154,19 @@ function NotConnected({ id, store }: { id: string; store: Store }) {
 
 function FunnelTiles({ report }: { report: StoreFunnelReport }) {
   const zh = useInterfaceLanguage() === "zh-CN";
+  const { isOwner } = useAuth();
+  const client = useQueryClient();
+  const { data: connections } = useSuspenseQuery(storeConnectionsOptions);
+  const connection = connections.connections.find(
+    (item) => item.store === report.store,
+  );
+  const sync = useMutation({
+    mutationFn: () => syncStore(report.store),
+    onSuccess: () =>
+      void client.invalidateQueries({
+        queryKey: storeConnectionsOptions.queryKey,
+      }),
+  });
   const headline = windowOf(report, FUNNEL_HEADLINE_DAYS);
   const week = windowOf(report, 7);
   const share = searchShare(report, headline);
@@ -196,6 +215,54 @@ function FunnelTiles({ report }: { report: StoreFunnelReport }) {
           />
         ))}
       </StatTileGroup>
+      {funnelState(report) === "waiting" ? (
+        <div
+          role="status"
+          className="space-y-2 rounded-lg border p-3 text-sm text-muted-foreground"
+        >
+          <p>
+            {report.store === "APP_STORE"
+              ? zh
+                ? "ASC 已连接，但尚未成功导入 Apple 的每日分析报表。Apple Analytics Reports 需要先创建报表请求，等待 Apple 生成每日数据，再下载并解析；仅连接密钥不会立即返回历史转化数据。"
+                : "ASC is connected, but no Apple daily analytics report has been imported. Analytics Reports requires report requests and Apple's daily processing before data can be downloaded."
+              : zh
+                ? "商店已连接，但尚未获取到统计报告。"
+                : "The store is connected, but no reports have been imported yet."}
+          </p>
+          {connection?.lastError ? (
+            <p className="text-warning">
+              {zh ? "最近同步异常：" : "Last sync issue: "}
+              {connection.lastError}
+            </p>
+          ) : (
+            <p>
+              {zh
+                ? "当前状态：等待首份可读取报告。"
+                : "Status: awaiting the first readable report."}
+            </p>
+          )}
+          {isOwner ? (
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={sync.isPending}
+              onClick={() => sync.mutate()}
+            >
+              {zh ? "重新同步官方报表" : "Sync official reports"}
+            </Button>
+          ) : null}
+          {sync.isSuccess ? (
+            <p>
+              {zh
+                ? "同步任务已排队，将在后台处理。"
+                : "Sync queued for background processing."}
+            </p>
+          ) : null}
+          {sync.error ? (
+            <p className="text-destructive">{String(sync.error)}</p>
+          ) : null}
+        </div>
+      ) : null}
       <p className="text-caption text-muted-foreground">
         {share === null
           ? null

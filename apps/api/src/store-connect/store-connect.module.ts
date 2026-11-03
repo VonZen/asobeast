@@ -1,9 +1,17 @@
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import type { Env } from '../config/env';
 import { QUEUES } from '../jobs/jobs.types';
 import { AscApiFactory } from './asc-api.factory';
 import { AscReportSync } from './asc-report-sync.service';
-import { ASC_TRANSPORT, undiciTransport } from './asc-transport';
+import {
+  ASC_TRANSPORT,
+  ASC_ORIGIN,
+  ASC_TIMEOUT_MS,
+  ASC_DOWNLOAD_TIMEOUT_MS,
+  createAscTransport,
+} from './asc-transport';
 import { GcsApiFactory } from './play/gcs-api.factory';
 import { GCS_TRANSPORT, undiciGcsTransport } from './play/gcs-transport';
 import { googleOAuthClientProvider } from './play/google-sign-in';
@@ -31,7 +39,17 @@ import { StoreReportsWorker } from './store-reports.worker';
   ],
   providers: [
     secretBoxProvider,
-    { provide: ASC_TRANSPORT, useValue: undiciTransport },
+    {
+      provide: ASC_TRANSPORT,
+      useFactory: (config: ConfigService<Env, true>) =>
+        createAscTransport({
+          origin: ASC_ORIGIN,
+          timeoutMs: ASC_TIMEOUT_MS,
+          downloadTimeoutMs: ASC_DOWNLOAD_TIMEOUT_MS,
+          proxyUrl: config.get('ASC_HTTP_PROXY_URL', { infer: true }),
+        }),
+      inject: [ConfigService],
+    },
     AscApiFactory,
     { provide: GCS_TRANSPORT, useValue: undiciGcsTransport },
     googleOAuthClientProvider,

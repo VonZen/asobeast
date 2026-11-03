@@ -3,6 +3,10 @@ import { interfaceCopy } from "./interface-copy";
 
 // Fixed UI strings only. Never run store keyword data, user input, or listing metadata through this map.
 const copy: Record<string, string> = {
+  Released: "上架日期",
+  Phrase: "词组",
+  "Found in": "出现字段",
+  "Not tracked": "未跟踪",
   "Sign in with Google": "使用 Google 登录",
   "Sign in with the Google account that owns your Play Console developer account. AsoBeast asks Google for read only access to Cloud Storage and for access to Play Console to post the review replies you send, checks the bucket and stores the sign in encrypted.":
     "请使用 Play Console 开发者账号所属的 Google 账号登录。AsoBeast 将申请 Cloud Storage 只读权限，以及在 Play Console 中发布你主动发送的评论回复所需的权限；验证存储桶后会加密保存授权信息。",

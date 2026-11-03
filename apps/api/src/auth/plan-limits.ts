@@ -21,9 +21,7 @@ export function selfHostedLimits(
     ...SELF_HOSTED_LIMITS,
     aiCallsPerMonth,
     competitorsPerApp:
-      competitorsPerApp === undefined
-        ? SELF_HOSTED_LIMITS.competitorsPerApp
-        : competitorsPerApp,
+      competitorsPerApp === undefined ? null : competitorsPerApp,
   };
 }
 

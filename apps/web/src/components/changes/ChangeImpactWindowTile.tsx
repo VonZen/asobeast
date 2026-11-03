@@ -43,6 +43,64 @@ function MeasuredFacts({ impact }: { impact: ChangeImpactWindow }) {
           />
         </dd>
       </Fact>
+      {impact.weightedValueChange !== undefined ? (
+        <Fact
+          label={
+            language === "zh-CN" ? "价值加权变化" : "Value-weighted change"
+          }
+        >
+          <dd className="font-mono tabular-nums">
+            {impact.weightedValueBefore?.toFixed(1) ?? "—"} →{" "}
+            {impact.weightedValueAfter?.toFixed(1) ?? "—"} (
+            {impact.weightedValueChange !== null &&
+            impact.weightedValueChange >= 0
+              ? "+"
+              : ""}
+            {impact.weightedValueChange?.toFixed(1) ?? "—"})
+          </dd>
+          <dd className="text-caption text-muted-foreground">
+            {language === "zh-CN"
+              ? "价值 = 热度 × (1 − (难度/100)²) × 契合系数；品牌词为 0。"
+              : "Value = popularity × (1 − (difficulty/100)²) × fit; brand terms have zero value."}
+          </dd>
+          {impact.valueRows?.length ? (
+            <div className="max-h-48 overflow-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="text-left text-muted-foreground">
+                    <th className="py-1">
+                      {language === "zh-CN" ? "关键词" : "Keyword"}
+                    </th>
+                    <th>{language === "zh-CN" ? "前→后" : "Before→After"}</th>
+                    <th>{language === "zh-CN" ? "价值" : "Value"}</th>
+                    <th>{language === "zh-CN" ? "收益" : "Gain"}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {impact.valueRows.map((row, index) => (
+                    <tr key={`${row.keyword}-${index}`} className="border-t">
+                      <td className="py-1">{row.keyword}</td>
+                      <td className="tabular-nums">
+                        {row.before ?? "—"} → {row.after ?? "—"}
+                      </td>
+                      <td
+                        className="tabular-nums"
+                        title={`Popularity: ${row.popularity ?? "?"}, difficulty: ${row.difficulty ?? "50 assumed"}, fit: ${row.relevance ?? "unknown"}`}
+                      >
+                        {row.value.toFixed(1)}
+                      </td>
+                      <td className="tabular-nums">
+                        {row.gain >= 0 ? "+" : ""}
+                        {row.gain.toFixed(2)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : null}
+        </Fact>
+      ) : null}
       <Fact label={language === "zh-CN" ? "关键词" : "Keywords"}>
         <dd>{movementLine(impact.movement, language)}</dd>
         {shift ? <dd>{shift}</dd> : null}

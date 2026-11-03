@@ -12,6 +12,7 @@ import { useQueryState, useQueryStates } from "nuqs";
 import { useStoredColumnVisibility } from "@/components/data-table/useStoredColumnVisibility";
 import { useUrlSorting } from "@/components/data-table/useUrlSorting";
 import { keywordCountriesOptions, keywordsOptions } from "@/lib/queries";
+import { getAppleAdsCampaignStats } from "@/lib/api";
 import {
   KEYWORD_DEFAULT_SORT,
   keywordFilterParsers,
@@ -60,6 +61,11 @@ export function KeywordsTable({
   );
   const today = utcDayOf(dataUpdatedAt);
   const { data: markets } = useQuery(keywordCountriesOptions(id));
+  const { data: appleAds } = useQuery({
+    queryKey: ["apple-ads-campaigns", id, country],
+    queryFn: () => getAppleAdsCampaignStats(id, country),
+    enabled: store === "APP_STORE",
+  });
   const multiMarket = (markets?.length ?? 0) > 1;
   const [selection, setSelection] = useState<RowSelectionState>({});
   const tableArea = useRef<HTMLDivElement>(null);
@@ -82,9 +88,10 @@ export function KeywordsTable({
         homeCountry,
         multiMarket,
         today,
+        appleAdsRows: appleAds?.configured ? appleAds.rows : null,
         onOpenSerp: (keywordId) => void setSerp(keywordId),
       }),
-    [id, store, homeCountry, multiMarket, setSerp, today],
+    [id, store, homeCountry, multiMarket, setSerp, today, appleAds],
   );
 
   const { sorting, onSortingChange } = useUrlSorting(

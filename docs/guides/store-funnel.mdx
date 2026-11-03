@@ -39,11 +39,14 @@ An app the connection does not cover and a competitor show no numbers. A member 
   For least privilege, a **Sales and Reports** key works too, but only once the report requests exist: after an Admin key has made them, or when another tool already asked Apple for the same reports. Connect the Admin key first and replace it later if you prefer. An App Store app imported after the switch needs the Admin key again, because its requests do not exist yet.
 </Note>
 
-| Role | Reports | Review replies |
-| --- | --- | --- |
-| Admin | Asks for and reads them | Posts and withdraws them |
-| Sales and Reports | Reads them once an Admin key asked for them | No |
-| Customer Support | No | Posts and withdraws them |
+| Role | Reports | Review replies | Metadata publishing |
+| --- | --- | --- | --- |
+| Admin | Asks for and reads them | Posts and withdraws them | Yes, when enabled |
+| App Manager | Depends on report access | Depends on review access | Yes, when enabled |
+| Sales and Reports | Reads them once an Admin key asked for them | No | No |
+| Customer Support | No | Posts and withdraws them | No |
+
+Metadata publishing is disabled by default in **Settings → App Store metadata publishing**. Every publication requires a fresh online diff and explicit confirmation. A successful key verification does not prove publish permission; an Apple refusal marks publishing as forbidden and explains that App Manager or Admin access is required.
 
 The connection card's **Review replies** line says whether the connected key may reply. It reads **Not tried yet** until the first post, then **Allowed**, or names the role to add when Apple refused one.
 

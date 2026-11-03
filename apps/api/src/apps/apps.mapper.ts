@@ -38,6 +38,7 @@ export function toSnapshotSummary(
     currency: currencyOf(snapshot.raw),
     version: snapshot.version,
     capturedAt: snapshot.capturedAt.toISOString(),
+    releasedAt: snapshot.releasedAt?.toISOString() ?? null,
     country: listingMarket(home, snapshot.country),
   };
 }
@@ -119,6 +120,8 @@ export function toCompetitorItem(
   return {
     id: app.id,
     store: app.store,
+    storeAppId: app.storeAppId,
+    country: app.country,
     name: app.name,
     iconUrl: app.iconUrl,
     delistedAt: delistedAt(app),

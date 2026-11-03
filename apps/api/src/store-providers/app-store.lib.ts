@@ -77,6 +77,14 @@ export interface AppStoreReviewResult {
 }
 
 export interface AppStoreLib {
+  primaryGenres?(
+    ids: readonly string[],
+    country: string,
+  ): Promise<Map<string, string>>;
+  releaseDates?(
+    ids: readonly string[],
+    country: string,
+  ): Promise<Map<string, Date>>;
   app(
     options: {
       id: number;
@@ -148,6 +156,7 @@ async function fetchText(
   url: string,
   userAgent: string,
   signal?: AbortSignal,
+  expectedAppId?: number,
 ): Promise<string> {
   const response = await egressFetch(url, {
     headers: { 'User-Agent': userAgent },
@@ -156,7 +165,30 @@ async function fetchText(
   if (!response.ok) {
     throw requestFailed(response.status);
   }
+  // Apple may return HTTP 200 after redirecting a product URL to the
+  // storefront's Today landing page. That is not a listing or a missing subtitle.
+  if (
+    expectedAppId !== undefined &&
+    response.url &&
+    !isAppProductPage(response.url, expectedAppId)
+  ) {
+    throw new Error(
+      'App Store redirected the product page to a non-product page',
+    );
+  }
   return response.text();
+}
+
+export function isAppProductPage(url: string, appId: number): boolean {
+  try {
+    const parsed = new URL(url);
+    return (
+      parsed.hostname === 'apps.apple.com' &&
+      new RegExp(`/id${appId}(?:/|$)`).test(parsed.pathname)
+    );
+  } catch {
+    return false;
+  }
 }
 
 const EDGE_CACHED_HOST = 'itunes.apple.com';
@@ -222,10 +254,97 @@ async function similarApps(
   return found;
 }
 
+export function parseAppStorePrimaryGenres(
+  value: unknown,
+): Map<string, string> {
+  const data = value as { results?: unknown } | null;
+  const result = new Map<string, string>();
+  if (!Array.isArray(data?.results)) return result;
+  for (const item of data.results) {
+    if (!item || typeof item !== 'object') continue;
+    const row = item as Record<string, unknown>;
+    const id = row.trackId;
+    const genre = row.primaryGenreId;
+    if (
+      typeof id !== 'number' ||
+      !Number.isSafeInteger(id) ||
+      typeof genre !== 'number' ||
+      !Number.isSafeInteger(genre) ||
+      genre <= 0
+    )
+      continue;
+    result.set(String(id), String(genre));
+  }
+  return result;
+}
+
+async function primaryGenres(
+  ids: readonly string[],
+  country: string,
+): Promise<Map<string, string>> {
+  const selected = [...new Set(ids)]
+    .filter((id) => /^\d+$/.test(id))
+    .slice(0, 50);
+  if (!selected.length || !/^[a-z]{2}$/.test(country)) return new Map();
+  const url = new URL('https://itunes.apple.com/lookup');
+  url.searchParams.set('id', selected.join(','));
+  url.searchParams.set('country', country);
+  url.searchParams.set('entity', 'software');
+  const body = await fetchText(
+    url.toString(),
+    PAGE_USER_AGENT,
+    AbortSignal.timeout(15_000),
+  );
+  return parseAppStorePrimaryGenres(JSON.parse(body) as unknown);
+}
+
+export function parseAppStoreReleaseDates(value: unknown): Map<string, Date> {
+  const data = value as { results?: unknown } | null;
+  const result = new Map<string, Date>();
+  if (!Array.isArray(data?.results)) return result;
+  for (const item of data.results) {
+    if (!item || typeof item !== 'object') continue;
+    const row = item as Record<string, unknown>;
+    const id = row.trackId;
+    const date = row.releaseDate;
+    if (
+      typeof id !== 'number' ||
+      !Number.isSafeInteger(id) ||
+      typeof date !== 'string'
+    )
+      continue;
+    const parsed = new Date(date);
+    if (!Number.isNaN(parsed.getTime())) result.set(String(id), parsed);
+  }
+  return result;
+}
+
+async function releaseDates(
+  ids: readonly string[],
+  country: string,
+): Promise<Map<string, Date>> {
+  const selected = [...new Set(ids)]
+    .filter((id) => /^\d+$/.test(id))
+    .slice(0, 50);
+  if (!selected.length || !/^[a-z]{2}$/.test(country)) return new Map();
+  const url = new URL('https://itunes.apple.com/lookup');
+  url.searchParams.set('id', selected.join(','));
+  url.searchParams.set('country', country);
+  url.searchParams.set('entity', 'software');
+  const body = await fetchText(
+    url.toString(),
+    PAGE_USER_AGENT,
+    AbortSignal.timeout(15_000),
+  );
+  return parseAppStoreReleaseDates(JSON.parse(body) as unknown);
+}
+
 export const appStoreLib: AppStoreLib = {
+  primaryGenres,
+  releaseDates,
   app: (options) => scrape(options, appStore.app),
   page: ({ id, country, language, signal }) =>
-    fetchText(pageUrl(id, country, language), PAGE_USER_AGENT, signal),
+    fetchText(pageUrl(id, country, language), PAGE_USER_AGENT, signal, id),
   search: (options) =>
     scrape(options, appStore.search) as Promise<AppStoreSearchResult[]>,
   suggest: (options) => scrape(options, appStore.suggest),

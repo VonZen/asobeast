@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/lib/localized-toast";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,7 @@ export function TrackCombinations({
   homeCountry: string;
 }) {
   const queryClient = useQueryClient();
+  const zh = useInterfaceLanguage() === "zh-CN";
   const [pending, setPending] = useState<string[] | null>(null);
   const selected = phrasesToTrack(
     table.getFilteredSelectedRowModel().rows.map((row) => row.original),
@@ -71,14 +73,14 @@ export function TrackCombinations({
         disabled={selected.length === 0 || track.isPending}
         onClick={() => setPending(selected)}
       >
-        Track selected ({selected.length})
+        {zh ? "跟踪选中项" : "Track selected"} ({selected.length})
       </Button>
       <Button
         size="sm"
         disabled={shown.length === 0 || track.isPending}
         onClick={() => setPending(shown)}
       >
-        Track all shown ({shown.length})
+        {zh ? "跟踪当前显示项" : "Track all shown"} ({shown.length})
       </Button>
       <TrackCombinationsDialog
         count={pending?.length ?? 0}

@@ -94,6 +94,26 @@ export class AppStoreProvider implements StoreProvider {
     return results.map(({ term, priority }) => ({ term, priority }));
   }
 
+  async releaseDates(
+    storeAppIds: readonly string[],
+    country: string,
+  ): Promise<Map<string, Date>> {
+    if (!this.lib.releaseDates) return new Map();
+    return this.withRetry('releaseDates', () =>
+      this.lib.releaseDates!(storeAppIds, country),
+    );
+  }
+
+  async primaryGenres(
+    storeAppIds: readonly string[],
+    country: string,
+  ): Promise<Map<string, string>> {
+    if (!this.lib.primaryGenres) return new Map();
+    return this.withRetry('primaryGenres', () =>
+      this.lib.primaryGenres!(storeAppIds, country),
+    );
+  }
+
   async similar(storeAppId: string, country: string): Promise<SearchItem[]> {
     const results = await this.withRetry('similar', (deadline) =>
       this.lib.similar({ id: Number(storeAppId), country, ...deadline }),

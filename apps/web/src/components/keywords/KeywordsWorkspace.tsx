@@ -12,6 +12,8 @@ import { ImportKeywordsDialog } from "./ImportKeywordsDialog";
 import { KeywordsToolbar } from "./KeywordsToolbar";
 import { MarketSearchReadsCard } from "./MarketSearchReadsCard";
 import { KeywordsTable } from "./KeywordsTable";
+import { AppleAdsCampaignCard } from "./AppleAdsCampaignCard";
+import { KeywordRelevanceCard } from "./KeywordRelevanceCard";
 import { KeywordsTableSkeleton } from "./skeletons";
 import { KeywordCombinations } from "./KeywordCombinations";
 import { SuggestionsPanel } from "./SuggestionsPanel";
@@ -76,6 +78,9 @@ export function KeywordsWorkspace({
             : "Apple App Store and Google Play popularity and volume scores use different public signals and are not directly comparable."}
         </AlertDescription>
       </Alert>
+      {store === "APP_STORE" ? (
+        <AppleAdsCampaignCard appId={id} country={market} />
+      ) : null}
       <Suspense fallback={<KeywordsTableSkeleton />}>
         <KeywordsTable
           id={id}
@@ -84,6 +89,7 @@ export function KeywordsWorkspace({
           homeCountry={homeCountry}
         />
       </Suspense>
+      <KeywordRelevanceCard appId={id} country={market} />
       <SuggestionsPanel id={id} country={market} store={store} />
       <KeywordCombinations
         id={id}

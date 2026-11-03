@@ -23,6 +23,7 @@ import {
 export const AI_FEATURES = [
   'creativeAnalysis',
   'metadataDrafts',
+  'keywordRelevance',
   'actionExplanation',
   'reviewReply',
   'reviewTranslation',

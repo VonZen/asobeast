@@ -55,6 +55,9 @@ model Workspace {
   snapshotScreenshots SnapshotScreenshot[]
   keywordFields KeywordField[]
   appLocalizations AppLocalization[]
+  metadataDrafts MetadataPublishDraft[]
+  metadataPublishes MetadataPublishRecord[]
+  appleAdsKeywordStats AppleAdsKeywordStat[]
   appSetups   AppSetup[]
   reviewReplies ReviewReply[]
   chartFollows ChartFollow[]
@@ -216,6 +219,9 @@ model App {
   tracked      TrackedKeyword[]
   keywordFields KeywordField[]
   appLocalizations AppLocalization[]
+  metadataDrafts MetadataPublishDraft[]
+  metadataPublishes MetadataPublishRecord[]
+  appleAdsKeywordStats AppleAdsKeywordStat[]
   rankings     KeywordRanking[]
   categoryRanks CategoryRank[]
   changeEvents ChangeEvent[]
@@ -352,6 +358,59 @@ model AppLocalization {
 
   @@id([appId, localization])
   @@index([workspaceId])
+}
+
+model MetadataPublishDraft {
+  appId       String
+  workspaceId String
+  app         App       @relation(fields: [appId, workspaceId], references: [id, workspaceId], onDelete: Cascade)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  locale      String
+  fields      Json
+  baselineHash String
+  updatedAt   DateTime  @updatedAt
+
+  @@id([appId, locale])
+  @@index([workspaceId])
+}
+
+model AppleAdsKeywordStat {
+  workspaceId  String
+  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  appId        String
+  app          App       @relation(fields: [appId, workspaceId], references: [id, workspaceId], onDelete: Cascade)
+  campaignId   String
+  keywordId    String
+  keyword      String
+  country      String
+  currency     String
+  impressions  Int
+  taps         Int
+  installs     Int
+  spend        Decimal @db.Decimal(18, 4)
+  rangeStart   DateTime @db.Date
+  rangeEnd     DateTime @db.Date
+  syncedAt     DateTime @default(now())
+
+  @@id([appId, campaignId, keywordId, country])
+  @@index([workspaceId, country])
+}
+
+model MetadataPublishRecord {
+  id          String    @id @default(cuid())
+  appId       String
+  workspaceId String
+  app         App       @relation(fields: [appId, workspaceId], references: [id, workspaceId], onDelete: Cascade)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  locale      String
+  fields      Json
+  beforeHash  String
+  afterHash   String?
+  status      String
+  createdAt   DateTime  @default(now())
+
+  @@index([workspaceId, createdAt])
+  @@index([appId, locale, createdAt])
 }
 
 model AppSetup {
@@ -844,6 +903,8 @@ model StoreConnection {
   status               String               @default("active")
   reportAccess         String               @default("unknown")
   replyAccess          String               @default("unknown")
+  metadataPublishEnabled Boolean            @default(false)
+  metadataPublishAccess String               @default("unknown")
   createdByUserId      String?
   createdBy            User?                @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
   createdAt            DateTime             @default(now())

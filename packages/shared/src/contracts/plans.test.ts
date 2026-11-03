@@ -228,10 +228,8 @@ describe('plan limits', () => {
     expect(QUOTA_RESOURCES).toContain('chartFollows');
   });
 
-  it('keeps the competitor cap on a self hosted instance', () => {
-    expect(SELF_HOSTED_LIMITS.competitorsPerApp).toBe(
-      PLAN_LIMITS.indie.competitorsPerApp,
-    );
+  it('does not apply a competitor cap to self-hosted workspaces by default', () => {
+    expect(SELF_HOSTED_LIMITS.competitorsPerApp).toBeNull();
   });
 });
 

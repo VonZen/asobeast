@@ -15,6 +15,7 @@ import type { AscAnalyticsApi } from './asc-analytics-api';
 import { AscApiFactory } from './asc-api.factory';
 import { AscRejectedKeyError } from './asc-errors';
 import type { AscReviewsApi } from './asc-reviews-api';
+import type { AscMetadataApi } from './asc-metadata-api';
 import {
   RATE_LIMIT_RETRY_SECONDS,
   refusalOf,
@@ -96,6 +97,10 @@ export class AppStoreKeys implements StoreKeys<
 
   reviews(credentials: AscCredentials): AscReviewsApi {
     return this.factory.reviews(credentials);
+  }
+
+  metadata(credentials: AscCredentials): AscMetadataApi {
+    return this.factory.metadata(credentials);
   }
 
   async refusal(credentials: AscCredentials): Promise<string | null> {

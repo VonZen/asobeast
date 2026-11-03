@@ -1,6 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { componentCopy } from "@/lib/component-copy";
 import type { Row, Table } from "@tanstack/react-table";
 import type { inferParserType, SetValues } from "nuqs";
 import { FacetFilter } from "@/components/data-table/FacetFilter";
@@ -55,28 +57,30 @@ export function CombinationFilters({
   setParams: SetCombinationParams;
   actions: ReactNode;
 }) {
-  const statuses = params.status.map(
-    (value) => COMBINATION_STATUS_LABELS[value],
+  const language = useInterfaceLanguage();
+  const zh = language === "zh-CN";
+  const statuses = params.status.map((value) =>
+    componentCopy(language, COMBINATION_STATUS_LABELS[value]),
   );
   const chips = [
     params.q
       ? {
           key: "q",
-          label: `Search: ${params.q}`,
+          label: `${zh ? "搜索" : "Search"}: ${params.q}`,
           onRemove: () => void setParams({ q: null }),
         }
       : null,
     params.words.length > 0
       ? {
           key: "words",
-          label: `Words: ${params.words.join(", ")}`,
+          label: `${zh ? "词语" : "Words"}: ${params.words.join(", ")}`,
           onRemove: () => void setParams({ words: null }),
         }
       : null,
     statuses.length > 0
       ? {
           key: "status",
-          label: `Status: ${statuses.join(", ")}`,
+          label: `${zh ? "状态" : "Status"}: ${statuses.join(", ")}`,
           onRemove: () => void setParams({ status: null }),
         }
       : null,
@@ -92,7 +96,10 @@ export function CombinationFilters({
         />
         <FacetFilter
           title="Words"
-          options={WORD_OPTIONS}
+          options={WORD_OPTIONS.map((option) => ({
+            ...option,
+            label: zh ? `${option.value} 词` : option.label,
+          }))}
           selected={params.words}
           counts={facetCounts(table, "words", (row) =>
             String(row.original.wordCount),
@@ -101,7 +108,10 @@ export function CombinationFilters({
         />
         <FacetFilter
           title="Status"
-          options={STATUS_OPTIONS}
+          options={STATUS_OPTIONS.map((option) => ({
+            ...option,
+            label: componentCopy(language, option.label),
+          }))}
           selected={params.status}
           counts={facetCounts(table, "status", (row) => row.original.status)}
           onChange={(status) => void setParams({ status })}

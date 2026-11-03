@@ -1,4 +1,7 @@
 import { BullModule } from '@nestjs/bullmq';
+import { AiModule } from '../ai/ai.module';
+import { KeywordRelevanceController } from './keyword-relevance.controller';
+import { KeywordRelevanceService } from './keyword-relevance.service';
 import { Module } from '@nestjs/common';
 import { FLOW_PRODUCERS, QUEUES } from '../jobs/jobs.types';
 import { StoreProvidersModule } from '../store-providers/store-providers.module';
@@ -25,15 +28,21 @@ import { TrackedKeywordAccess } from './tracked-keyword.access';
 @Module({
   imports: [
     StoreProvidersModule,
+    AiModule,
     BullModule.registerQueue(
       { name: QUEUES.APP_STORE },
       { name: QUEUES.GPLAY },
     ),
     BullModule.registerFlowProducer({ name: FLOW_PRODUCERS.FIRST_RUN }),
   ],
-  controllers: [KeywordsController, LocalizationsController],
+  controllers: [
+    KeywordsController,
+    LocalizationsController,
+    KeywordRelevanceController,
+  ],
   providers: [
     AppLocalizationsService,
+    KeywordRelevanceService,
     CompetitorSearchPlanner,
     FirstPositionChecks,
     KeywordBreakdownService,

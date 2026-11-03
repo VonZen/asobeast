@@ -1,6 +1,8 @@
 "use client";
 
 import { LocalizedText } from "@/components/layout/LocalizedText";
+import { useInterfaceLanguage } from "@/components/layout/InterfaceLanguageProvider";
+import { componentCopy } from "@/lib/component-copy";
 
 import { createColumnHelper } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
@@ -41,14 +43,16 @@ function fieldLabels(fields: readonly CombinationField[]): string {
 
 function StatusCell({ combination }: { combination: KeywordCombination }) {
   const { phrase, status, trackedAs } = combination;
+  const language = useInterfaceLanguage();
   return (
     <span className="flex items-center gap-2">
       <Badge variant={STATUS_VARIANT[status]}>
-        {COMBINATION_STATUS_LABELS[status]}
+        {componentCopy(language, COMBINATION_STATUS_LABELS[status])}
       </Badge>
       {trackedAs !== null && trackedAs !== phrase ? (
         <span className="text-caption text-muted-foreground">
-          as {trackedAs}
+          {language === "zh-CN" ? "对应：" : "as "}
+          {trackedAs}
         </span>
       ) : null}
     </span>
@@ -84,12 +88,12 @@ export const COMBINATION_COLUMNS = columnHelper.columns([
   }),
   columnHelper.accessor("phrase", {
     id: "phrase",
-    header: "Phrase",
+    header: () => <LocalizedText en="Phrase" />,
     cell: ({ row }) => row.original.phrase,
   }),
   columnHelper.display({
     id: "fields",
-    header: "Found in",
+    header: () => <LocalizedText en="Found in" />,
     cell: ({ row }) => (
       <span className="text-muted-foreground">
         {fieldLabels(row.original.fields)}
@@ -98,7 +102,7 @@ export const COMBINATION_COLUMNS = columnHelper.columns([
   }),
   columnHelper.accessor("status", {
     id: "status",
-    header: "Status",
+    header: () => <LocalizedText en="Status" />,
     filterFn: (row, id, selected: CombinationStatus[]) =>
       oneOf(row.getValue<CombinationStatus>(id), selected),
     cell: ({ row }) => <StatusCell combination={row.original} />,

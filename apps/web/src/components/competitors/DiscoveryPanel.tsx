@@ -52,17 +52,24 @@ function DiscoveryTable({
   id,
   days,
   storeName,
+  store,
+  country,
 }: {
   id: string;
   days: number;
   storeName: string;
+  store: "APP_STORE" | "GOOGLE_PLAY";
+  country: string;
 }) {
   const language = useInterfaceLanguage();
   const { data } = useSuspenseQuery(discoveryOptions(id, days));
   const [params, setParams] = useQueryStates(DISCOVERY_PARAMS, {
     urlKeys: DISCOVERY_URL_KEYS,
   });
-  const columns = useMemo(() => discoveryColumns(id), [id]);
+  const columns = useMemo(
+    () => discoveryColumns(id, store, country),
+    [id, store, country],
+  );
   const [visibility, setVisibility] = useStoredColumnVisibility(
     "discovery",
     columns,
@@ -101,13 +108,13 @@ function DiscoveryTable({
       <EmptyState
         title={
           language === "zh-CN"
-            ? `最近 ${days} 天没有发现结果`
-            : `Nothing discovered in the last ${days} days`
+            ? `最近 ${days} 天没有发现同分类竞品`
+            : `No same-category competitors found in ${days} days`
         }
         body={
           language === "zh-CN"
-            ? "每日检查积累后，经常出现在关键词搜索结果中但尚未追踪的 App 会显示在这里。可扩大时间范围查看更早记录。"
-            : "As daily checks accumulate, apps that keep appearing in your keyword results but you do not track surface here. Widen the window to look further back."
+            ? "仅显示与当前 App 主分类相同、尚未追踪且出现在关键词搜索结果中的 App。无法确认分类的候选不会显示；可扩大时间范围查看更早记录。"
+            : "Only untracked apps with a verified matching primary category appear here. Unknown-category candidates are excluded; widen the window to inspect earlier results."
         }
       />
     );
@@ -211,7 +218,13 @@ export function DiscoveryPanel({ id }: { id: string }) {
       }
     >
       <Suspense fallback={<DiscoveryPanelSkeleton />}>
-        <DiscoveryTable id={id} days={days} storeName={storeName} />
+        <DiscoveryTable
+          id={id}
+          days={days}
+          storeName={storeName}
+          store={detail.store}
+          country={detail.country}
+        />
       </Suspense>
     </CollapsibleCard>
   );

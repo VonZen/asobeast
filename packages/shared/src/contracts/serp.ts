@@ -19,6 +19,7 @@ export interface SerpSnapshot {
 
 export interface CompetitorDiscoveryItem {
   storeAppId: string;
+  releasedAt?: string | null;
   title: string;
   developer: string | null;
   iconUrl?: string | null;

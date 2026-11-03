@@ -105,13 +105,21 @@ A listing whose indexed fields cover only aspirational keywords will rank for no
 
 With `OPENAI_API_KEY` set, a drafts card proposes title, subtitle and keyword field values on the App Store, or title, short description and description values on Google Play, grounded in your tracked keywords, your coverage gaps and competitor titles.
 
-Every draft is linted again on the server and clamped to the field limit, so a draft can never exceed a store limit. asobeast has no write path to the stores: a draft ends at a copy button.
+Every draft is linted again on the server and clamped to the field limit. Google Play drafts end at a copy button. For an owned App Store app, an explicitly enabled App Store Connect connection can publish a draft after a fresh store diff, field-by-field review and confirmation. Publishing is **off by default** in Settings and never submits an app for review.
 
 With no key the card is hidden entirely. See [Enable the optional AI features](/guides/ai-features).
 
 On an App Store app the drafts card has a **Localization** menu. **Primary listing** drafts the listing asobeast reads, as before. An additional language of one of your storefronts drafts that localization instead: its title, subtitle and keyword field, written in that language from the meaning of your tracked keywords rather than copied from them, preferring words your current listing does not use. A draft for a localization is told the keyword field you saved for it. The keyword field is held to its 100 character limit, and a Chinese, Japanese or Korean character counts once. See [How do you read and write the keyword field?](/concepts/stores#how-do-you-read-and-write-the-keyword-field)
 
 Each localization item has a **Draft with AI** button that picks it in the menu and moves the focus there. To fill a localization's keyword field with keywords in another language, a common tactic for Spanish (Mexico) in the United States, say so in the instructions. Which storefronts read which localization is explained in [Which localizations does a storefront read?](/concepts/countries#which-localizations-does-a-storefront-read)
+
+## Publish an App Store draft
+
+To enable publishing, open **Settings → App Store metadata publishing**. Only the workspace owner can turn on the switch, and the connection must use an App Store Connect team key with the **App Manager or Admin** role. Publishing uses the existing encrypted key and never returns it to the browser.
+
+Select a specific shipped localization in the AI drafts panel, generate a draft, and choose **Preview store diff**. The server reads the editable App Store version and stores its metadata checksum with the draft. The UI shows the existing and proposed value for each changed field. Only after reviewing the fields can you confirm **Apply to App Store Connect**.
+
+The server rejects an invalid draft, an empty diff or a change in the stored online baseline. Write requests are not blindly retried; after a write, the server reads Apple's state and reports success, partial success or an unknown result when verification is unavailable. If Apple refuses the update, the connection marks publishing as forbidden and explains that App Manager or Admin access is required. No App Store submission action is performed.
 
 ## Troubleshooting
 

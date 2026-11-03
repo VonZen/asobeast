@@ -1,6 +1,8 @@
 "use client";
 
 import { LocalizedText } from "@/components/layout/LocalizedText";
+import { normalizeText } from "@asobeast/shared";
+import type { AppleAdsKeywordStat } from "@/lib/api";
 
 import type { FilterFn } from "@tanstack/react-table";
 import { ListOrdered } from "lucide-react";
@@ -84,6 +86,7 @@ export function keywordColumns({
   multiMarket,
   today,
   onOpenSerp,
+  appleAdsRows,
 }: {
   appId: string;
   store: Store;
@@ -91,6 +94,7 @@ export function keywordColumns({
   multiMarket: boolean;
   today: string;
   onOpenSerp: (keywordId: string) => void;
+  appleAdsRows?: AppleAdsKeywordStat[] | null;
 }) {
   return columnHelper.columns([
     ...identityColumns(),
@@ -98,12 +102,63 @@ export function keywordColumns({
     positionColumn(today, { appId, store, homeCountry, multiMarket }),
     ...scoreColumns(),
     ...(store === "GOOGLE_PLAY" ? [acquisitionsColumn()] : []),
+    ...(store === "APP_STORE" && appleAdsRows
+      ? [appleAdsColumn(appleAdsRows)]
+      : []),
     deltaColumn(),
     volatilityColumn(),
     competitorsColumn(),
     actionsColumn({ appId, onOpenSerp }),
     ...filterColumns(),
   ]);
+}
+
+function appleAdsColumn(rows: AppleAdsKeywordStat[]) {
+  const indexed = new Map<
+    string,
+    {
+      impressions: number;
+      taps: number;
+      installs: number;
+      spend: number;
+      currencies: Set<string>;
+    }
+  >();
+  for (const row of rows) {
+    const key = normalizeText(row.keyword);
+    const value = indexed.get(key) ?? {
+      impressions: 0,
+      taps: 0,
+      installs: 0,
+      spend: 0,
+      currencies: new Set<string>(),
+    };
+    value.impressions += row.impressions;
+    value.taps += row.taps;
+    value.installs += row.installs;
+    value.spend += row.spend;
+    value.currencies.add(row.currency);
+    indexed.set(key, value);
+  }
+  return columnHelper.display({
+    id: "appleAds",
+    header: "Apple Ads",
+    enableSorting: false,
+    cell: ({ row }) => {
+      const value = indexed.get(normalizeText(row.original.text));
+      if (!value) return <span className="text-muted-foreground">—</span>;
+      const currencies = [...value.currencies].filter(Boolean);
+      return (
+        <span
+          className="tabular-nums"
+          title={`Impressions: ${value.impressions}, taps: ${value.taps}, installs: ${value.installs}, spend: ${value.spend.toFixed(2)} ${currencies.length === 1 ? currencies[0] : "mixed currencies"}`}
+        >
+          {value.installs.toLocaleString()}{" "}
+          <span className="text-xs text-muted-foreground">installs</span>
+        </span>
+      );
+    },
+  });
 }
 
 function identityColumns() {

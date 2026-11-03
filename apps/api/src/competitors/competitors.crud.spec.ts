@@ -13,6 +13,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { StoreProviderRegistry } from '../store-providers/store-provider.registry';
 import { ProxyEgress } from '../store-providers/egress/proxy-egress.service';
 import { CompetitorsService } from './competitors.service';
+import type { CompetitorCategoryService } from './competitor-category.service';
 import { ScreenshotQueue } from '../screenshots/screenshot-queue';
 import { ScreenshotRecorder } from '../screenshots/screenshot-recorder';
 
@@ -22,7 +23,7 @@ const passThroughEgress = {
 } as unknown as ProxyEgress;
 
 describe('CompetitorsService.add', () => {
-  const buildDeps = (competitorCount: number) => {
+  const buildDeps = (competitorCount: number, competitorLimit?: number) => {
     const getApp = jest.fn().mockResolvedValue({
       title: 'Rival',
       iconUrl: 'https://icon',
@@ -133,9 +134,10 @@ describe('CompetitorsService.add', () => {
           key === 'BILLING_ENABLED'
             ? false
             : key === 'SELF_HOSTED_COMPETITORS_PER_APP'
-              ? undefined
+              ? competitorLimit
               : null,
       } as unknown as ConfigService<Env, true>),
+      { filter: jest.fn() } as unknown as CompetitorCategoryService,
     );
     return { service, prisma, upsert, keywords, getApp, workspace };
   };
@@ -179,8 +181,8 @@ describe('CompetitorsService.add', () => {
     expect(getApp).not.toHaveBeenCalled();
   });
 
-  it('rejects once the competitor cap is reached', async () => {
-    const { service, workspace } = buildDeps(10);
+  it('rejects once an explicitly configured competitor cap is reached', async () => {
+    const { service, workspace } = buildDeps(10, 10);
 
     await expect(
       workspace.run(DEFAULT_WORKSPACE_ID, () =>

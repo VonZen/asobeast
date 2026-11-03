@@ -16,7 +16,7 @@ describe('selfHostedLimits', () => {
     expect(selfHostedLimits(null)).toEqual(SELF_HOSTED_LIMITS);
   });
 
-  it('keeps the shipped competitor cap when none is configured', () => {
+  it('keeps competitors unlimited when no cap is configured', () => {
     expect(selfHostedLimits(null).competitorsPerApp).toBe(
       SELF_HOSTED_LIMITS.competitorsPerApp,
     );

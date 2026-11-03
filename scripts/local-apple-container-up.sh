@@ -67,11 +67,16 @@ if [[ -z "$database_url" ]]; then
 fi
 
 # Recreate only stateless services. Database and Redis volumes remain untouched.
+asc_proxy_args=()
+if [[ -n "${ASC_HTTP_PROXY_URL:-}" ]]; then
+  asc_proxy_args+=(-e "ASC_HTTP_PROXY_URL=$ASC_HTTP_PROXY_URL")
+fi
 "$cli" stop asobeast-api >/dev/null 2>&1 || true
 "$cli" delete asobeast-api >/dev/null 2>&1 || true
 "$cli" run -d --name asobeast-api --network asobeast -c 4 -m 1024M \
   --env-file "$deploy/api.env" --env-file "$deploy/.env" \
   -e "DATABASE_URL=$database_url" -e "REDIS_HOST=$redis_ip" \
+  "${asc_proxy_args[@]}" \
   "$api_image"
 unset database_url
 

@@ -122,6 +122,55 @@ export class GooglePlayProvider implements StoreProvider {
     return results.map((suggestion) => ({ term: suggestion }));
   }
 
+  async releaseDates(
+    storeAppIds: readonly string[],
+    country: string,
+  ): Promise<Map<string, Date>> {
+    const result = new Map<string, Date>();
+    const ids = [...new Set(storeAppIds)].slice(0, 30);
+    const lang = googlePlayLanguage(country);
+    for (let offset = 0; offset < ids.length; offset += 4) {
+      const group = await Promise.allSettled(
+        ids
+          .slice(offset, offset + 4)
+          .map((appId) =>
+            this.lib.app({ appId, country, lang, ...storeDeadline() }),
+          ),
+      );
+      group.forEach((item, index) => {
+        if (item.status !== 'fulfilled' || !item.value.released) return;
+        const date = new Date(item.value.released);
+        if (!Number.isNaN(date.getTime()))
+          result.set(ids[offset + index], date);
+      });
+    }
+    return result;
+  }
+
+  async primaryGenres(
+    storeAppIds: readonly string[],
+    country: string,
+  ): Promise<Map<string, string>> {
+    const result = new Map<string, string>();
+    const unique = [...new Set(storeAppIds)].slice(0, 50);
+    const lang = googlePlayLanguage(country);
+    for (let offset = 0; offset < unique.length; offset += 4) {
+      const group = await Promise.allSettled(
+        unique
+          .slice(offset, offset + 4)
+          .map((appId) =>
+            this.lib.app({ appId, country, lang, ...storeDeadline() }),
+          ),
+      );
+      group.forEach((item, index) => {
+        if (item.status === 'fulfilled' && item.value.genreId) {
+          result.set(unique[offset + index], item.value.genreId);
+        }
+      });
+    }
+    return result;
+  }
+
   async similar(storeAppId: string, country: string): Promise<SearchItem[]> {
     const lang = googlePlayLanguage(country);
     const results = await this.call('similar', (deadline) =>

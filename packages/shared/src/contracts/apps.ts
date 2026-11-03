@@ -12,6 +12,7 @@ export interface AppSnapshotSummary {
   currency?: string | null;
   version: string | null;
   capturedAt: string;
+  releasedAt?: string | null;
   country?: string;
 }
 
@@ -28,6 +29,8 @@ export interface ListingMarket {
 export interface CompetitorItem {
   id: string;
   store: Store;
+  storeAppId?: string;
+  country?: string;
   name: string | null;
   iconUrl: string | null;
   latestSnapshot: AppSnapshotSummary | null;

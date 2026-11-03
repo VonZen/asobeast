@@ -74,6 +74,16 @@ export interface StoreProvider {
   search(term: string, country: string, num: number): Promise<SearchItem[]>;
   suggest(term: string, country: string): Promise<SuggestItem[]>;
   similar(storeAppId: string, country: string): Promise<SearchItem[]>;
+  /** Store-native primary categories for candidate comparison; missing IDs are unknown. */
+  primaryGenres?(
+    storeAppIds: readonly string[],
+    country: string,
+  ): Promise<Map<string, string>>;
+  /** Publicly reported first release dates, absent if the store does not provide one. */
+  releaseDates?(
+    storeAppIds: readonly string[],
+    country: string,
+  ): Promise<Map<string, Date>>;
   topCharts(
     collection: CategoryCollection,
     genre: string,

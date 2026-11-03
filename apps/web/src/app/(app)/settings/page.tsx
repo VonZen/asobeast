@@ -27,6 +27,7 @@ import {
 import { viewerIsOperator } from "@/lib/viewer";
 import { getInterfaceLanguage } from "@/lib/interface-language-server";
 import { LanguageSetting } from "@/components/settings/LanguageSetting";
+import { MetadataPublishSetting } from "@/components/settings/MetadataPublishSetting";
 
 export default async function SettingsPage({
   searchParams,
@@ -64,6 +65,21 @@ export default async function SettingsPage({
 
         <LanguageSetting preference={preference} />
         <PlanSection />
+        <SettingsSection
+          id="metadata-publishing"
+          title={
+            locale === "zh-CN"
+              ? "App Store 元数据发布"
+              : "App Store metadata publishing"
+          }
+          description={
+            locale === "zh-CN"
+              ? "控制工作区对 App Store Connect 的元数据写入。"
+              : "Control metadata writes to App Store Connect for this workspace."
+          }
+        >
+          <MetadataPublishSetting />
+        </SettingsSection>
 
         {operator ? (
           <SettingsSection

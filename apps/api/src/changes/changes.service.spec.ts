@@ -31,6 +31,7 @@ describe('ChangesService', () => {
   let service: ChangesService;
   const createMany = jest.fn();
   const changeEventFindFirst = jest.fn();
+  const publishRecordFindMany = jest.fn();
   const findMany = jest.fn<Promise<unknown>, [Record<string, unknown>]>();
   const findFirst = jest.fn();
   const findUnique = jest.fn();
@@ -45,6 +46,7 @@ describe('ChangesService', () => {
   beforeEach(async () => {
     createMany.mockReset();
     changeEventFindFirst.mockReset().mockResolvedValue(null);
+    publishRecordFindMany.mockReset().mockResolvedValue([]);
     findMany.mockReset();
     findFirst.mockReset();
     findUnique.mockReset();
@@ -64,6 +66,7 @@ describe('ChangesService', () => {
               findMany,
               findFirst: changeEventFindFirst,
             },
+            metadataPublishRecord: { findMany: publishRecordFindMany },
             appSnapshot: { findFirst: snapshotFindFirst },
             app: { findFirst, findUnique, findMany: appFindMany },
           },

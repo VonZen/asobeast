@@ -101,8 +101,11 @@ describe('ChangeImpactService', () => {
     expect(trackedFindMany).toHaveBeenCalledWith({
       where: { appId: 'app_1', active: true, keyword: { country: 'gb' } },
       select: {
+        relevance: true,
+        tags: true,
         keyword: {
           select: {
+            text: true,
             metrics: {
               where: { date: { lte: plan.metricsUntil } },
               orderBy: { date: 'desc' },

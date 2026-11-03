@@ -24,6 +24,7 @@ import { KeywordsService } from '../keywords/keywords.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { toDifficulty100 } from '../scoring/formulas';
 import { aggregateDiscovery } from './discovery';
+import { CompetitorCategoryService } from './competitor-category.service';
 import { DiscoveryQueryDto } from './dto/discovery-query.dto';
 import { LATEST_HOME_LISTING } from '../apps/listing';
 
@@ -53,6 +54,7 @@ export class CompetitorsService {
     private readonly keywords: KeywordsService,
     private readonly capture: AppCaptureService,
     private readonly quota: QuotaService,
+    private readonly categories: CompetitorCategoryService,
   ) {}
 
   async add(
@@ -164,6 +166,8 @@ export class CompetitorsService {
     const app = await this.prisma.app.findFirst({
       where: { id: appId },
       select: {
+        id: true,
+        store: true,
         storeAppId: true,
         country: true,
         competitors: { select: { storeAppId: true } },
@@ -201,20 +205,26 @@ export class CompetitorsService {
 
     return {
       windowDays: query.days,
-      items: aggregateDiscovery(
-        rows.map((row) => ({
-          storeAppId: row.storeAppId,
-          title: row.title,
-          developer: row.developer,
-          iconUrl: row.iconUrl,
-          ratingAvg: row.ratingAvg,
-          ratingCount: row.ratingCount,
-          position: row.position,
-          date: row.date,
-          country: row.keyword.country,
-          keywordText: row.keyword.text,
-        })),
-        app.country,
+      items: await this.categories.withReleaseDates(
+        app,
+        await this.categories.filter(
+          app,
+          aggregateDiscovery(
+            rows.map((row) => ({
+              storeAppId: row.storeAppId,
+              title: row.title,
+              developer: row.developer,
+              iconUrl: row.iconUrl,
+              ratingAvg: row.ratingAvg,
+              ratingCount: row.ratingCount,
+              position: row.position,
+              date: row.date,
+              country: row.keyword.country,
+              keywordText: row.keyword.text,
+            })),
+            app.country,
+          ),
+        ),
       ),
     };
   }

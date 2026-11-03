@@ -37,10 +37,30 @@ export function MetadataAuditView({
 
   return (
     <>
+      {result.store === "APP_STORE" ? (
+        <div className="space-y-1 text-sm text-muted-foreground">
+          <p>
+            {result.metadataSource === "app-store-connect"
+              ? language === "zh-CN"
+                ? "元数据来源：App Store Connect（当前可编辑版本优先）。"
+                : "Metadata source: App Store Connect (editable version preferred)."
+              : language === "zh-CN"
+                ? "元数据来源：已保存的商店页面快照。"
+                : "Metadata source: saved storefront snapshot."}
+          </p>
+          {result.metadataSourceWarning ? (
+            <p role="status" className="text-warning">
+              {language === "zh-CN"
+                ? "App Store Connect 未能提供当前所选语言的元数据；已回退到商店快照。"
+                : result.metadataSourceWarning}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
       <section className="grid grid-cols-1 gap-4 @2xl/metadata:grid-cols-2">
         {result.fields.map((field) => (
           <MetadataFieldCard
-            key={`${market}:${localization ?? ""}:${field.field}`}
+            key={`${market}:${localization ?? ""}:${field.field}:${field.value ?? ""}`}
             field={field.field}
             value={field.value ?? ""}
             limit={field.limit}

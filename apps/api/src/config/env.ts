@@ -73,6 +73,20 @@ export const EnvSchema = z.object({
   SCRAPE_ITUNES_RPM: z.coerce.number().int().positive().default(15),
   SCRAPE_GPLAY_RPM: z.coerce.number().int().positive().default(10),
   PROXY_PROVIDER: z.enum(['none', 'webshare']).default('none'),
+  ASC_HTTP_PROXY_URL: z.preprocess(
+    blankAsUndefined,
+    z
+      .url()
+      .refine(
+        (value) => /^https?:$/.test(new URL(value).protocol),
+        'must be an HTTP or HTTPS proxy URL',
+      )
+      .refine(
+        carriesNoCredentials,
+        'proxy credentials must not be embedded in the URL',
+      )
+      .optional(),
+  ),
   PROXY_API_URL: z.url().default('https://proxy.webshare.io/api/v2'),
   PROXY_API_KEY: optionalText,
   PROXY_USERNAME: optionalText,

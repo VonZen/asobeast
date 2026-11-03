@@ -69,6 +69,8 @@ A keyword counts in a window when it was checked on both days, whether or not it
 | Median position | the middle position change over keywords ranked on both days; up means the typical keyword climbed |
 | Visibility | before and after, over the measured keywords, each weighted by its popularity on the baseline date for both numbers |
 
+The window also includes **Value-weighted change** and a keyword breakdown. This is a separate measure from the existing normalized visibility score: each keyword is worth `popularity × (1 − (difficulty/100)²) × fit`, where explicit brand keywords have fit 0, an evaluated relevance below 50 has fit 0, evaluated relevance at least 50 has fit 1, and an unevaluated keyword uses fit 0.8. Missing difficulty assumes 50. It applies an approximate per-position visibility curve to those values and totals the gains and losses, so a rank change on a low-value term cannot dominate the assessment. The report shows the 20 keywords with the largest absolute effect; the totals use all measured keywords. AI relevance scores, when explicitly requested from the keyword monitor, are stored in the existing relevance field.
+
 Holding the popularity weights at the baseline means a weekly rescore between the two dates cannot move the visibility change; only positions do. It is also why the number can differ slightly from the overview chart, which weights each day by the popularity current on that day and covers every active keyword in every market. The formula itself is explained in [Visibility](/concepts/visibility).
 
 ### When changes overlap

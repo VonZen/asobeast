@@ -47,6 +47,18 @@ Switch the country filter and add the phrase again. That creates a second keywor
 
 The two rows are genuinely independent: positions, popularity and difficulty all differ per storefront. They also cost twice as much, because each market multiplies daily search volume against one fixed budget. See [Countries and markets](/concepts/countries) and [The daily pipeline and rate limits](/concepts/pipeline).
 
+## Apple Ads campaign metrics
+
+If the server has its existing `APPLE_ADS_CLIENT_ID`, `APPLE_ADS_TEAM_ID`, `APPLE_ADS_KEY_ID`, and `APPLE_ADS_PRIVATE_KEY_PATH` configured, the App Store keyword monitor shows an **Apple Ads campaigns** card and an **Apple Ads** column. No additional ad credentials are required. Without an Apple Ads account these controls are hidden.
+
+The workspace owner can select **Sync campaigns**. The API reads Apple's campaign list and the keyword report grouped by country for the last 30 complete days; campaign IDs and promoted App Store IDs are matched to the tracked app. For each keyword and country it stores impressions, taps, attributed installs, and local-currency spend. All remote pages must finish before the stored snapshot is replaced. Repeated syncs replace existing campaign rows rather than adding to them. Countries and currencies remain separate; spend in different currencies is never combined into one monetary amount. The column shows attributed installs, with other metrics in its details.
+
+The campaign data stays in the workspace's own database rows with row-level security. The owner can sync on demand; no write action is sent to Apple Ads.
+
+## AI keyword relevance
+
+In the keyword monitor, **AI keyword relevance** offers an explicit action to assess up to 25 active keywords in the current market against the app's listing. It uses the configured AI endpoint and consumes AI allowance. The resulting 0–100 score is stored in the existing optional relevance field. Review the selected keywords before confirming: the operation replaces their previous relevance values. This score can be used by the [value-weighted change analysis](/guides/listing-changes#read-the-numbers).
+
 ## Import keywords from a CSV file
 
 **Import CSV**, beside **Add keywords** on the keyword monitor, tracks a list from a file. Use it to bring keywords over from a spreadsheet or another tool, to track the same list across several markets in one go, or to copy the keywords of one app to another with the file the keyword monitor exports.

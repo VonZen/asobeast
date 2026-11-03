@@ -11,6 +11,7 @@ import { SearchItem } from '../store-providers/types';
 import { CompetitorsService } from './competitors.service';
 import { mergeSuggestions, withSimilarIcons } from './competitor-suggestions';
 import { closestSimilar, listingTerms } from './similar-relevance';
+import { CompetitorCategoryService } from './competitor-category.service';
 
 const DISCOVERY_WINDOW_DAYS = 30;
 
@@ -31,6 +32,7 @@ export class CompetitorSuggestionsService {
     private readonly competitors: CompetitorsService,
     private readonly registry: StoreProviderRegistry,
     private readonly egress: ProxyEgress,
+    private readonly categories: CompetitorCategoryService,
   ) {}
 
   async suggest(
@@ -59,7 +61,7 @@ export class CompetitorSuggestionsService {
       similar: similar ? 'ok' : 'unavailable',
       items: mergeSuggestions(
         withSimilarIcons(serp.items, similar ?? []),
-        await this.onTopic(app, unshown),
+        await this.onTopic(app, await this.categories.filter(app, unshown)),
         exclude,
       ),
     };

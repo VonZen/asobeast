@@ -1,6 +1,8 @@
 "use client";
 
 import { LocalizedText } from "@/components/layout/LocalizedText";
+import { ExternalLink } from "lucide-react";
+import { storeUrl } from "@/components/top-charts/chart-actions";
 
 import { createColumnHelper } from "@tanstack/react-table";
 import type { CompetitorDiscoveryItem } from "@asobeast/shared";
@@ -12,7 +14,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { formatNumber, formatRating } from "@/lib/format";
+import { formatDate, formatNumber, formatRating } from "@/lib/format";
 import { grade } from "@/lib/grade";
 import { nullsLast } from "@/lib/table/sorting";
 import { TrackButton } from "./TrackButton";
@@ -24,7 +26,11 @@ const columnHelper = createColumnHelper<
 
 const NUMBER_SORT = { sortFn: "basic", sortUndefined: "last" } as const;
 
-export function discoveryColumns(appId: string) {
+export function discoveryColumns(
+  appId: string,
+  store: "APP_STORE" | "GOOGLE_PLAY",
+  country: string,
+) {
   return columnHelper.columns([
     columnHelper.accessor("title", {
       id: "app",
@@ -34,10 +40,28 @@ export function discoveryColumns(appId: string) {
       header: ({ column }) => <SortableHeader column={column} label="App" />,
       cell: ({ row }) => (
         <div className="flex flex-col">
-          <span className="font-medium">{row.original.title}</span>
+          <span className="flex min-w-0 items-center gap-1.5">
+            <span className="truncate font-medium">{row.original.title}</span>
+            <a
+              href={storeUrl(store, row.original.storeAppId, country)}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Open ${row.original.title} in store`}
+              title="Open store page in new tab"
+              className="shrink-0 text-muted-foreground hover:text-foreground"
+            >
+              <ExternalLink className="size-4" aria-hidden />
+            </a>
+          </span>
           {row.original.developer ? (
             <span className="text-xs text-muted-foreground">
               {row.original.developer}
+            </span>
+          ) : null}
+          {row.original.releasedAt ? (
+            <span className="text-xs text-muted-foreground">
+              <LocalizedText en="Released" />:{" "}
+              {formatDate(row.original.releasedAt)}
             </span>
           ) : null}
         </div>

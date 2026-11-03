@@ -15,6 +15,8 @@ export interface ConnectionRow {
   status: string;
   reportAccess: string;
   replyAccess: string;
+  metadataPublishEnabled: boolean;
+  metadataPublishAccess: string;
   issuerId: string;
   keyId: string;
   keyFingerprint: string;
@@ -76,6 +78,12 @@ export function connectionItems(
     status: row.status as StoreConnectionStatus,
     reportAccess: row.reportAccess as StoreReportAccess,
     replyAccess: row.replyAccess as StoreReplyAccess,
+    ...(row.store === 'APP_STORE'
+      ? {
+          metadataPublishEnabled: row.metadataPublishEnabled,
+          metadataPublishAccess: row.metadataPublishAccess as StoreReplyAccess,
+        }
+      : {}),
     issuerId: row.issuerId,
     keyId: row.keyId,
     keyFingerprint: row.keyFingerprint,
